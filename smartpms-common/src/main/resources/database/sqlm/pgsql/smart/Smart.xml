@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="smart">
+	
+	<select id="selectLimitConnectionCount" resultType="java.lang.Integer">
+	SELECT  limit_connection_count as limitConnectionCount
+    FROM intg_project_status
+	</select>
+	
+	<select id="selectInterfaceDateInfo" resultType="DataSyncInfo">
+	SELECT cutover_start_date as cutoverStartDate,
+	       cutover_end_date as cutoverEndDate,
+	       defect_start_date as defectStartDate,
+	       defect_end_date as defectEndDate
+	FROM intg_project_status
+	</select>
+	
+	
+	
+	
+	<select id="selecDataSyncInfo" resultType="DataSyncInfo" parameterType="DataSyncInfo">
+	select sync_type as syncType,
+	       last_sync_date as lastSyncDate
+	from intg_data_sync_info
+	where sync_type = #{syncType}
+	</select>
+	
+	<update id="updateDataSyncInfo" parameterType="DataSyncInfo">
+	update intg_data_sync_info
+	set last_sync_date = #{lastSyncDate}
+	where sync_type = #{syncType}
+	</update>
+	
+	<insert id="insertDataSyncInfo" parameterType="DataSyncInfo">
+	insert into intg_data_sync_info (sync_type, last_sync_date)
+	values (#{syncType}, #{lastSyncDate})
+	</insert>
+	
+	<select id="selectUserList" parameterType="UserInfo" resultType="UserInfo">
+	SELECT
+		  id as userId, 
+		  name as userName, 
+		  user_no as userNo, 
+		  user_type as userType, 
+		  email as emailAddress, 
+		  phone_number as phoneNumber, 
+		  status as status, 
+		  password as  userPassword, 
+       	  to_char(create_date, 'yyyy-MM-dd HH24:mi:ss') as createDate, 
+       	  to_char(last_active_date, 'yyyy-MM-dd HH24:mi:ss') as lastActiveDate
+       	  to_char(expiration_date, 'yyyy-MM-dd HH24:mi:ss') as expirationDate
+       	  default_org_id as defaultOrgId, 
+          photo_path as photoPath
+  	FROM smrt_sys_user
+  	WHERE 1=1
+  	<if test="userId != null">
+  	AND id like #{userId}||'%'
+  	</if>
+  	<if test="userName != null">
+  	AND name like '%'||#{userName}||'%'
+  	</if>
+  	<if test="searchValue != null">
+  	AND (id like #{searchValue}||'%' or name like '%'||#{searchValue}||'%')
+  	</if>
+  	ORDER BY create_date DESC
+  	<if test="maxRowSize == 0">
+  	limit #{limit} offset (#{page} - 1) * #{limit}
+  	 </if>
+  	 <if test="maxRowSize != 0">
+  	 limit #{maxRowSize}
+  	 </if>
+	</select> 
+</mapper>

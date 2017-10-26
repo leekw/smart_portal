@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="resource">
+	<select id="selectResourceList" parameterType="Resource" resultType="Resource">
+	SELECT /* resource.selectResourceList 2014-07-10 Lee Kyung Wook */
+		  c.resource_id AS resourceId,
+		  c.resource_name AS resourceName,
+		  c.parent_resource_id AS parentResourceId,
+		  c.resource_type AS resourceTypeCode,
+		  c.url AS url,
+		  b.resource_name as parentResourceName,
+		  <if test="viewType == null">
+		  case when c.resource_type = 'MENU' then 0
+		       when c.url is null and c.resource_content is null then 0
+		       else 1 end as leaf,
+		  </if>
+		  <if test="viewType != null">
+		  (select case when count(1) &gt; 0 then 0 else 1 end  from intg_resource where parent_resource_id = c.resource_id) AS leaf,
+		  </if>
+		  <if test="viewType == null and resourceId != null">
+		  c.resource_content as resourceContent,
+		  </if>
+		  <if test="adminYn !=null">
+		  c.resource_content as resourceContent,
+		  </if>
+		  c.sort_no as sortNo,
+		  case when c.icon_cls is null then 'x-fa fa-leanpub' else c.icon_cls end as iconCls
+	FROM intg_resource c,
+		 intg_resource b
+	WHERE 1=1
+	and b.resource_id = c.parent_resource_id
+	<if test="viewType == null">
+	AND c.resource_type IN ('MENU','PAGE', 'IMAGE')
+	</if>
+	<if test="resourceId != null">
+	AND c.resource_id = #{resourceId}
+	</if>
+	<if test="parentResourceId != null and allData == null">
+	AND c.parent_resource_id = #{parentResourceId}
+	</if>
+	<if test="resourceTypeCode != null">
+	AND c.resource_type = #{resourceTypeCode}
+	</if>
+	<if test="parentResourceId == null and resourceId == null">
+	START WITH c.parent_resource_id = 'TOP'
+	CONNECT BY PRIOR c.resource_id = c.parent_resource_id
+	</if>
+	<if test="parentResourceId != null">
+	START WITH c.parent_resource_id = #{parentResourceId}
+	CONNECT BY PRIOR c.resource_id = c.parent_resource_id
+	</if>
+	order by c.sort_no, c.resource_id  asc
+	</select>
+	
+	<update id="updateResource" parameterType="Resource">
+	UPDATE intg_resource
+	SET sort_no = #{sortNo}
+	    ,parent_resource_id = #{parentResourceId}
+	WHERE resource_id = #{resourceId}
+	</update>
+	<update id="updateResourceByContent" parameterType="Resource">
+	UPDATE intg_resource
+	SET resource_name = #{resourceName},
+	    resource_type = #{resourceTypeCode}
+	    <if test="url != null">
+	    , url = #{url}
+	    </if>
+	     <if test="resourceContent != null">
+	    , resource_content = #{resourceContent}
+	    </if>
+	WHERE resource_id = #{resourceId}
+	</update>
+	<insert id="insertResource" parameterType="Resource">
+	INSERT INTO intg_resource (resource_id, resource_name, parent_resource_id, resource_type, url, resource_content)
+	VALUES (#{resourceId}, #{resourceName}, #{parentResourceId}, #{resourceTypeCode}, #{url}, #{resourceContent})
+	</insert>
+	<delete id="deleteResource" parameterType="Resource">
+	DELETE FROM intg_resource
+	WHERE resource_id = #{resourceId}
+	</delete>
+	
+	
+	<insert id="insertUploadFile" parameterType="UploadFile">
+	INSERT INTO intg_file_info (file_no, board_no, file_name, file_path, file_size, board_id)
+	VALUES (nextval('file_seq'), #{boardNo}, #{fileName}, #{filePath}, #{fileSize}, #{boardId})
+	</insert>
+	
+	<delete id="deleteUploadFile" parameterType="UploadFile">
+	DELETE FROM intg_file_info
+	WHERE file_no = #{fileNo}
+	</delete>
+	
+	<select id="selectUploadFileList" parameterType="UploadFile" resultType="UploadFile">
+	SELECT file_no as fileNo,
+	       board_no as boardNo,
+	       board_id as boardId,
+	       file_name as fileName,
+	       file_path as filePath,
+	       file_size as fileSize,
+	       'R' as dataMode
+	FROM intg_file_info
+	WHERE 1=1
+	<if test="fileNo == 0">
+	AND board_no = #{boardNo}
+	AND board_id = #{boardId}
+	</if>
+	<if test="fileNo != 0">
+	AND file_no = ${fileNo}
+	</if>
+	</select>
+	
+	<select id="selectUserList" parameterType="UserInfo" resultType="UserInfo">
+	SELECT
+		  id as userId, 
+		  name as userName, 
+		  user_no as userNo, 
+		  user_type as userType, 
+		  email as emailAddress, 
+		  phone_number as phoneNumber, 
+		  status as status, 
+		  password as  userPassword, 
+       	  to_char(create_date, 'yyyy-MM-dd HH24:mi:ss') as createDate, 
+       	  to_char(last_active_date, 'yyyy-MM-dd HH24:mi:ss') as lastActiveDate,
+       	  to_char(expiration_date, 'yyyy-MM-dd HH24:mi:ss') as expirationDate,
+       	  default_org_id as defaultOrgId, 
+          photo_path as photoPath
+  	FROM smrt_sys_user
+  	WHERE 1=1
+  	<if test="userId != null">
+  	AND id like #{userId}||'%'
+  	</if>
+  	<if test="userName != null">
+  	AND name like '%'||#{userName}||'%'
+  	</if>
+  	<if test="searchValue != null">
+  	AND (id like #{searchValue}||'%' or name like '%'||#{searchValue}||'%')
+  	</if>
+  	ORDER BY create_date DESC
+  	<if test="maxRowSize == 0">
+  	limit #{limit} offset (#{page} - 1) * #{limit}
+  	 </if>
+  	 <if test="maxRowSize != 0">
+  	 limit #{maxRowSize}
+  	 </if>
+	</select> 
+	
+	<select id="selecteRoleList" parameterType="Role" resultType="Role">
+	SELECT role_id as roleId,
+	       parent_role_id as parentRoleId,
+	       role_name as roleName,
+	       role_description as roleDescription,
+	       'R' as mode
+	FROM intg_role_info
+	WHERE 1=1
+	<if test="roleName != null">
+	AND role_name like #{roleName}||'%'
+	</if>
+	</select>
+	
+	<select id="selectUserRoleList" parameterType="UserRole" resultType="UserRole">
+	SELECT user_name as userId,
+		   role_id as roleId
+	FROM intg_user_role_rel
+	WHERE 1=1
+	<if test="userId != null">
+	AND user_name = #{userId}
+	</if>
+	</select> 
+	
+	<delete id="deleteUserRole" parameterType="UserInfo">
+	DELETE FROM intg_user_role_rel
+	WHERE user_name = #{userId}
+	</delete>
+	
+	<insert id="inserUserRole" parameterType="UserRole">
+	INSERT INTO intg_user_role_rel (user_name, role_id)
+	VALUES (#{userId}, #{roleId})
+	</insert>
+	
+	<update id="updateAccessUserInfo" parameterType="UserInfo">
+	UPDATE intg_user_info
+	SET access_yn = #{accessYn}
+	WHERE user_name = #{userId}
+	</update>
+	
+	<insert id="insertResourceRole" parameterType="ResourceRole">
+	INSERT INTO intg_role_resource_rel (role_id, rsource_id, include_yn)
+	VALUES (#{roleId}, #{resourceId}, #{includeYn})
+	</insert>
+	
+	<delete id="deleteResourceRole" parameterType="ResourceRole">
+	DELETE FROM intg_role_resource_rel
+	WHERE role_id = #{roleId}
+	AND rsource_id = #{resourceId}
+	</delete>
+	           
+	<select id="selectResourceRoleList" parameterType="ResourceRole" resultType="ResourceRole">
+	SELECT role_id as roleId, 
+	       include_yn as includeYn,
+	       case when include_yn = 'Y' then false else true end as exclude,
+	       b.resource_id as resourceId,
+	       b.resource_name as resourceName,
+	       b.resource_type as resourceType,
+	       b.url as url 
+	  FROM intg_role_resource_rel a,
+	       intg_resource b
+	  WHERE b.resource_id = a.rsource_id
+	  <if test="roleId != null">
+	  AND role_id = #{roleId}
+	  </if>
+	  <if test="resourceId != null">
+	  AND b.resource_id = #{resourceId}
+	  </if>
+	</select>
+	
+	<update id="updateResourceRole" parameterType="ResourceRole">
+	UPDATE intg_role_resource_rel
+	SET include_yn = #{includeYn}
+	WHERE rsource_id = #{resourceId}
+	AND role_id = #{roleId}
+	</update>
+	
+	<insert id="insertRole" parameterType="Role">
+	INSERT INTO intg_role_info (role_id, role_name, role_description)
+	VALUES (#{roleId}, #{roleName}, #{roleDescription})
+	</insert>
+	<update id="updateRole" parameterType="Role">
+	UPDATE intg_role_info
+	SET role_name = #{roleName}
+	    ,role_description = #{roleDescription}
+	WHERE role_id = #{roleId}
+	</update>
+	
+	<delete id="deleteRole" parameterType="Role">
+	DELETE FROM intg_role_info
+	WHERE role_id = #{roleId}
+	</delete>
+	
+	<select id="selectRoleInUserList" parameterType="Role" resultType="Role">
+	select a.user_name as userId,
+	       b.display_name as userName,
+	       a.role_id as roleId,
+	       c.role_name as roleName,
+	       count(1) over() as total,
+	       'R' as mode
+	from intg_user_role_rel a, 
+	     intg_user_info b,
+	     intg_role_info c
+	where 1=1
+	<if test="roleId !=null">
+	and a.role_id = #{roleId}
+	</if>
+	and b.user_name = a.user_name
+	and c.role_id = a.role_id
+	limit #{limit} offset (#{page} - 1) * #{limit}
+	</select>
+	
+	<select id="selectRoleAuthList" parameterType="Resource" resultType="Resource">
+	   SELECT    a.resource_id AS resourceId,
+			  a.resource_name AS resourceName,
+			  a.parent_resource_id AS parentResourceId,
+			  b.resource_name AS parentResourceName,
+			  a.resource_type AS resourceTypeCode,
+			  case when c.include_yn is not null and c.include_yn ='Y' then true else false end AS include,
+			  case when c.include_yn is not null and c.include_yn ='N' then true else false end AS exclude,
+			  level||'단계' AS resourceDepth,
+			  #{roleId} as roleId
+		FROM intg_resource a,
+		     intg_resource b,
+		     intg_role_resource_rel c
+		WHERE 1=1
+		AND b.resource_id = a.parent_resource_id
+		and c.rsource_id (+) = a.resource_id
+		and c.role_id (+) = #{roleId}
+		AND a.resource_type IN ('MENU','PAGE', 'IMAGE')
+		START WITH a.parent_resource_id = #{parentResourceId}
+		CONNECT BY PRIOR a.resource_id = a.parent_resource_id
+	</select>
+	
+	<select id="selectServiceAuthList" parameterType="Resource" resultType="Resource">
+		SELECT    a.resource_id AS resourceId,
+			  a.resource_name AS resourceName,
+			  a.parent_resource_id AS parentResourceId,
+			  b.resource_name AS parentResourceName,
+			  a.url AS url,
+			  #{roleId} as roleId,
+			  case when c.include_yn is not null and c.include_yn ='Y' then true else false end AS include,
+			  case when c.include_yn is not null and c.include_yn ='N' then true else false end AS exclude
+		FROM intg_resource a,
+		     intg_resource b,
+		     intg_role_resource_rel c
+		WHERE 1=1
+		AND b.resource_id(+) = a.parent_resource_id
+		and c.rsource_id (+) = a.resource_id
+		and c.role_id (+) = #{roleId}
+		AND a.resource_type  = 'CONTENT'
+	</select>
+	
+	<delete id="deleteAuth" parameterType="Resource">
+	DELETE FROM intg_role_resource_rel
+	WHERE rsource_id = #{resourceId}
+	AND role_id = #{roleId}
+	</delete>
+	
+	<update id="mergeAuth" parameterType="Resource">
+	with t_auth as (
+	select #{resourceId} as rsource_id,
+		   #{roleId} as role_id, 
+		   #{includeYn} as include_yn
+	),
+	update_auth as (
+	update intg_role_resource_rel a
+	set a.include_yn = t_auth.include_yn
+	from t_auth where a.rsource_id = t_auth.rsource_id 
+	and  a.role_id = t_auth.role_id
+	)
+	insert into intg_role_resource_rel (rsource_id, role_id, include_yn)
+	select t_auth.rsource_id, t_auth.role_id, t_auth.include_yn
+	from t_auth where not exists (select 1 from intg_role_resource_rel a where a.rsource_id = t_auth.rsource_id and  a.role_id = t_auth.role_id)
+	</update>
+	
+	<delete id="deleteRoleUser" parameterType="Role">
+	DELETE FROM intg_user_role_rel
+	WHERE role_id = #{roleId} and user_name = #{userId}
+	</delete>
+	
+	<update id="insertRoleUser" parameterType="Role">
+	insert into intg_user_role_rel (role_id, user_name)
+	values (#{roleId}, #{userId})
+	</update>
+	
+	<select id="selectMenuServiceList" parameterType="Resource" resultType="Resource">
+	SELECT 
+		  a.resource_id AS resourceId,
+		  a.resource_name AS resourceName,
+		  a.parent_resource_id AS parentResourceId,
+		  b.resource_name AS parentResourceName,
+		  a.resource_type AS resourceTypeCode,
+		  a.url AS url,
+		  a.sort_no as sortNo
+	FROM intg_resource a,
+	     intg_resource b
+	WHERE 1=1
+	AND b.resource_id = a.parent_resource_id
+	AND a.resource_type IN ('CONTENT')
+	START WITH a.parent_resource_id = #{resourceId}
+	CONNECT BY PRIOR a.resource_id = a.parent_resource_id
+	order by a.sort_no, a.resource_id  asc
+	</select>
+	
+	<select id="selectUser" parameterType="RegUser" resultType="RegUser">
+	SELECT id as userId
+	FROM intg_user_info
+	WHERE user_name = #{userId}
+	</select>
+</mapper>

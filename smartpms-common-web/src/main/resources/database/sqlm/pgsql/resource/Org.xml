@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="org">
+	
+	<select id="selectOrgList" parameterType="Org" resultType="Org">
+	WITH RECURSIVE q AS (
+	select org_id as orgId,
+		       org_name||case when org_div = 'TEAM' then '(팀)'
+		                      when org_div = 'MODULE' then '(모듈)'
+		                      else '' end as orgName,
+		       org_name as originalOrgName,
+		       org_type as orgType,
+		       parent_org_id as parentOrgId,
+		       org_div as orgDiv,
+		       (select case when count(1) &gt; 0 then 0 else 1 end  from intg_org where parent_org_id = c.org_id) AS leaf,
+		       org_ref_value as orgRefValue
+		from intg_org c
+		where 1=1
+		<if test="orgId != null">
+		AND org_id = #{orgId}
+		</if>
+		<if test="parentOrgId != null">
+		AND parent_org_id = #{parentOrgId}
+		</if>
+		<if test="orgType != null">
+		AND org_type = #{orgType}
+		</if>
+		<if test="excludeOrgDiv != null">
+		AND org_div != #{excludeOrgDiv}
+		</if>
+		<if test="orgDiv != null">
+		AND org_div = #{orgDiv}
+		</if>
+		<if test="orgRefValue != null">
+		AND org_ref_value = #{orgRefValue}
+		</if>
+		<if test="parentOrgId == null"> 
+		and parent_org_id = 'TOP'
+		</if>
+		union all
+		select org_id as orgId,
+		       org_name||case when org_div = 'TEAM' then '(팀)'
+		                      when org_div = 'MODULE' then '(모듈)'
+		                      else '' end as orgName,
+		       org_name as originalOrgName,
+		       org_type as orgType,
+		       parent_org_id as parentOrgId,
+		       org_div as orgDiv,
+		       (select case when count(1) &gt; 0 then 0 else 1 end  from intg_org where parent_org_id = c.org_id) AS leaf,
+		       org_ref_value as orgRefValue
+		from intg_org c
+		JOIN q ON q.orgId = parent_org_id
+		where 1=1
+		<if test="orgId != null">
+		AND org_id = #{orgId}
+		</if>
+		<if test="parentOrgId != null">
+		AND parent_org_id = #{parentOrgId}
+		</if>
+		<if test="orgType != null">
+		AND org_type = #{orgType}
+		</if>
+		<if test="excludeOrgDiv != null">
+		AND org_div != #{excludeOrgDiv}
+		</if>
+		<if test="orgDiv != null">
+		AND org_div = #{orgDiv}
+		</if>
+		<if test="orgRefValue != null">
+		AND org_ref_value = #{orgRefValue}
+		</if>
+	)
+	SELECT * FROM q
+	</select>
+	
+</mapper>

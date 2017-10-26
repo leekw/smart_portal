@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion> 
+	<parent>
+		<groupId>net.smart</groupId>
+		<artifactId>smartpms-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../smartpms-parent</relativePath>
+	</parent>
+	<artifactId>smartpms-core</artifactId>
+	<packaging>jar</packaging>
+	<name>Smart Project Management Core Module</name>
+	<properties>
+		<maven.test.failure.ignore>true</maven.test.failure.ignore>
+	</properties>
+	<dependencies>
+		<dependency>
+		  <groupId>net.smart</groupId>
+		  <artifactId>smartpms-common</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+		</plugins>
+	</build> 
+</project>

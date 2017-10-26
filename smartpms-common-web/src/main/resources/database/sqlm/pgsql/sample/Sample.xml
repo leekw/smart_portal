@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="sample">
+	<insert id="insertSample" parameterType="Sample">
+	INSERT INTO /* sample.insertSample 2014-06-16 Lee Kyung Wook */ pl_srvc_info 
+	(area_cd, srvc_cd, fclt_yn, use_yn, rmrk,
+	 frst_rgst_id, frst_rgst_dt, frst_rgst_prg_nm,
+	 last_crct_id, last_crct_dt, last_crct_prg_nm)
+	 VALUES (#{areaCode}, #{serviceCode}, #{facilitiesYn}, #{useYn}, #{remark},
+	 #{firstCreateTransactionId}, SYSDATE, #{firstCreateProgramName},
+	 #{lastChangeTranscationId}, SYSDATE, #{lastChangeProgramName}
+	 )
+	</insert>
+	<update id="updateSample" parameterType="Sample">
+	UPDATE /* sample.updateSample 2014-06-16 Lee Kyung Wook */ pl_srvc_info
+	SET fclt_yn = #{facilitiesYn},
+	    use_yn = #{useYn},
+	    rmrk = #{remark},
+	    last_crct_id = #{lastChangeTranscationId},
+	    last_crct_dt = SYSDATE,
+	    last_crct_prg_nm = #{lastChangeProgramName}
+	WHERE area_cd = #{areaCode} AND srvc_cd = #{serviceCode}
+	</update>
+	<update id="deleteSample" parameterType="Sample">
+	DELETE /* sample.deleteSample 2014-06-16 Lee Kyung Wook */ FROM pl_srvc_info
+	WHERE area_cd = #{areaCode} AND srvc_cd = #{serviceCode}
+	</update>
+	<select id="selectSampleList" parameterType="Sample" resultType="Sample">
+	SELECT /* sample.selectSampleList 2014-06-16 Lee Kyung Wook */
+		area_cd AS areaCode,
+		srvc_cd AS serviceCode,
+		fclt_yn AS facilitiesYn,
+		use_yn AS useYn,
+		rmrk AS remark,
+		'R' AS dataMode
+	FROM pl_srvc_info
+	WHERE 1=1
+	<if test="areaCode != null">
+	AND area_cd = #{areaCode}
+	</if>
+	<if test="serviceCode != null">
+	AND srvc_cd = #{serviceCode}
+	</if>
+	</select>
+	<select id="selectCommonCodeChildList" parameterType="SampleTree" resultType="SampleTree">
+	 SELECT /* sample.selectCommonCodeChildList 2014-06-25 Lee Kyung Wook */ 
+	       cd_id AS id,
+	       cd_nm AS text,
+	       uprn_cd_id AS parentId,
+	       decode(last_yn,'N', 0, 1) AS leaf
+     FROM cm_cd a
+     WHERE 1=1
+     <if test="categoryCode != null">
+     AND cd_dvsn_id = #{categoryCode}
+     </if>
+     <if test="parentId != null">
+	 AND uprn_cd_id = #{parentId}
+	 </if>
+	 <if test="parentId == null">
+	 AND uprn_cd_id = 'TOP'
+	 </if>
+	 START WITH uprn_cd_id = 'TOP'
+	 CONNECT BY PRIOR cd_id = uprn_cd_id
+	</select>
+	<select id="selectCommonCodeCategoryList" parameterType="CodeCategory" resultType="CodeCategory">
+	SELECT /* sample.selectCommonCodeCategoryList 2014-06-25 Lee Kyung Wook */ 
+	     cd_dvsn_id AS codeCategoryId,
+         cd_dvsn_nm AS codeCategoryName,
+	     use_yn AS useYn,
+	     rmrk AS remark
+	FROM cm_cd_dvsn
+	WHERE 1=1
+	<if test="codeCategoryName != null">
+	AND cd_dvsn_nm like #{codeCategoryName}||'%'
+	</if>
+	<if test="maxRowSize != 0">
+	limit  #{maxRowSize}
+	</if>
+	</select>
+</mapper>

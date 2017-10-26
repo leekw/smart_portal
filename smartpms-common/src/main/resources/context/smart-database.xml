@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+	
+	<bean id="basedDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${based.jdbc.url}" />
+		<property name="username" value="${based.jdbc.username}" />
+		<property name="password" value="${based.jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="150"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="150"/>
+        <property name="maxWait" value="60000"/>
+        <property name="defaultAutoCommit" value="false"/>
+	</bean>
+	
+	<!-- ################################## transactionManager setting ################################################## -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="basedDataSource" />
+    </bean>
+    
+    <!-- ################################## MyBatis setting ################################################## -->
+    <bean id="basedSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="basedDataSource" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/${local.databse.type}/**/*.xml" />
+	</bean>
+	
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="150"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="150"/>
+        <property name="maxWait" value="60000"/>
+        <property name="defaultAutoCommit" value="false"/>
+	</bean>
+	
+	<!-- <jee:jndi-lookup id="dataSource" jndi-name="${datasource.jndi}" expected-type="javax.sql.DataSource"/>
+	<tx:jta-transaction-manager /> -->
+	
+	
+	<!-- ################################## transactionManager setting ################################################## -->
+	<bean id="transactionManagerOld" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <!-- ################################## MyBatis setting ################################################## -->
+    <bean id="smartSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/${local.databse.type}/**/*.xml" />
+	</bean>
+	
+	
+	<bean id="smartBatchSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/${local.databse.type}/**/*.xml" />
+	</bean>
+	
+	<bean id="dataSourceJira" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jira.jdbc.driverClassName}" />
+		<property name="url" value="${jira.jdbc.url}" />
+		<property name="username" value="${jira.jdbc.username}" />
+		<property name="password" value="${jira.jdbc.password}" />
+	</bean>
+	
+	<bean id="transactionManagerJira" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourceJira" />
+    </bean>
+    
+    <bean id="jiraSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceJira" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/pgsql/**/*.xml" />
+	</bean>
+	
+	<bean id="dataSourceCrowd" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${crowd.jdbc.driverClassName}" />
+		<property name="url" value="${crowd.jdbc.url}" />
+		<property name="username" value="${crowd.jdbc.username}" />
+		<property name="password" value="${crowd.jdbc.password}" />
+	</bean>
+	
+	<bean id="transactionManagerCrowd" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourceCrowd" />
+    </bean>
+    
+    <bean id="crowdSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceCrowd" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/mysql/**/*.xml" />
+	</bean>
+	
+	<bean id="dataSourcePmss" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${pmss.jdbc.driverClassName}" />
+		<property name="url" value="${pmss.jdbc.url}" />
+		<property name="username" value="${pmss.jdbc.username}" />
+		<property name="password" value="${pmss.jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="50"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxWait" value="60000"/>
+	</bean>
+	
+	<bean id="transactionManagerPmss" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourcePmss" />
+    </bean>
+    
+    <bean id="pmssSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourcePmss" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/pgsql/**/*.xml" />
+	</bean>
+	
+	<bean id="dataSourcePmssReal" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${pmssr.jdbc.driverClassName}" />
+		<property name="url" value="${pmssr.jdbc.url}" />
+		<property name="username" value="${pmssr.jdbc.username}" />
+		<property name="password" value="${pmssr.jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="10"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="10"/>
+        <property name="maxWait" value="60000"/>
+	</bean>
+	
+	<bean id="transactionManagerPmssReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourcePmssReal" />
+    </bean>
+    
+    <bean id="pmssRealSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourcePmssReal" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/pgsql/**/*.xml" />
+	</bean>
+	
+	
+	<bean id="dataSourceE2E" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${e2e.jdbc.driverClassName}" />
+		<property name="url" value="${e2e.jdbc.url}" />
+		<property name="username" value="${e2e.jdbc.username}" />
+		<property name="password" value="${e2e.jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="10"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="10"/>
+        <property name="maxWait" value="60000"/>
+	</bean>
+	
+	<bean id="transactionManagerE2E" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourceE2E" />
+    </bean>
+    
+    <bean id="e2eSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceE2E" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/pgsql/**/*.xml" />
+	</bean>
+	
+	
+	<bean id="dataSourceCoverage" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${coverage.jdbc.driverClassName}" />
+		<property name="url" value="${coverage.jdbc.url}" />
+		<property name="username" value="${coverage.jdbc.username}" />
+		<property name="password" value="${coverage.jdbc.password}" />
+		<property name="initialSize" value="1"/>
+        <property name="maxIdle" value="10"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="10"/>
+        <property name="maxWait" value="60000"/>
+	</bean>
+	
+	<bean id="transactionManagerCoverage" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" lazy-init="false">
+        <property name="dataSource" ref="dataSourceCoverage" />
+    </bean>
+    
+    <bean id="coverageSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceCoverage" />
+   		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
+   		<property name="mapperLocations" value="classpath*:database/sqlm/pgsql/**/*.xml" />
+	</bean>
+	
+	
+	<tx:annotation-driven proxy-target-class="true"/>
+	
+</beans>

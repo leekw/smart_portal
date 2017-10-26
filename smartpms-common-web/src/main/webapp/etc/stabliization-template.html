@@ -1,0 +1,335 @@
+ <style type="text/css">
+			html, body{ height:100%; padding:0px; margin:0px; overflow: hidden;}
+			
+			.tbText{line-height:14px; font:15px "돋움",Dotum,Verdana,Arial,AppleGothic,sans-serif;}
+			
+			.stat{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			
+			.folder{
+				border:2px solid RGB(0, 0, 0);
+				color: #ffffff;
+				background: RGB(100, 100, 100);
+			}
+			.folder .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.ready{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			.ready .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.inprogress{
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+			}
+			.inprogress .gantt_task_progress{
+				background: #23964d;
+			}
+			   
+			.close{
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+			}
+			.close .gantt_task_progress{
+				background: #547dab;
+			}
+			
+			.delay{
+				background: RGB(242, 153, 153);
+			}
+			.delay .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.h1{ font-size:40px;font-family:Verdana,"돋움";color:#777; }
+						   
+			.today_task_cell{ border-left:2px solid #ff2424; }
+			.today_scale_cell{ background: #ff2424; }
+			
+			.stat_title{
+				background-color:#ffffff;
+				text-align:center;
+				padding-left:5px;
+				padding-right:5px;
+				Bold;
+				font-weight: bold;
+				background: RGB(240, 240, 240);
+				font-size:15px;font-family:Verdana,"돋움";
+			}
+			
+			.stat_text1{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:12px;font-family:Verdana,"돋움";
+			}
+			
+			.stat_text2{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:20px;font-family:Verdana,"돋움";color:#777;
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_ready{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_inprogress{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_close{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_delay{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(186, 46, 46);
+				color:#ffffff;
+				background: RGB(242, 153, 153);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_fail{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:30px;font-family:Verdana,"돋움";color:RGB(186, 46, 46);
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_success{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:30px;font-family:Verdana,"돋움";color:#8c66ff;
+				cursor:pointer;cursor:hand;
+			}
+			
+    	</style>
+
+   <div style="padding:10 2 2 2px;width:80%; height:60px; background-color:#000000;">
+	<table style="width:100%;" cellspacing="0" cellpadding="0">
+	<tbody>
+			<tr>
+				<td align="center"><h2><font color="white">PA1-1 업무전환 -</font> <font color="green">안정화</font> <font color="white">Status Report<br>(2016.2.15)</font></h2></td>
+			</tr>
+	</tbody>
+	</table>
+   </div>
+   <div id="status" style="padding:10px; width:80%; height:90px; background-color:#ffffff; border-bottom:1px solid #cecece; ">
+   <table style="width:100%; background-color:#ffffff;" cellspacing="1" cellpadding="0">
+	<tbody>
+		<tr style="height:28px;">
+			<td width="50%" class="stat_title">사용자 접속 현황</td>
+			<td width="50%" class="stat_title">이슈/개선현황</td>
+		</tr>
+		<tr>
+			<td align="left" valign="top">
+			<div style="padding: 2 2 2 2px;">
+			◎ 사용자 다수 성공적으로 차세대 시스템 점속
+			</div>
+			<table style="width:100%;" cellspacing="0" cellpadding="0">
+			<tbody><tr>
+				<td align="left" valign="top">
+					<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+					<tbody><tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">채널구분</td>
+						<td style="" class="stat_title">접속자수</td>
+						<td style="" class="stat_title">로그인(포탈)</td>
+						<td style="" class="stat_title">로그인(CTI)</td>
+						<td style="" class="stat_title">비고</td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" rowspan="5">고객센터</td>
+						<td style="" class="stat_title">용산</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">분당</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">군포</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">대구</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">동작</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">기업IP컨설팅</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">BizCRM</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">M&S</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">MVNO</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">사업부서</td>
+						<td style="" class="stat_text1">40</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1">34</td>
+						<td style="" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title" colspan="2">계</td>
+						<td style="" class="stat_title">40</td>
+						<td style="" class="stat_title">34</td>
+						<td style="" class="stat_title">34</td>
+						<td style="" class="stat_title"></td>
+					</tr>
+					</tbody></table>
+				</td>
+			</tr>
+			</tbody>
+			</table>
+			</td>
+	  <td style="background-color:#ffffff;" align="left" valign="top" rowspan="2">
+			<div style="padding: 10 10 10 10px; background-color:#ffffff;">
+			◎ 비정상종료 현상 미해결 (3일 이상 지연)
+			</div>
+			<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+			<tbody><tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">구분</td>
+				<td style="" class="stat_title">금일발생</td>
+				<td style="" class="stat_title">누계</td>
+				<td style="" class="stat_title">잔여건</td>
+				<td style="" class="stat_title">비고</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">이슈</td>
+				<td style="" class="stat_text1">20</td>
+				<td style="" class="stat_text1">247</td>
+				<td style="" class="stat_text1">18</td>
+				<td style="" class="stat_text1">중복건제외</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">개선</td>
+				<td style="" class="stat_text1">20</td>
+				<td style="" class="stat_text1">247</td>
+				<td style="" class="stat_text1">18</td>
+				<td style="" class="stat_text1">중복건제외</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">계</td>
+				<td style="" class="stat_title">20</td>
+				<td style="" class="stat_title">247</td>
+				<td style="" class="stat_title">18</td>
+				<td style="" class="stat_title"></td>
+			</tr>
+			</tbody></table>
+			<div style="padding: 10 2 2 2px; background-color:#ffffff;">
+			 <p><b>◎ 주요 이슈</b></p>
+			 <p><b>무한로딩/화면멈춤 오류(9건)</b></p>
+			 <p> - 시간대별 사용유형 제어</p>
+			 <p>   13:00 ~ 15:00 Legacy 시스템 동시 미사용 (Legacy CTI 미작동)</p>
+			 <p><b>◎ 기타 사항</b></p>
+			</div>
+	  </td>
+	</tr>
+	<tr style="height:28px;padding: 10 10 10 10px; background-color:#ffffff;">
+		<td width="50%" class="stat_title">사용자 접속 현황</td>
+	</tr>
+	<tr style="height:28px;">
+		<td width="50%" class="stat_title">
+		<div style="padding: 10 10 10 10px; background-color:#ffffff;">
+		◎ 80% 이상 차세대 시스템을 통해 이슈 없이 업무처리 완료
+		</div>
+		<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+		<tbody><tr style="height:28px;">
+			<td style="" class="stat_title" width="80px">시간</td>
+			<td style="" class="stat_title">CTI로그인</td>
+			<td style="" class="stat_title">고객조회</td>
+			<td style="" class="stat_title">SRTT</td>
+			<td style="" class="stat_title">캠페인</td>
+		</tr>
+		<tr style="height:28px;">
+			<td style="" class="stat_title" width="80px">10:00~18:00</td>
+			<td style="" class="stat_text1">120</td>
+			<td style="" class="stat_text1">3297</td>
+			<td style="" class="stat_text1">528</td>
+			<td style="" class="stat_text1">1068</td>
+		</tr>
+		</tbody></table>
+		</td>
+	</tr>
+	</tbody>
+	</table>
+    </div>

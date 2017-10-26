@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="login.policy">
+	<select id="selectLoginPolicyList" parameterType="LoginPolicy" resultType="LoginPolicy">
+	SELECT /* login.policy.selectLoginPolicyList 2014-07-10 Lee Kyung Wook */
+		LOGN_PLCY_ID AS loginPolicyId,
+		LOGN_PLCY_NM AS loginPolicyName,
+		LOGN_PLCY_EFTV_DT AS loginPolicyEffactiveDate,
+		LOGN_PLCY_EPRT_DT AS loginPolicyExpirationDate,
+		TO_CHAR(LOGN_PLCY_EFTV_DT, 'YYYY-MM-DD HH24:MI:SS') AS loginPolicyEffectiveDataStr,
+		TO_CHAR(LOGN_PLCY_EPRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS loginPolicyExpirationDateStr,
+		'R' AS dataMode
+	FROM CM_LOGN_PLCY_BASS
+	WHERE 1=1
+	<if test="loginPolicyName != null">
+	AND LOGN_PLCY_NM like #{areaCode}||'%'
+	</if>
+	</select>
+	<select id="selectLoginPolicyFactorList" parameterType="LoginPolicyFactor" resultType="LoginPolicyFactor">
+	SELECT /* login.policy.selectLoginPolicyFactorList 2014-07-10 Lee Kyung Wook */
+	      LOGN_PLCY_ELMT_ID AS loginPolicyFactorId,
+		  LOGN_PLCY_ELMT_NM AS loginPolicyFactorName,
+		  LOGN_PLCY_ELMT_TYPE_CD AS loginPolicyFactorTypeCode,
+		  SCRN_CNFG_TYPE_CD AS viewTypeCode
+	FROM CM_LOGN_PLCY_ELMT
+	WHERE 1=1
+	<if test="loginPolicyFactorName != null">
+	AND LOGN_PLCY_ELMT_NM LIKE #{loginPolicyFactorName}||'%'
+	</if>
+	</select>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd
+		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-4.0.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-4.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<import resource="classpath*:context/smart-view.xml"/>
+	
+	<context:component-scan base-package="net.smart.common.controller" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<context:component-scan base-package="net.smart.web" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	
+	<bean id="annotationMapper"
+        class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        <description>annotation HandlerMapping 설정</description>
+        <property name="interceptors">
+            <list>
+                <ref bean="connectionInterceptor"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean class="net.smart.common.support.util.web.AsynAnnotationHandlerAdapter" />
+    
+    <bean id="connectionInterceptor" class="net.smart.web.support.IntegrationConnectionInterceptor">
+    	<property name="exclutionUrlList">
+    		<list>
+    			<value>/wait.do</value>
+    		</list>
+    	</property>
+    </bean>
+    
+    <!-- <mvc:annotation-driven /> -->
+ 
+  	<mvc:resources mapping="/resources/**" location="/resources/" />
+    
+    <import resource="classpath*:context/smart-inerceptor.xml"/> 
+    
+   
+    
+    <websocket:message-broker application-destination-prefix="/app">
+	    <websocket:stomp-endpoint path="/ws">
+	      <websocket:sockjs/>
+	    </websocket:stomp-endpoint>
+    	<websocket:simple-broker prefix="/topic"/>
+  	</websocket:message-broker>
+  	
+    
+</beans>

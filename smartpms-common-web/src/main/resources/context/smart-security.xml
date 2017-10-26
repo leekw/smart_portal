@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+
+	<security:http pattern="/resources/**" security="none"/>
+	<security:http pattern="/based/res/**" security="none"/>
+    <security:http pattern="/etc/**" security="none"/>
+    <security:http pattern="/ext/**" security="none"/>
+    <security:http pattern="/angular/**" security="none"/>
+    <security:http pattern="/index.html" security="none"/>
+    <security:http pattern="/user/reg.do" security="none"/>
+    <security:http pattern="/etc/cutover-min.html" security="none"/>
+    <security:http pattern="/loginFail.do" security="none"/>
+    <security:http pattern="/accessDenied.html" security="none"/>
+    <security:http pattern="/etc/guide.html" security="none"/>
+    <security:http pattern="/etc/wait.html" security="none"/>
+    <security:http pattern="/wait.do" security="none"/>
+    <security:http pattern="/ws/**" security="none"/>
+    <security:http pattern="/*.jsp" security="none"/> 
+    <security:http pattern="/permit/res/file/upload.file" security="none"/>
+    <security:http pattern="/permit/res/file/download.do" security="none"/>
+    <security:http pattern="/permit/res/file/list/get.json" security="none"/>
+    <security:http pattern="/permit/res/file/remove.json" security="none"/>
+    <security:http pattern="/permit/res/file/add.json" security="none"/>
+    <security:http pattern="/permit/res/excel/upload.file" security="none"/>
+    <security:http pattern="/code/list/get.json" security="none"/> 
+    <security:http pattern="/etc/timeline.html" security="none"/>
+    <security:http pattern="/notice/main/get.json" security="none"/>
+    <security:http pattern="/connection/get.json" security="none"/>
+    <security:http pattern="/logout/process.json" security="none"/>
+    <security:http pattern="/redirect.html" security="none"/>
+    <security:http pattern="/resource/user/vaild.json" security="none"/>
+    
+    
+    
+	<!-- 임시  -->
+	<security:http pattern="/layout/app/view.do" security="none"/>
+	<security:http pattern="/based/res/info/get.json" security="none"/>
+	<security:http pattern="/compare/chart/get.json" security="none"/>
+	<security:http pattern="/resource/session/invalid.json" security="none"/>
+	<security:http pattern="/open/issue/level/get.json" security="none"/>
+	<security:http pattern="/jira/chart/get.json" security="none"/>
+	
+	<security:http pattern="/org/list/get.json" security="none"/>
+	<security:http pattern="/svn/file/view.do" security="none"/>
+	<security:http pattern="/etc/project-scheduler.html" security="none"/>
+	<security:http pattern="/sr/excel/download.do" security="none"/>
+	
+   
+    <!-- Security Annotations activation -->
+    <security:global-method-security secured-annotations="enabled"/>
+
+    <security:authentication-manager/>
+    
+    <!-- This is where we configure Spring-Security  -->
+    <security:http auto-config="true" use-expressions="true"
+                   entry-point-ref="authenticationEntryPoint" access-decision-manager-ref="affirmativeBased">
+                   
+        <security:headers>
+        	<security:frame-options policy="SAMEORIGIN"/>
+        	<security:xss-protection block="false"/>
+        </security:headers>           
+    	<security:access-denied-handler ref="accessDeniedExceptionHandler"/>
+	    <security:form-login login-page="/login.do" />
+		<security:logout logout-success-url="/" invalidate-session="true" />
+		
+		<security:intercept-url pattern="/**/**/view.do" access="denyAll"/>
+        <security:intercept-url pattern="/**/**/*.json" method="POST" access="denyAll"/>
+        
+                  
+        <security:custom-filter ref="authenticationProcessingFilter" before="FORM_LOGIN_FILTER"/>
+	    <!-- <security:custom-filter ref="sessionMgmtFilter" before="SESSION_MANAGEMENT_FILTER"/>  -->
+	    <security:csrf/>
+    </security:http>
+    
+    <bean id="sessionMgmtFilter" class="org.springframework.security.web.session.SessionManagementFilter">
+		<constructor-arg ref="securityContextRepository"/>
+		<constructor-arg ref="sessionAuthenticationStrategy"/>
+		<!-- 세션 갯수 조정 -->
+		<property name="authenticationFailureHandler" ref="failureHandler"/>
+		<property name="invalidSessionStrategy" ref="jsonInvalidSessionStrategy"/>
+	</bean>
+	
+	<bean id="securityContextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository"/>
+	
+	<!-- ConcurrentSessionControlStrategy(동시세션제어전략 설정) -->
+	<bean id="sessionAuthenticationStrategy" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+		<constructor-arg name="sessionRegistry" ref="sessionRegistry"/>
+		<property name="maximumSessions" value="1"/>
+		<!-- 세션한개만 인정 -->
+		<property name="exceptionIfMaximumExceeded" value="true"/>
+	</bean>
+	
+	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" autowire="byType" />
+	
+	<bean id="failureHandler"  class="net.smart.web.support.authentication.exception.LoginFailureExceptionHandler">
+   		<property name="defaultFailureUrl" value="/loginFail.do"/>
+   		<property name="errorCode" value="LOGINFAIL"/>
+   		<property name="metadataType" value="json"/>
+	</bean>
+	
+	<bean id="jsonInvalidSessionStrategy" class="net.smart.web.support.authentication.exception.JsonInvalidSessionStrategy">
+		<property name="defaultInvalidSessionStrategy" ref="simpleRedirectInvalidSessionStrategy"/>
+		<property name="errorCode" value="NOTLOGIN"/>
+		<property name="metadataType" value="json"/>
+	</bean>
+	
+	<bean id="simpleRedirectInvalidSessionStrategy" class="org.springframework.security.web.session.SimpleRedirectInvalidSessionStrategy">
+		<constructor-arg value="/login.do"/>
+		<property name="createNewSession" value="false"/>
+	</bean>
+	
+	<!-- Authentication Exception Handler -->
+	<bean id="authenticationEntryPoint"  class="net.smart.web.support.authentication.exception.AuthenticationExceptionHandler">
+	    <constructor-arg value="/login.do"/>
+        <property name="useForward" value="false"/>
+   		<property name="errorCode" value="NOTLOGIN"/>
+   		<property name="metadataType" value="json"/>
+	</bean>
+
+	<!-- Access Denied Exception Handler -->
+	<bean id="accessDeniedExceptionHandler"  class="net.smart.web.support.authentication.exception.AccessDeniedExceptionHandler">
+   		<property name="errorPage" value="/accessDenied.html"/>
+   		<property name="errorCode" value="NOTAUTH"/>
+   		<property name="metadataType" value="json"/>
+	</bean>
+	
+	
+	<!-- SSO Authentication Processing Filter -->
+	<bean id="authenticationProcessingFilter" class="net.smart.web.support.authentication.filter.SSOAuthenticationProcessingFilter">
+		<constructor-arg value="/login/process.do"/>
+		<property name="authenticationManager" ref="authenticationManager"/>
+
+		<property name="authenticationSuccessHandler"  ref="successHandler"/>
+		<property name="authenticationFailureHandler" ref="failureHandler"/>
+	</bean>
+	
+	<!-- Authentication Manager -->
+	<security:authentication-manager alias="authenticationManager">
+			<security:authentication-provider  ref="authenticationProvider"/>
+		</security:authentication-manager>
+	
+	<!--  Authentication Provider -->
+	<bean id="authenticationProvider" class="net.smart.web.support.authentication.provider.SSOAuthenticationProvider"/>
+	
+	 
+	<!-- SuccessHandler -->
+	<bean id="successHandler" class="net.smart.web.support.authentication.handler.IntegrationSavedRequestAwareAuthenticationSuccessHandler">
+    	 <property name="defaultTargetUrl" value="/main/app/view.do"/>
+	</bean>
+	
+	<bean id="affirmativeBased" class="org.springframework.security.access.vote.AffirmativeBased">
+   		<constructor-arg>
+   			<list>
+   				<ref bean="webExpressionVoter"/>
+   				<ref bean="screenRoleVoter"/>
+   				<ref bean="serviceRoleVoter"/>
+   				
+   			</list>
+   		</constructor-arg>
+   	</bean>
+   	
+    <bean id="webExpressionVoter" class="org.springframework.security.web.access.expression.WebExpressionVoter"/>
+    
+    <bean id="screenRoleVoter" class="net.smart.web.support.authentication.voter.ScreenRoleVoter">
+           <property name="grantScreens">
+               <list value-type="java.lang.String">
+                    <value>login</value>
+               </list>
+           </property>
+   	</bean>
+   	
+   	<bean id="serviceRoleVoter" class="net.smart.web.support.authentication.voter.ServiceRoleVoter"/>
+   	
+   	<bean id="roleVoter" class="org.springframework.security.access.vote.RoleVoter"/>
+
+   	<bean id="authenticatedVoter" class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+</beans>

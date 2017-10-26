@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="portal">
+	
+	<insert id="insertPortalStatistic" parameterType="PortalData">
+	INSERT INTO intg_statistic (day, channel, data1, target, type, data2, data3, data4, data5, data6)
+	VALUES (#{day}, #{channel}, #{data1}, #{target}, #{type}, #{data2}, #{data3}, #{data4}, #{data5}, #{data6})
+	</insert>
+	<delete id="deletePoralStatistic" parameterType="PortalData">
+	DELETE FROM intg_statistic 
+	WHERE 1=1
+	AND day like #{ownDay}||'%'
+	AND type = #{type}
+	AND channel = #{channel}
+	</delete>
+	<update id="insertPortalStatisticInitData" >
+	 INSERT INTO intg_statistic
+	(day, channel, data1, data2, data3, data4, data5, data6, target, type)
+	SELECT to_char(now(),'yyyymmdd')||'000000' as day 
+	       , channel
+	       , 0
+	       , 0
+	       , 0
+	       , 0
+	       , 0
+	       , 0
+	       , max(target)
+	       , type
+	FROM intg_statistic
+	where day like to_char(now() + integer '-1','yyyymmdd')||'%'
+	and type not in ('level', 'que','open')
+	group by type, channel
+	</update>
+	<select id="selectPortalStatisticList" resultType="PortalData" parameterType="PortalData">
+	SELECT *
+	FROM (
+	SELECT day as ownDay
+	       , to_char(to_date(day, 'yyyymmddhh24miss'), 'yyyy-mm-dd hh24:mi:ss') as strDay 
+	       , to_char(to_date(day,'yyyymmddhh24miss'),'dd')||'일'||to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||'시'||to_char(to_date(day,'yyyymmddhh24miss'),'mi')||'분' as day
+	       , channel
+	       , data1
+	       , data2
+	       , data3
+	       , data4
+	       , data5
+	       , data6
+	       ,  rank() over(partition by channel order by day desc) 
+	       ,target
+	       , type
+	       , case when channel like 'ICIS%' then 1
+	              when channel in ('불만SR','일반SR','명의도용SR','요금조정SR','기술TT') then 2
+	              else 0
+	              end sort_no
+	FROM intg_statistic
+	WHERE type = #{type}
+	<if test="day == null">
+	and day like to_char(now(), 'yyyymmdd')||'%'
+	</if>
+	<if test="day != null">
+	and day like #{day}||'%'
+	</if>
+	) a where rank = 1
+	<if test="type != 'que'">
+	order by sort_no, channel
+	</if>
+	<if test="type == 'que'">
+	and data1 > 0
+	order by data1 desc
+	</if>
+	</select>
+	<select id="selectPortalStatisticChart" resultType="PortalData" parameterType="PortalData">
+	SELECT max(day) as day,
+		   sum(target) as target, 
+	       sum(data1) as data1,
+	       sum(data2) as data2,
+	       sum(data3) as data3,
+	       sum(data4) as data4,
+	       sum(data5) as data5,
+	       sum(data6) as data6,
+	       gDay as strDay
+	FROM (
+	SELECT day as ownDay
+	       , to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||(case when  to_char(to_date(day,'yyyymmddhh24miss'),'mi') > 30 then '1' else '0' end) as gDay
+	       , to_char(to_date(day,'yyyymmddhh24miss'),'dd')||'일'||to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||'시'||to_char(to_date(day,'yyyymmddhh24miss'),'mi')||'분' as day
+	       , channel
+	       , data1
+	       , data2
+	       , data3
+	       , data4
+	       , data5 
+	       , data6
+	       ,  rank() over(partition by to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||(case when  to_char(to_date(day,'yyyymmddhh24miss'),'mi') > 30 then '1' else '0' end), channel order by day desc) 
+	       ,target
+	       , type
+	FROM intg_statistic
+	WHERE type = #{type}
+	<if test="day != null">
+	and day like #{day}||'%'
+	</if>
+	<if test="day == null">
+	and (day like to_char(now() + integer '-1','yyyymmdd')||'%' or day like to_char(now(),'yyyymmdd')||'%')
+	</if>
+	) a where rank = 1
+	group by gDay
+	order by max(ownDay)
+	</select>
+	<select id="selectPortalStatisticChartByQuestion" resultType="PortalData" parameterType="PortalData">
+	SELECT max(day) as day,
+		   max(strDay) as strDay, 
+	       max(decode(type, 'que', data1, 0)) as que,
+	       max(decode(type, 'wfm', data1, 0)) as wfm1,
+	       max(decode(type, 'wfm', data2, 0)) as wfm2,
+	       max(decode(type, 'itsm', data1, 0)) as itsm1,
+	       max(decode(type, 'itsm', data2, 0)) as itsm2,
+	       max(decode(type, 'itsm', data3, 0)) as itsm3,
+	       max(decode(type, 'helf', data3, 0)) as helf1,
+	       max(decode(type, 'helf', data3, 0)) as helf2,
+	       max(decode(type, 'helf', data3, 0)) as helf3,
+	       max(decode(type, 'helf', data3, 0)) as helf4,
+	       max(decode(type, 'helf', data3, 0)) as helf5,
+	       max(decode(type, 'helf', data3, 0)) as helf6
+	FROM (
+	SELECT max(day) as day, 
+		type,
+		       max(strDay) as strDay,
+		       sum(data1) as data1,
+		       sum(data2) as data2,
+		       sum(data3) as data3,
+		       sum(data4) as data4,
+		       sum(data5) as data5,
+		       sum(data6) as data6,
+		       gDay
+		FROM (
+		SELECT day as ownDay
+			   , to_char(to_date(day, 'yyyymmddhh24miss'), 'yyyy-mm-dd hh24:mi:ss') as strDay
+			   , to_char(to_date(day,'yyyymmddhh24miss'),'yyyymmddhh24')||(case when  to_char(to_date(day,'yyyymmddhh24miss'),'mi') > 30 then '1' else '0' end) as gDay
+		       , to_char(to_date(day,'yyyymmddhh24miss'),'dd')||'일'||to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||'시'||to_char(to_date(day,'yyyymmddhh24miss'),'mi')||'분' as day
+		       , channel
+		       , data1
+		       , data2
+		       , data3
+		       , data4
+		       , data5
+		       , data6
+		       ,  rank() over(partition by day, type, channel order by day desc) 
+		       ,target
+		       , type
+		FROM intg_statistic
+		WHERE type in ('que','helf')
+		and day like to_char(now(), 'yyyymmdd')||'%'
+		) a where rank = 1
+		group by gDay, type
+		order by type, max(ownDay)
+	) group by gDay
+	order by gDay
+	</select>
+	
+	<select id="selectPortalProjectStatus" resultType="PortalInfo">
+	SELECT main_status as mainLight, 
+	       conn_status as connUserLight, 
+	       biz_status as bizLight, 
+	       isc_status as iscLight, 
+	       use_yn as useYn,
+	       limit_connection_count as limitConnectionCount,
+	       main_resource_id as mainResorceId,
+	       cutover_start_date as cutoverStartDate,
+	       cutover_end_date as cutoverEndDate,
+	       defect_start_date as defectStartDate,
+	       defect_end_date as defectEndDate
+	FROM intg_project_status
+	</select>
+	
+	<update id="updatePortalProjectStatus" parameterType="PortalInfo">
+	UPDATE intg_project_status
+	SET  main_status = #{mainLight}
+	    ,conn_status = #{connUserLight}
+	    ,biz_status = #{bizLight}
+	    ,isc_status = #{iscLight}
+	    ,use_yn = #{useYn}
+	    ,last_update_date = now()::timestamp without time zone
+	    ,limit_connection_count = #{limitConnectionCount}
+	    <if test="cutoverStartDate != null">
+	    ,cutover_start_date = #{cutoverStartDate}
+	    </if>
+	    <if test="cutoverEndDate != null">
+	    ,cutover_end_date = #{cutoverEndDate}
+	    </if>
+	    <if test="defectStartDate != null">
+	    ,defect_start_date= #{defectStartDate}
+	    </if>
+	    <if test="defectEndDate != null">
+	    ,defect_end_date= #{defectEndDate}
+	    </if>
+	WHERE 1=1
+	</update>
+	
+	<update id="updatePortalProjectStatusByMainResource" parameterType="PortalInfo">
+	UPDATE intg_project_status
+	SET main_resource_id = #{mainResorceId}
+	where 1=1
+	</update>
+	
+	<select id="selectPortalOpenIssueLevel" parameterType="PortalInfo" resultType="PortalData">
+	SELECT '01.total' as day,
+	       case when priority = 1 then 'Critical'
+	            when priority = 2 then 'High'
+	            when priority = 3 then 'Medium'
+	            when priority = 4 then 'Low'
+	            else priority
+	       end as channel,
+	       to_char(now() + interval '-1 minutes', 'yyyy-mm-dd hh24:mi:ss') as strDay,
+	       sum(case when jira_status like '%처리중' then 1 else 0 end) as data1,
+	       sum(case when jira_status like '%처리완료' or  jira_status like '%Closed' then 1 else 0 end) as data2, 
+	       sum(1) as data3
+	  FROM intg_open_issue
+	  group by priority
+	  order by priority
+	</select>
+	<select id="selectPortalOpenIssueLevelByDaily" parameterType="PortalInfo" resultType="PortalData">
+	  SELECT case when priority = 1 then 'Critical'
+	            when priority = 2 then 'High'
+	            when priority = 3 then 'Medium'
+	            when priority = 4 then 'Low'
+	            else priority
+	       end as channel,
+	       to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'), 'yyyy-mm-dd') as day,
+	       to_char(now() + interval '-1 minutes', 'yyyy-mm-dd hh24:mi:ss') as strDay,
+	       sum(case when jira_status like '%처리중' then 1 else 0 end) as data1,
+	       sum(case when jira_status like '%처리완료' or  jira_status like '%Closed' then 1 else 0 end) as data2, 
+	       sum(1) as data3
+	  FROM intg_open_issue
+	  group by to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'), 'yyyy-mm-dd'), priority
+	  order by to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'), 'yyyy-mm-dd') desc, priority
+	</select>
+	<select id="selectPortalOpenIssueChannel" parameterType="PortalInfo" resultType="PortalData">
+	SELECT que_channel as channel,
+	       sum(decode(jira_status, '1선 처리중', 1, 0)) as data1,
+	       sum(decode(jira_status, '1선 처리완료', 1, 0)) as data2,
+	       sum(decode(jira_status, '1.5선 처리중', 1, 0)) as data3,
+	       sum(decode(jira_status, '1.5선 처리완료', 1, 0)) as data4,
+	       sum(decode(jira_status, '2선 처리중', 1, 0)) as data5,
+	       sum(decode(jira_status, '2선 처리완료', 1, 0)) as data6,
+	       sum(1) as target
+	  FROM intg_open_issue
+	  group by que_channel
+	  order by que_channel
+	</select>
+	<update id="insertOpenJiraHistoryData">
+	 INSERT INTO intg_statistic
+	(day, channel, data1, data2, data3, data4, data5, data6, target, type)
+	SELECT 
+		   to_char(now(), 'yyyymmddhh24miss') as day,
+	       que_channel as channel,
+	       sum(decode(jira_status, '1선 처리중', 1, 0)) as data1,
+	       sum(decode(jira_status, '1선 처리완료', 1, 0)) as data2,
+	       sum(decode(jira_status, '1.5선 처리중', 1, 0)) as data3,
+	       sum(decode(jira_status, '1.5선 처리완료', 1, 0)) as data4,
+	       sum(decode(jira_status, '2선 처리중', 1, 0)) as data5,
+	       sum(decode(jira_status, '2선 처리완료', 1, 0)) as data6,
+	       sum(1) as target,
+	       'open' as type
+	  FROM intg_open_issue
+	  group by que_channel
+	</update> 
+	<update id="insertOpenJiraLevelHitoryData">
+	INSERT INTO intg_statistic
+	(day, channel, data1, data2, data3, data4, data5, data6, target, type)
+	SELECT to_char(now(), 'yyyymmddhh24miss') as day,
+	      case when priority = 1 then 'Critical'
+	            when priority = 2 then 'High'
+	            when priority = 3 then 'Medium'
+	            when priority = 4 then 'Low'
+	            else priority
+	       end as channel,
+	       sum(decode(jira_status, '1선 처리중', 1, decode(jira_status, '1.5선 처리중', 1, decode(jira_status, '2선 처리중', 1, 0)))) as data1,
+	       sum(decode(jira_status, ' 1선 처리완료', 1, decode(jira_status, '1.5선 처리완료', 1, decode(jira_status, '2선처리완료', 1, decode(jira_status, 'Closed', 1, 0))))) as data2, 
+	       sum(1) as data3,
+	       0,
+	       0,
+	       0, 
+	       0,
+	       'level'
+	  FROM intg_open_issue
+	  group by priority
+	</update>
+	
+	<select id="selectOpenJiraOriginationChart" resultType="PortalData">
+	select replace(day,'-','월')||'일' as day,
+	       sum(decode(channel, 'Critical', data3, 0)) as data1,
+	       sum(decode(channel, 'High', data3, 0)) as data2,
+	       sum(decode(channel, 'Medium', data3, 0)) as data3,
+	       sum(decode(channel, 'Low', data3, 0)) as data4,
+	       sum(data3) as data5
+	from (
+	SELECT to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'),'mm-dd') as day,
+		      case when priority = 1 then 'Critical'
+		            when priority = 2 then 'High'
+		            when priority = 3 then 'Medium'
+		            when priority = 4 then 'Low'
+		            else priority
+		       end as channel,
+		       0,
+		       0,
+		       sum(1) as data3,
+		       0,
+		       0,
+		       0, 
+		       0,
+		       'level_day'
+		  FROM intg_open_issue
+		  group by to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'),'mm-dd'), priority
+	) a
+	group by day
+	order by day
+	</select>
+	<select id="selectOpenJiraAccumChart" resultType="PortalData">
+	SELECT max(replace(day,'-','월')||'일') as day,
+		   sum(target) as target, 
+	       sum(data1) as data1,
+	       sum(data2) as data2,
+	       sum(data3) as data3,
+	       sum(data4) as data4,
+	       sum(data5) as data5,
+	       sum(data6) as data6,
+	       gDay as strDay
+	FROM (
+	SELECT day as ownDay
+	       , to_char(to_date(day,'yyyymmddhh24miss'),'yyyymmdd') as gDay
+	       , to_char(to_date(day,'yyyymmddhh24miss'),'mm-dd') as day
+	       , channel
+	       , data1
+	       , data2
+	       , data3
+	       , data4
+	       , data5 
+	       , data6
+	       ,  rank() over(partition by to_char(to_date(day,'yyyymmddhh24miss'),'yyyymmdd'), channel order by day desc) 
+	       ,target
+	       , type
+	FROM intg_statistic
+	WHERE type = 'level'
+	) a where rank = 1
+	group by gDay
+	order by max(ownDay)
+	</select>
+	<select id="selectJiraChartByDaily" resultType="PortalData" parameterType="PortalData">
+	select hours as day,
+	       max(data1)+10 as target,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd'),'dd'), day, data1, 0)) as data1,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-1','dd'), day, data1, 0)) as data2
+	from (
+		SELECT max(day) as day,
+		       max(hours) as hours,
+		       0 as target, 
+		       sum(data1) as data1,
+		       0 as data2,
+		       0 as data3,
+		       0 as data4,
+		       0 as data5,
+		       0 as data6,
+		       gDay as strDay
+		FROM (
+			select to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'), 'yyyymmddhh24miss') as ownDay
+			       , to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'),'yyyymmddhh24') as gDay
+			       , to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'),'dd') as day
+			       , to_char(to_date(jira_create_date,'yyyy-mm-dd hh24:mi:ss'),'hh24')||'시' as hours
+			       , 'jirachart'
+			       , 1 as data1
+			from intg_open_issue
+			where jira_create_date &gt; to_char(to_date(#{day},'yyyymmdd') - integer '2', 'yyyy-mm-dd hh24:mi:ss')
+			and jira_create_date &lt; to_char(to_date(#{day},'yyyymmdd') + integer '1', 'yyyy-mm-dd hh24:mi:ss')
+		) a
+		group by gDay
+	 ) group by hours
+	order by hours
+	</select>
+	<select id="selectPortalStatisticChartByDaily" resultType="PortalData" parameterType="PortalData">
+	select hours as day,
+	       max(data1)+500 as target,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd'),'dd'), day, data1, 0)) as data1,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-1','dd'), day, data1, 0)) as data2,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-2','dd'), day, data1, 0)) as data3,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-3','dd'), day, data1, 0)) as data4,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-4','dd'), day, data1, 0)) as data5,
+	       sum(decode(to_char(to_date(#{day}, 'yyyymmdd') + integer '-5','dd'), day, data1, 0)) as data6
+	from (
+	     SELECT max(day) as day,
+	            max(hours) as hours,
+			   sum(target) as target, 
+		       sum(data1) as data1,
+		       sum(data2) as data2,
+		       sum(data3) as data3,
+		       sum(data4) as data4,
+		       sum(data5) as data5,
+		       sum(data6) as data6,
+		       gDay as strDay
+		FROM (
+		SELECT day as ownDay
+		       , to_char(to_date(day,'yyyymmddhh24miss'),'yyyymmddhh24') as gDay
+		       , to_char(to_date(day,'yyyymmddhh24miss'),'dd') as day
+		       , to_char(to_date(day,'yyyymmddhh24miss'),'hh24')||'시' as hours
+		       , channel
+		       , data1
+		       , data2
+		       , data3
+		       , data4
+		       , data5 
+		       , data6
+		       ,  rank() over(partition by to_char(to_date(day,'yyyymmddhh24miss'),'yyyymmddhh24'), channel order by day desc) 
+		       ,target
+		       , type
+		FROM intg_statistic
+		WHERE type = #{type}
+		and day &gt; to_char(to_date(#{day},'yyyymmdd') - integer '6', 'yyyymmdd')
+		and day &lt; to_char(to_date(#{day},'yyyymmdd') + integer '1', 'yyyymmdd')
+		) a where rank = 1
+		<if test="hours != null">
+		and hours = #{hours}
+		</if>
+		group by gDay
+	) group by hours
+	order by hours
+	</select>
+</mapper>

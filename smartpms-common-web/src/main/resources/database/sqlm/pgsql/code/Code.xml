@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="code">
+	<select id="selectCodeList" parameterType="CommonCode" resultType="CommonCode">
+	SELECT comn_code_type_id as commonCodeType,
+	       comn_code_id as commonCode,
+	       comn_code_name as commonCodeName,
+	       sort_no as sortNo,
+	       ref_value1 as refValue1,
+	       ref_value2 as refValue2
+	FROM smrt_comn_code
+	WHERE 1=1
+	<if test="commonCodeType != null">
+	AND comn_code_type_id = #{commonCodeType}
+	</if>
+	<if test="refValue1 != null">
+	and ref_value1 = #{refValue1}
+	</if>
+	<if test="refValue2 != null">
+	and ref_value2 = #{refValue2}
+	</if>
+	ORDER BY comn_code_type_id, sort_no
+	</select>
+	
+	<insert id="insertCode" parameterType="CommonCode">
+	INSERT INTO smrt_comn_code
+	(comn_code_type_id, comn_code_id, comn_code_name, ref_value1, ref_value2, ref_value3, sort_no)
+	VALUES (#{commonCodeType}, #{commonCode}, #{commonCodeName}, #{refValue1}, #{refValue2}, #{refValue3}, nextVal('code_seq'))
+	</insert>
+	
+</mapper>

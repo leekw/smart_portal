@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="resource">
+	<select id="selectResourceList" parameterType="Resource" resultType="Resource">
+	SELECT /* resource.selectResourceList 2014-07-10 Lee Kyung Wook */
+		  RSCE_ID AS resourceId,
+		  RSCE_NM AS resourceName,
+		  UPRN_RSCE_ID AS parentResourceId,
+		  RSCE_TYPE_CD AS resourceTypeCode,
+		  URL AS url,
+		  CONNECT_BY_ISLEAF AS leaf 
+	FROM CM_RSCE c
+	WHERE 1=1
+	<if test="parentResourceId != null">
+	AND UPRN_RSCE_ID = #{parentResourceId}
+	</if>
+	<if test="resourceTypeCode != null">
+	AND RSCE_TYPE_CD = #{resourceTypeCode}
+	</if>
+	START WITH UPRN_RSCE_ID = 'TOP'
+	CONNECT BY PRIOR RSCE_ID = UPRN_RSCE_ID
+	</select>
+</mapper>

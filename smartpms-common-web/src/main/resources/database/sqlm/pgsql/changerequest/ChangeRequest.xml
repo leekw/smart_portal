@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="changerequest">
+	
+	<select id="selectChangeRequestTartgetList" resultType="ChangeRequestItem" parameterType="ChangeRequestItem">
+	  SELECT repository,
+	       fullpath,
+	       filename,
+	       count(1) over() as total,
+	       commit_author as commitAuthor,
+	       to_char(commit_date,'yyyy-mm-dd hh24:mi:ss') as commitDate,
+	       jira_id as jiraId,
+	       last_update_author as lastUpdateAuthor,
+	       to_char(last_update_date, 'yyyy-mm-dd hh24:mi:ss') as lastUpdateDate,
+	       decode(jira_id, null, 'N', 'Y') as checkinYn
+	  FROM program_reg_target
+	  where 1=1
+	  <if test="commitAuthor != null">
+	  and commit_author = #{commitAuthor}
+	  </if>
+	  <if test="filename != null">
+	  and filename like #{filename}||'%'
+	  </if>
+	  <if test="repository != null">
+	  and repository = #{repository}
+	  </if>
+	  order by jira_id, commit_date desc
+	  limit #{limit} offset (#{page} - 1) * #{limit}
+	</select>
+	
+	<select id="selectChangeRequestRepositoryList" resultType="ChangeRequestComboInfo" parameterType="ChangeRequestComboInfo">
+	select a.repository as repositoryId,
+	       a.repository as repositoryName
+	from (
+		select repository 
+		from program_reg_target
+		group by repository
+	) a 
+	where 1=1
+	<if test="searchValue != null">
+	AND lower(repository) like lower(#{searchValue})||'%'
+	</if>
+	</select>
+	
+	<update id="updateChangeRequestJira" parameterType="ChangeRequestItem">
+	update program_reg_target
+	set jira_id = #{jiraId}
+	    , last_update_author = #{lastUpdateAuthor}
+	    , last_update_date = now()::timestamp without time zone
+	where repository = #{repository}
+	and fullpath = #{fullpath}
+	</update>
+	
+	<select id="selectSvnValidationCheckYn" resultType="java.lang.String">
+	select decode(count(1), 0, 'N', 'Y') as svnCheckYn 
+	from svn_file_pattern
+	where use_yn = 'Y'
+	</select>
+	
+	<update id="updateSvnValidationCheckYn" parameterType="java.lang.String">
+	update svn_file_pattern
+	set use_yn = #{svnCheckYn}
+	</update>
+	
+	<update id="mergeChangeRequestJira" parameterType="ChangeRequestJira">
+	with t_issue as (
+	select #{jiraId} as jira_id,
+	       #{jiraStatus} as jira_status,
+		   #{jiraSummary} as jira_summary, 
+		   #{jiraAssignee} as jira_assignee,
+		   #{jiraReporter} as jira_reporter,
+		   #{jiraCreateDate} as jira_create_date,
+		   #{jiraDescription} as jira_description,
+		   #{team} as team,
+		   #{module} as module
+	),
+	update_issue as (
+	update intg_change_request a
+		set a.jira_status = t_issue.jira_status,
+		    a.jira_summary = t_issue.jira_summary,
+		    a.jira_assignee = t_issue.jira_assignee,
+		    a.jira_reporter = t_issue.jira_reporter,
+		    a.jira_create_date = t_issue.jira_create_date,
+		    a.jira_description = t_issue.jira_description,
+		    a.team = t_issue.team,
+		    a.module = t_issue.module
+		from t_issue where a.jira_id = t_issue.jira_id 
+	)
+	insert into intg_change_request(
+            jira_id, jira_status, jira_summary, jira_assignee, 
+            jira_reporter, jira_create_date, jira_description, team, module)
+	select t_issue.jira_id,
+	       t_issue.jira_status,
+	       t_issue.jira_summary,
+	       t_issue.jira_assignee,
+	       t_issue.jira_reporter,
+	       t_issue.jira_create_date,
+	       t_issue.jira_description,
+	       t_issue.team,
+	       t_issue.module
+	from t_issue where not exists (select 1 from intg_change_request a where a.jira_id = t_issue.jira_id)
+	</update>
+	
+	<delete id="deleteChangeProgram" parameterType="ChangeRequestJira">
+	DELETE FROM intg_change_req_target
+	WHERE jira_id = #{jiraId}
+	</delete>
+	
+	<insert id="insertChangeProgram" parameterType="ChangeRequestTarget">
+	INSERT INTO intg_change_req_target(
+	 jira_id, issue_id, team, task, task_detail, program_type, program_small_type, 
+     filename, program_id, program_name, interface_id, developer, 
+     start_date, due_date, phase, iteration, sr_flag, sr_no, use_flag, 
+     cr_requester, cr_reuqest_date, cr_update_date, cr_status, module, 
+     sub_module, cr_reason, cr_mode, done_ratio, apply_value, old_start_date, old_due_date
+     ) values (
+       #{jiraId}, #{issueId}, #{team}, #{task}, #{taskDetail}, #{programType}, #{programSmallType},
+       #{fileName}, #{programId}, #{programName}, #{interfaceId}, #{developer},
+       #{startDate}, #{dueDate}, #{phase}, #{iteration}, #{srFlag}, #{srNo}, #{useFlag},
+       #{crRequester}, #{crRequestDate}, now()::timestamp without time zone, 'REQ', #{module},
+       #{subModule}, #{crReason}, #{mode}, #{doneRatio}, #{applyValue}, #{oldStartDate}, #{oldDueDate}
+     ) 
+	</insert>
+	
+	<select id="selectSourceProgramList" parameterType="ChangeRequestTarget" resultType="ChangeRequestTarget">
+	SELECT a.program_id as programId, 
+	       a.program_name as programName, 
+	       a.team  as team, 
+	       a.module as module, 
+	       a.sub_module as subModule, 
+	       a.developer as developer, 
+	       a.filename as fileName, 
+	       a.program_type as programType, 
+	       a.program_small_type as programSmallType, 
+	       to_char(a.start_date, 'yyyy-mm-dd') as startDateStr, 
+	       to_char(a.due_date, 'yyyy-mm-dd') as dueDateStr, 
+	       a.start_date as oldStartDate, 
+	       a.due_date as oldDueDate, 
+	       a.done_ratio as donRatio, 
+	       a.issue_id as issueId, 
+	       a.interface_id as interfaceId, 
+	       a.use_flag as useFlag, 
+	       a.task as task, 
+	       a.phase as phase, 
+	       a.iteration as iteration, 
+	       a.sr_flag as srFlag,
+	       count(1) over() as total,
+	       'M' as mode
+	  FROM program_list a
+	  WHERE 1=1
+	  <if test="team != null">
+	  AND team = #{team}
+	  </if>
+	  <if test="module != null">
+	  AND module = #{module}
+	  </if>
+	  <if test="subModule != null">
+	  AND sub_module = #{subModule}
+	  </if>
+	  <if test="phase != null">
+	  AND phase = #{phase}
+	  </if>
+	  <if test="iteration != null">
+	  AND iteration = #{iteration}
+	  </if>
+	  <if test="developer != null">
+	  AND developer like  '%'||#{developer}||'%'
+	  </if>
+	  <if test="startDateStr != null and dueDateStr != null">
+	  AND start_date &gt;= to_date(#{startDateStr}, 'yyyyMMdd')
+	  AND due_date &lt;= to_date(#{dueDateStr}, 'yyyyMMdd')
+	  </if>
+	  <if test="doneParam == true">
+	  and done_ratio &lt; '100'
+	  </if>
+	  <if test="maxRowSize == 0">
+	  limit #{limit} offset (#{page} - 1) * #{limit}
+	  </if>
+	</select>
+	<select id="selectProgramListByJiraId" parameterType="ChangeRequestTarget" resultType="ChangeRequestTarget">
+	SELECT b.program_id as programId, 
+	       b.program_name as programName, 
+	       b.team  as team, 
+	       b.module as module, 
+	       b.sub_module as subModule, 
+	       b.developer as developer, 
+	       b.filename as fileName, 
+	       b.program_type as programType, 
+	       b.program_small_type as programSmallType, 
+	       to_char(b.start_date, 'yyyy-mm-dd') as startDateStr,
+	       nvl(to_char(b.old_start_date, 'yyyy-mm-dd'),null) as oldStartDateStr,  
+	       to_char(b.due_date, 'yyyy-mm-dd') as dueDateStr, 
+	       nvl(to_char(b.old_due_date, 'yyyy-mm-dd'),null) as oldDueDateStr, 
+	       b.done_ratio as donRatio, 
+	       decode(b.cr_mode, 'I', 0,  b.issue_id) as issueId, 
+	       b.interface_id as interfaceId, 
+	       b.use_flag as useFlag, 
+	       b.task as task, 
+	       b.phase as phase, 
+	       b.iteration as iteration, 
+	       b.sr_flag as srFlag,
+	       b.task_detail as taskDetail,
+	       b.sr_no as srNo,
+	       b.cr_requester as crRequester,
+	       nvl(to_char(b.cr_reuqest_date, 'yyyy-mm-dd hh24:mi:ss'),null) as crRequestDateStr,
+	       nvl(to_char(b.cr_update_date, 'yyyy-mm-dd hh24:mi:ss'),null) as crUpdateDateStr,
+	       b.cr_status as crStatus,
+	       b.cr_reason as crReason,
+	       b.cr_mode as mode,
+	       case when c.log_type is null then '정상'
+	            when c.log_type = 'DATE' then '기간 체크대상'
+	            when c.log_type = 'FORMAT' then '오 입력'
+	            when c.log_type = 'REQUIRED' then '필수값 누락'
+	            when c.log_type = 'DUP' then '프로그램 중복(신규)'
+	            when c.log_type = 'ETC' then '기타'
+	          	else '' end as logType,
+	       c.log_message as logMessage
+	  FROM intg_change_req_target b,
+	       intg_change_request_log c
+	  WHERE 1=1
+	  and b.jira_id = #{jiraId}
+	  and c.jira_id(+) = b.jira_id
+	  and c.issue_id(+) = b.issue_id
+	  and c.team(+) = b.team 
+	  <if test="logType != null and logType == 'VERIFY'">
+	  and c.log_type is null
+	  </if>
+	  <if test="logType != null and logType != 'VERIFY'">
+	  and c.log_type = #{logType}
+	  </if>
+	</select>
+	
+	<select id="selectProgramNextIssueId" resultType="java.lang.Integer">
+	select nextval('change_req_seq') as issueId
+	</select>
+	
+	<select id="selectChangeRequestLogSummary" resultType="ChangeRequestLog" parameterType="ChangeRequestLog">
+	select sum(verifyCount) as verifyCount, 
+	       sum(dateCount) as dateCount,
+	       sum(formatCount) as formatCount,
+	       sum(reqCount) as reqCount,
+	       sum(newCount) as newCount,
+	       sum(etcCount) as etcCount
+	from (
+	select sum(decode(log_type, null, 1, 0)) as verifyCount,
+		       sum(decode(log_type, 'DATE', 1, 0)) as dateCount,
+		       sum(decode(log_type, 'FORMAT', 1, 0)) as formatCount,
+		       sum(decode(log_type, 'REQUIRED', 1, 0)) as reqCount,
+		       sum(decode(log_type, 'DUP', 1, 0)) as newCount,
+		       sum(decode(log_type, 'ETC', 1, 0)) as etcCount,
+		       0 as key
+		from intg_change_req_target a,
+		     intg_change_request_log b
+		where a.jira_id = #{jiraId}
+		and b.jira_id(+) = a.jira_id
+		and b.issue_id(+) = a.issue_id
+		and b.team(+) = a.team
+		group by log_type
+	) a 
+	group by key
+	</select>
+	
+	<delete id="deleteChangeRequestLog" parameterType="ChangeRequestJira">
+	DELETE FROM intg_change_request_log
+	WHERE jira_id = #{jiraId}
+	</delete>
+	
+	<insert id="insertChangeRequestLog" parameterType="ChangeRequestLog">
+	INSERT INTO public.intg_change_request_log(
+            jira_id, issue_id, team, log_seq, log_message, log_date, log_type)
+    VALUES (#{jiraId}, #{issueId}, #{team}, nextval('log_seq'), #{logMessage}, now()::timestamp without time zone, #{logType});
+	</insert>
+	
+	<select id="selectChangeRequestLimit" parameterType="ChangeRequestLimit" resultType="ChangeRequestLimit">
+	select team as team,
+	       module as module,
+	       limit_date as limitDate,
+	       iteration as iteration,
+	       phase as phase
+	from intg_dev_limit
+	</select>
+	
+	<select id="selectSvnFileList" parameterType="java.lang.String" resultType="java.lang.String">
+	  SELECT filename
+	  FROM svn
+	  where filename = #{programId}
+	</select>
+	
+	<select id="selectChangeRequestSummary" parameterType="ChangeRequestLog" resultType="ChangeRequestLog">
+	  SELECT cr_mode as crMode, 
+	         count(1) as count
+	  FROM intg_change_req_target
+	  where jira_id = #{jiraId}
+	  group by cr_mode
+	</select>
+	
+	<select id="selectSourceProgramByDeveloper" parameterType="ChangeRequestVolume" resultType="ChangeRequestVolume">
+	select *
+	from (
+	SELECT '기존' as type,
+	       sum(1) as count, 
+	       a.developer,
+	       to_char(a.due_date,'yyyy-mm')||'-'||week_of_month(a.due_date, 1) as weekOfMonth
+	  FROM program_list a
+	  where 1=1
+	  and team in 
+	  <foreach collection="teamList" item="item" separator="," open="(" close=")">
+	  		#{item}
+	  </foreach>
+	  and module in 
+	  <foreach collection="moduleList" item="item" separator="," open="(" close=")">
+	  		#{item}
+	  </foreach>
+	  and a.due_date &gt;= now() + '-3 months' 
+	  group by a.developer, to_char(a.due_date,'yyyy-mm')||'-'||week_of_month(a.due_date, 1)
+	) a
+	order by  weekOfMonth,  developer
+	</select>
+	
+	<select id="selectTargerProgramByTeamInfo" parameterType="ChangeRequestVolume" resultType="ChangeRequestVolume">
+	select team, module
+	from intg_change_req_target
+	where jira_id in
+	<foreach collection="jiraList" item="item" separator="," open="(" close=")">
+	  	#{item}
+	</foreach>
+	group by team, module
+	</select>
+	
+	<select id="selectTargetProgramByDeveloper" parameterType="ChangeRequestVolume" resultType="ChangeRequestVolume">
+	select *
+	from (
+	SELECT 'CR' as type,
+	       sum(apply_value) as count, 
+	       developer,
+	       to_char(due_date,'yyyy-mm')||'-'||week_of_month(due_date, 1) as weekOfMonth
+	  FROM intg_change_req_target
+	  where 1=1
+	  and jira_id in 
+	  <foreach collection="jiraList" item="item" separator="," open="(" close=")">
+	  	#{item}
+	  </foreach>
+	  group by developer, to_char(due_date,'yyyy-mm')||'-'||week_of_month(due_date, 1)
+	) a
+	order by  weekOfMonth,  developer
+	</select>
+	
+	<select id="selectSourceProgramByDeveloperSubscribe" parameterType="ChangeRequestVolume" resultType="ChangeRequestVolume">
+	select *
+	from (
+	SELECT 'CR' as type,
+	       sum(-1) as count, 
+	       developer,
+	       to_char(old_due_date,'yyyy-mm')||'-'||week_of_month(old_due_date, 1) as weekOfMonth
+	  FROM intg_change_req_target
+	  where 1=1
+	  and cr_mode = 'M'
+	  and apply_value = 1
+	  and jira_id in 
+	  <foreach collection="jiraList" item="item" separator="," open="(" close=")">
+	  	#{item}
+	  </foreach>
+	  group by developer, to_char(old_due_date,'yyyy-mm')||'-'||week_of_month(old_due_date, 1)
+	) a
+	order by  weekOfMonth,  developer
+	</select>
+</mapper>

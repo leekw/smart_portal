@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="false" name="integrationEhcache">
+	
+	 <!-- Disk Store -->
+    <diskStore path="java.io.tmpdir"/>
+    
+	<!-- <terracottaConfig url="10.217.55.38:9401,10.217.55.38:9404" /> -->
+	
+	<!--  
+	  * DEV  mcast_addr=238.105.3.1
+		TEST mcast_addr=238.107.3.1
+		mcast_port=9999
+	 -->
+	<!-- <cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
+        properties="connect=UDP(mcast_addr=238.112.3.1;mcast_port=45567):
+                                PING:
+                                MERGE2:
+                                FD:
+                                FD_SOCK:
+                                VERIFY_SUSPECT:
+                                BARRIER:
+                                pbcast.NAKACK:
+                                UNICAST:
+                                pbcast.STABLE:
+                                pbcast.GMS:
+                                FC:
+                                FRAG2:
+                                pbcast.STATE_TRANSFER"
+        propertySeparator="::" /> -->
+  		
+  	<!--cacheManagerPeerListenerFactory class="org.terracotta.ehcachedx.monitor.probe.ProbePeerListenerFactory"
+    		properties="monitorAddress=192.168.0.101, monitorPort=9889, memoryMeasurement=true" /-->
+    
+    <!-- 기본 캐시 -->	
+	<cache name="integrationDefaultCache"
+		eternal="true"
+		maxElementsInMemory="10000"
+		timeToIdleSeconds="0"
+		timeToLiveSeconds="0"
+		memoryStoreEvictionPolicy="LRU"
+		statistics="true">
+		 <!-- <cacheEventListenerFactory
+                         class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
+                         properties="replicateAsynchronously=false, replicatePuts=true,
+                         replicateUpdates=true, replicateUpdatesViaCopy=true,
+                         replicateRemovals=true, asynchronousReplicationIntervalMillis=1000"/>
+         <bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory"/> -->
+	</cache>
+	
+	
+</ehcache>

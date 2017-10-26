@@ -1,0 +1,2022 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="quality">
+	
+    <select id="selectQualitySummaryList" resultType="QualitySummary" parameterType="QualitySummary">
+	select statDate,
+	       team,
+	       module,
+	       <if test="mode != null and mode == 'function'">
+	       function as function,
+	       </if>
+	       startDate,
+	       dueDate,
+	       pgTotal,
+	       pgComplete,
+	       pgDelay,
+	       initCount,
+	       unUsedSource,
+	       notRun,
+	       utCoverage,
+	       utTarget,
+	       utComplete,
+	       utTesting,
+	       utNotest,
+	       runTarget,
+	       round(decode(runTarget, 0, 0, nvl(totFunc, 0)/runTarget), 2) as avgTotalFunction,
+	       round(decode(runTarget, 0, 0, nvl(runFunc, 0)/runTarget), 2) as avgRunFunction,
+	       totFunc as totalFunction,
+	       runFunc as runFunction,
+	       sitTarget,
+	       sitNotest,
+	       sitTesting,
+	       sitComplete,
+	       round(decode(runTarget, 0, 0, nvl(sumCoverage, 0)/runTarget), 2) as  avgCoverage,
+	       round(decode(runTarget, 0, 0, nvl(sitSumCoverage, 0)/runTarget), 2) as  sitAvgCoverage,
+	       sitSumCoverage,
+	       underSitCoverage,
+	       checkTarget,
+	       fileSize,
+	       fileSize/(1024*1024) as fileSize2
+	from (
+		select stat_date as statDate,
+		       case when a.module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(a.team, 'Order', 'Order-유선', a.team) end as team,
+		       a.module as module,
+		       case when a.module in ('AR','신규', '인터넷') then 1 
+		            when a.module in ('청구','기기','IPTV') then 2
+		            when a.module in ('BCOL','무선상품','SOIP') then 3
+		            when a.module in ('WiBro') then 4
+		            else 5 end module_sort,
+		       <if test="mode != null and mode == 'function'">
+		       function as function,
+		       </if>
+		       min(min_start_date) as startDate,
+		       max(max_due_date) as dueDate,
+		       sum(program_total) as pgTotal,
+		       sum(program_complete) as pgComplete,
+		       sum(program_delay) as pgDelay,
+		       max(b.init_value) as initCount,
+		       sum(unused_source) as unUsedSource,
+		       sum(not_run) as notRun,
+		       sum(under_ut_coverage) as utCoverage,
+		       sum(ut_target) as utTarget,
+		       sum(ut_complete) as utComplete,
+		       sum(ut_testing) as utTesting,
+		       sum(ut_notest) as utNotest,
+		       sum(run_target) as runTarget,
+		       sum(tot_func) as totFunc,
+		       sum(run_func) as runFunc,
+		       sum(sit_target) as sitTarget,
+		       sum(sit_notest) as sitNotest,
+		       sum(sit_testing) as sitTesting,
+		       sum(sit_complete) as sitComplete,
+		       sum(sum_coverage) as sumCoverage,
+		       sum(sit_sum_coverage) as sitSumCoverage,
+		       sum(under_sit_coverage) as underSitCoverage,
+		       sum(check_target) as checkTarget,
+		       sum(file_size) as fileSize
+		from intg_quality_info a,
+		     intg_program_init b
+		where 1=1
+		and b.team (+) = a.team
+		and b.module(+) = a.module 
+		and stat_date = to_char(now(),'yyyy-mm-dd')
+		and a.team = #{team}
+		group by stat_date, case when a.module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(a.team, 'Order', 'Order-유선', a.team) end, a.module
+		<if test="mode != null and mode == 'function'">
+		, function
+		</if>
+	) a
+	order by statDate, team, module_sort
+	<if test="mode != null and mode == 'function'">
+	, function
+	</if>
+	</select>
+	
+	<select id="selectQualityProgramTypeList" resultType="QualitySummary" parameterType="QualityProgramType">
+	select stat_date as statDate,
+	       team as team,
+	       module as module,
+	       function as function,
+	       program_type as programType,
+	       min(min_start_date) as startDate,
+	       max(max_due_date) as dueDate,
+	       sum(program_total) as pgTotal,
+	       sum(program_complete) as pgComplete,
+	       sum(program_delay) as pgDelay,
+	       0 as initCount,
+	       sum(loc) as loc,
+	       sum(unused_source) as unUsedSource,
+	       sum(not_run) as notRun,
+	       sum(under_ut_coverage) as utCoverage,
+	       sum(ut_target) as utTarget,
+		   sum(ut_complete) as utComplete,
+		   sum(ut_testing) as utTesting,
+		   sum(ut_notest) as utNotest,
+		   sum(run_target) as runTarget,
+		   sum(sit_target) as sitTarget,
+		   sum(sit_notest) as sitNotest,
+		   sum(under_sit_coverage) as underSitCoverage
+	from intg_quality_info
+	where stat_date = to_char(now(),'yyyy-mm-dd')
+	<if test="team != null and team == 'Order-무선'"> 
+	and team = 'Order'
+	and module in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team == 'Order-유선'">
+	and team = 'Order'
+	and module not in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team != 'Order-무선' and team != 'Order-유선'">
+	and team = #{team}
+	</if>
+	and module = #{module}
+	group by stat_date, team, module, function, program_type
+	</select>
+	
+	<select id="selectQualityDeveloperTopList" resultType="QualitySummary" parameterType="QualitySummary">
+	select a.*,
+		   round(fileSize/(1024*1024),3) as fileSize2,
+	       sum(pgComplete + pgDelay) over(partition by statDate) as total
+	from (
+		select stat_date as statDate,
+		       team as team,
+		       developer as developer,
+		       min(min_start_date) as minStartDateStr,
+		       max(max_due_date) as dueDate,
+		       sum(program_total) as pgTotal,
+		       sum(program_complete) as pgComplete,
+		       sum(program_delay) as pgDelay,
+		       0 as initCount,
+		       sum(loc) as loc,
+		       sum(under_statement) as underStatement,
+		       avg(avg_coverage) as avgCoverage,	       
+		       sum(unused_source) as unUsedSource,
+		       sum(not_run) as notRun,
+		       sum(under_ut_coverage) as utCoverage,
+		       sum(case when program_type in ('UI','JO') then ut_target-nvl(check_target,0) else 0 end) as utTarget,
+		       sum(ut_complete) as utComplete,
+		       sum(ut_testing) as utTesting,
+		       sum(ut_notest) as utNotest,
+		       sum(case when program_type in ('SO','BO','BOC','JO') then run_target-nvl(check_target,0) else 0 end) as runTarget,
+		       sum(sum_coverage) as sumCoverage,
+		       sum(program_com_target-nvl(check_target,0)) as pgComTarget,
+		       sum(case when program_type in ('UI','JO') then sit_target-nvl(check_target,0) else 0 end) as sitTarget,
+		       sum(sit_notest) as sitNotest,
+		       sum(sit_testing) as sitTesting,
+		       sum(sit_complete) as sitComplete,
+		       sum(sit_sum_coverage) as sitSumCoverage,
+		       sum(under_sit_coverage) as underSitCoverage,
+		       sum(check_target) as checkTarget,
+		       sum(file_size) as fileSize,
+		       sum(change_file) as changeFile,
+		       sum(nvl(svn_reg,program_com_target)) as svnReg,
+		       sum(check_target) as svnCheckReg
+		from intg_quality_info
+		where 1=1
+		<if test="searchMode != null">
+		and stat_date &gt;= to_char(now()-7,'yyyy-mm-dd')
+		</if>
+		<if test="searchMode == null">
+		and stat_date = to_char(now(),'yyyy-mm-dd')
+		</if>
+		<if test="team != null and team == 'Order-무선'">
+		and team = 'Order'
+		and module in ('기기', '신규','무선상품')
+		</if>
+		<if test="team != null and team == 'Order-유선'">
+		and team = 'Order'
+		and module not in ('기기', '신규','무선상품')
+		</if>
+		<if test="team != null and team != 'Order-무선' and team != 'Order-유선'">
+		and team = #{team}
+		</if>
+		<if test="module != null">
+		and module = #{module}
+		</if>
+		<if test="function != null">
+		and function = #{function}
+		</if>
+		group by stat_date, team, developer
+	) a
+	order by statDate, team, developer
+	</select>
+	
+	<select id="selectQualityDeveloperList" resultType="QualitySummary" parameterType="QualitySummary">
+	select statDate,
+	       team,
+	       module,
+	       developer,
+	       programType,
+	       minStartDateStr,
+	       dueDate,
+	       pgTotal,
+	       pgComplete,
+	       pgDelay,
+	       initCount,
+	       loc,
+	       underStatement,
+	       round(decode(runTarget, 0, 0, nvl(sumCoverage, 0)/runTarget), 2) as avgCoverage,
+	       unUsedSource,
+	       notRun,
+	       utCoverage,
+	       utTarget,
+	       utComplete,
+	       utTesting,
+	       utNotest,
+	       runTarget,
+	       round(decode(runTarget, 0, 0, nvl(totFunc, 0)/runTarget), 2) as avgTotalFunction,
+	       round(decode(runTarget, 0, 0, nvl(runFunc, 0)/runTarget), 2) as avgRunFunction,
+	       totFunc as totalFunction,
+	       runFunc as runFunction,
+	       sumCoverage,
+	       pgComTarget,
+	       sitTarget,
+	       sitNotest,
+	       sitTesting,
+	       sitComplete,
+	       round(decode(runTarget, 0, 0, nvl(sitSumCoverage, 0)/runTarget), 2) as sitAvgCoverage,
+	       sitSumCoverage,
+	       underSitCoverage,
+	       checkTarget,
+	       fileSize,
+	       round(fileSize/(1024*1024),3) as fileSize2,
+	       changeFile,
+	       svnReg
+	from (
+		select stat_date as statDate,
+		       team as team,
+		       module as module,
+		       case when module in ('AR','신규', '인터넷') then 1 
+		            when module in ('청구','기기','IPTV') then 2
+		            when module in ('BCOL','무선상품','SOIP') then 3
+		            when module in ('WiBro') then 4
+		            else 5 end module_sort,
+		       developer as developer,
+		       program_type as programType,
+		       min(min_start_date) as minStartDateStr,
+		       max(max_due_date) as dueDate,
+		       sum(program_total) as pgTotal,
+		       sum(program_complete) as pgComplete,
+		       sum(program_delay) as pgDelay,
+		       0 as initCount,
+		       sum(loc) as loc,
+		       sum(under_statement) as underStatement,
+		       avg(avg_coverage) as avgCoverage,	       
+		       sum(unused_source) as unUsedSource,
+		       sum(not_run) as notRun,
+		       sum(under_ut_coverage) as utCoverage,
+		       sum(ut_target) as utTarget,
+		   	   sum(ut_complete) as utComplete,
+		   	   sum(ut_testing) as utTesting,
+		   	   sum(ut_notest) as utNotest,
+		   	   sum(run_target) as runTarget,
+		   	   sum(tot_func) as totFunc,
+		       sum(run_func) as runFunc,
+		       sum(sum_coverage) as sumCoverage,
+		       sum(program_com_target) as pgComTarget,
+		       sum(sit_target) as sitTarget,
+		       sum(sit_notest) as sitNotest,
+		       sum(sit_testing) as sitTesting,
+		       sum(sit_complete) as sitComplete,
+		       sum(sit_sum_coverage) as sitSumCoverage,
+		       sum(under_sit_coverage) as underSitCoverage,
+		       sum(check_target) as checkTarget,
+		       sum(file_size) as fileSize,
+		       sum(change_file) as changeFile,
+		       sum(nvl(svn_reg,program_com_target)) as svnReg 
+		from intg_quality_info
+		where stat_date = to_char(now(),'yyyy-mm-dd')
+		<if test="team != null and team == 'Order-무선'">
+		and team = 'Order'
+		and module in ('기기', '신규','무선상품')
+		</if>
+		<if test="team != null and team == 'Order-유선'">
+		and team = 'Order'
+		and module not in ('기기', '신규','무선상품')
+		</if>
+		<if test="team != null and team != 'Order-무선' and team != 'Order-유선'">
+		and team = #{team}
+		</if>
+		<if test="module != null">
+		and module = #{module}
+		</if>
+		<if test="function != null">
+		and function = #{function}
+		</if>
+		<if test="developerList != null">
+			and developer in
+			<foreach collection="developerList" item="item" separator="," open="(" close=")">
+			#{item}
+			</foreach>
+		</if>
+		group by stat_date, team, module, developer, program_type
+	) a
+	order by statDate, team, module_sort, developer, programType
+	</select>
+	
+	<select id="selectQualityTargetByProgramList" resultType="QualityDetail" parameterType="QualityDetail">
+	  SELECT a.program_id as programId, 
+	       a.team  as team, 
+	       nvl(a.module,'모듚없음') as module, 
+	       nvl(decode(a.team, 'Order', nvl(a.category, a.task), a.task),'기능없음') as function, 
+	       nvl(a.developer, '개발자없음') as developer, 
+	       a.program_type as programType, 
+	       a.program_small_type as programSmallType, 
+	       to_char(a.start_date, 'yyyy-mm-dd') as startDate, 
+	       to_char(a.due_date, 'yyyy-mm-dd') as dueDate, 
+	       a.done_ratio as doneRatio, 
+	       a.issue_id as issueId, 
+	       a.use_flag as useFlag, 
+	       a.phase as phase, 
+	       a.iteration as iteration,
+	       a.filename,
+	       a.program_name as programName,
+	       a.interface_id as interfaceId,
+	       a.interface_pattern as interfacePattern,
+	       a.s_system as sourceSystem,
+	       a.t_system as targetSystem,
+	       a.internal_external as interfaceType,
+	       a.owner_team as ownTeam
+	  FROM program_list a
+	  WHERE 1=1
+	  and (use_flag not in ('미사용','DIH IF') or use_flag is null)
+	  and (team in ('Billing', 'Order','B-RDS', 'DIH') or team= 'CDM' and module ='대외연동')
+	  and module not in ('Mediation','IRIS')
+	  and due_date is not null
+	</select>
+	
+	<select id="selectProgramRelationList" resultType="QualityRelation" parameterType="QualityRelation">
+	select source, 
+	       source_file as sourceFile, 
+	       target, 
+	       target_file as targetFile, 
+	       relation_nm as relationName, 
+	       target_exist_yn as targetExistYn,
+	       decode(b.wrkjob_nm, '', 'COM', b.wrkjob_nm) as sourceWork,
+	       decode(c.wrkjob_nm, '', 'COM', c.wrkjob_nm) as targetWork
+	from e2e_relation a,
+	     e2e_asset b,
+	     e2e_asset c
+	where a.asset_env = 'SIT'
+	and relation_type = 'CALL'
+	and b.asset_id (+) = nvl(substring(source, 0, position('.' in source)), source)
+	and b.asset_env (+) = a.asset_env
+	and c.asset_id (+) = nvl(substring(target, 0, position('.' in target)), target)
+	and c.asset_env (+) = a.asset_env
+	</select>
+	
+	<select id="selectProgramRelationListByData" resultType="QualityRelation" parameterType="QualityRelation">
+	select a.jira_id as jiraId, 
+       	   jira_program_id as jiraProgramId, 
+           e2e_asset as e2eAsset 
+	from testcase_coverage_relation a,
+         (select jira_id from test_case where test_level = 'SIT' group by jira_id) b
+    where b.jira_id = a.jira_id
+    and team not in ('CDM','B2CCRM','B2BCRM')
+	</select>
+	
+	<select id="selectTestcaseList" resultType="QualityTestcase" parameterType="QualityTestcase">
+	  SELECT program_id as programId,
+	       status,
+	       resolution,
+	       jira_id as utJiraId,
+	       case when test_level != 'UT' then 'SIT' else 'UT' end as testLevel
+	  FROM test_case
+	  where test_level in ('UT', 'SIT','CR-SIT')
+	</select>
+	
+	<select id="selectSvnFileList" resultType="QualitySvnFile" parameterType="QualitySvnFile">
+	 select repository||'/'||path||'/'||filename||'.'||extension as filePath,
+	        path||'/'||filename as halfPath,
+            filename,
+            size,
+            to_char(last_changed_date,'YYYY-MM-DD') as lastCommitDate
+	 from svn 
+	 where repository in ('NBSS-ORDAP-PO/trunk/NBSS-ORDAP-PO/srcs'
+	 		,'NBSS-BILLING-PO/trunk/NBSS-BILLING-PO' 
+	 		,'NBSS-BILLING-PO/trunk/BIL-RFRN-DTO'
+	 		,'NBSS-DISTWEB-NEXA/trunk/NBSS_SRC'
+	 		,'NBSS-ESB/trunk/KT_NBSS_ESB'
+	 		,'NBSS-RDSAP-PO/trunk/NBSS-RDSAP-PO/srcs'
+	 		,'NBSS-FMTAP-JAVA/trunk/NBSS-INVOICE-JAVA'
+	 		,'NBSS-CDMAP-PO/trunk/NBSS-CDMAP-PO/srcs'
+	 		,'NBSS-EAIADP-ADP/trunk'
+	 		,'NBSS-EAIHUB-IIB/trunk/src'
+	 		,'NBSS-ETTBIFAP-BAT/trunk/nbss-bif'
+			,'NBSS-ETTBIFLOGAP-BAT/trunk/'
+	 		,'NBSS-ETTINFOAP-INFO/trunk'
+	 		,'NBSS-EAIADP-PA2/trunk'
+	 		,'NBSS-GWEAP-INFI/trunk/full'
+			, 'NBSS-GWEAP-INFI/trunk/partial')
+	</select>  
+	
+	<select id="selectQualityTargetByCoverageList" resultType="QualityCoverage" parameterType="QualityCoverage">
+	 SELECT reg_date as regDate, 
+	       tree_name as treeName, 
+	       n_func as runFunc, 
+	       t_func as totalFunc, 
+	       statement as statement, 
+	       n_statement as runStatement, 
+	       t_statement as totalStatement,  
+	       filename as filename, 
+	       max_statement as maxStatement,
+	       path as path, 
+	       team as team, 
+	       phase as phase,
+	       deploy_env as deployEnv
+	  FROM code_coverage
+	  where deploy_env in ('UT','SIT')
+	  and phase in ('PA3', 'PA2')
+	  order by reg_date desc
+	</select>
+	
+	<select id="selectQulaityOperationCoverageList" resultType="QualityCoverage" parameterType="QualityCoverage">
+	 SELECT file_name as filename, 
+	        func_name as funcName, 
+	        statement as statement,
+	        n_statement as runStatement, 
+	        t_statement as totalStatement
+	 FROM tb_coverage
+	 WHERE file_name like '/app/testmonitor/PA2%' or file_name like '/app/testmonitor/PA3%'
+	</select>
+	
+	<select id="selectQualityCheckTargetExcludeClass" resultType="QualityCoverage" parameterType="QualityCoverage">
+	select substring(asset_id, position('/nbss' in asset_id) + 1) as fileName
+	from e2e_asset_op
+	where asset_op_type = 'BO.OP'
+	and (asset_op_phys_nm like 'set%' or asset_op_phys_nm like 'get%' or asset_op_phys_nm like 'Set%' or asset_op_phys_nm like 'Get%')
+	group by substring(asset_id, position('/nbss' in asset_id) + 1)
+	</select>
+	
+	<select id="selectQualityServiceTestHistory" resultType="QualityCoverage" parameterType="QualityCoverage">
+	SELECT substring(svc_nm, decode(position('/PL' in svc_nm), 0, position('/BS' in svc_nm), position('/PL' in svc_nm))+1) as filename, 
+	       op_nm as funcName
+	FROM mo_bytm_svc_call_stat
+	group by substring(svc_nm, decode(position('/PL' in svc_nm), 0, position('/BS' in svc_nm), position('/PL' in svc_nm))+1), op_nm
+	</select>
+	
+	<delete id="deleteQualityDetail" parameterType="QualityDetail">
+	DELETE from intg_quality_detail
+	where 1=1
+	and stat_date = #{statDate}
+	</delete>
+	
+	<delete id="deleteQualtiyRelation" parameterType="QualityDetail">
+	DELETE from intg_quality_relation
+	where 1=1
+	and stat_date = #{statDate}
+	</delete>
+	
+	<update id="updateQualtiyRelation" parameterType="QualityDetail">
+	update intg_quality_relation a
+	set t_team = (select team from intg_quality_detail where stat_date = a.stat_date and filename = replace(a.t_file_path, '/','.') limit 1)
+	   ,t_module = (select module from intg_quality_detail where stat_date = a.stat_date and filename = replace(a.t_file_path, '/','.') limit 1)
+    where stat_date = #{statDate}
+	</update>
+	
+	<insert id="insertQualityRelation" parameterType="QualityRel">
+	INSERT INTO intg_quality_relation(
+            stat_date, team, module, s_file_path, t_file_path, s_op, t_op, s_file_statement, 
+            t_file_statement, s_run_yn, t_run_yn, s_op_statement, t_op_statement, 
+            s_op_t_statement, s_op_n_statement, t_op_t_statement, t_op_n_statement, t_team, t_module, relation_nm, relation_type,
+            s_op_run_yn, t_op_run_yn)
+    VALUES (#{statDate}, #{team}, #{module}, #{sourceFilePath}, #{targetFilePath}, #{sourceOperation}, #{targetOperation}, #{sourceFileStatement}, 
+            #{targetFileStatement}, #{sourceRunYn}, #{targetRunYn}, #{sourceOperationStatement}, #{targetOperationStatement}, 
+            #{sourceOperationTotal}, #{sourceOperationRun}, #{targetOperationTotal}, #{targetOperationRun}, #{targetTeam}, #{targetModule}, #{relationName}, #{relationType},
+            #{sourceOperationRunYn}, #{targetOperationRunYn});
+	</insert>
+	
+	<insert id="insertQualityDetail" parameterType="QualityDetail">
+	INSERT INTO intg_quality_detail(
+            stat_date, team, module, function, developer, program_type, program_id, 
+            loc, total_statement, run_statement, unused_yn, ut_case_type, 
+            issue_id, start_date, due_date, done_ratio, run_yn, statement, ut_jira_id, total_func, run_func,
+            sit_case_type, sit_run_yn, sit_statement, sit_jira_id, svn_file_path, filename, program_name, 
+            check_target_yn, check_message, file_size, last_commit_date, sit_include_yn, interface_id )
+    VALUES (#{statDate}, #{team}, #{module}, #{function}, #{developer}, #{programType}, #{programId},
+            #{loc}, #{totalStatement}, #{runStatement}, #{unusedYn}, #{utCaseType}, 
+            #{issueId}, #{startDate}, #{dueDate}, #{doneRatio}, #{runYn}, #{statement}, #{utJiraId}, #{totalFunction}, #{runFunction},
+            #{sitCaseType}, #{sitRunYn}, #{sitStatement}, #{sitJiraId}, #{svnFilePath}, #{filename}, #{programName}, #{checkTargetYn}, #{checkMessage},
+            #{fileSize}, #{lastCommitDate}, #{sitIncludeYn}, #{interfaceId})
+	</insert>
+	
+	<delete id="deleteQualityInfo" parameterType="QualityDetail">
+	DELETE FROM intg_quality_info
+	WHERE 1=1
+	and stat_date = #{statDate}
+	</delete>
+	
+	<insert id="insertQualityInfo" parameterType="QualityDetail">
+	insert into intg_quality_info
+	select stat_date,
+	       team,
+	       module,
+	       function,
+	       developer,
+	       program_type,
+	       program_total,
+	       program_complete,
+	       program_delay,
+	       min_start_date,
+	       avg_month_complete,
+	       loc,
+	       under_statement,
+	       round(decode(program_complete, 0, 0, nvl(sum_coverage,0)/program_complete), 2) as avg_coverage,
+	       unused_source,
+	       not_run,
+	       under_ut_coverage,
+	       max_deu_date,
+	       ut_target,
+	       ut_complete,
+	       ut_testing,
+	       ut_notest,
+	       run_target,
+	       tot_func,
+	       run_func,
+	       program_com_target,
+	       sum_coverage,
+	       sit_target,
+	       sit_notest,
+	       sit_sum_coverage,
+	       under_sit_coverage,
+	       sit_testing,
+	       sit_complete,
+	       check_target,
+	       file_size,
+	       change_file,
+	       svn_reg,
+	       svn_reg_full,
+	       sit_run_target,
+	       sit_run,
+	       sit_run_include,
+	       sit_run_exclude,
+	       no_reg_svn
+	from (
+	        select  stat_date,   
+		        team, 
+		        module, 
+		        function, 
+		        developer, 
+		        program_type, 
+		        count(1) as program_total, 
+		        sum(decode(done_ratio, 100, 1, 0)) as program_complete, 
+		        sum(case when due_date &lt; to_char(now(),'yyyy-mm-dd') and done_ratio &lt; 100 then 1
+		             else 0 end) as program_delay, 
+		        min(start_date) as min_start_date,
+		        0 as avg_month_complete,
+		        sum(loc) as loc,
+		        sum(case when run_yn !='-' and svn_file_path is not null and total_statement &lt; 10 then 1 else 0 end) as under_statement,
+		        nvl(sum(statement*100), 0) as sum_coverage,
+		        sum(case when unused_yn = 'Y' then 1 else 0 end) as unused_source, 
+		        sum(case when run_yn = 'N' then 1 else 0 end) as not_run, 
+		        sum(case when statement &lt; 0.65 then 1 else 0 end) as under_ut_coverage,
+		        max(due_date) as max_deu_date,
+		        sum(case when ut_case_type != 'NO_TGT' then 1 else 0 end) as ut_target,
+		        sum(case when ut_case_type = 'COMPLETED' then 1 else 0 end) as ut_complete,
+		        sum(case when ut_case_type = 'TESTING' then 1 else 0 end) as ut_testing,
+		        sum(case when ut_case_type = 'NO_TEST' then 1 else 0 end) as ut_notest,
+		        sum(case when run_yn != '-' then 1 else 0 end) as run_target,
+		        sum(total_func) as tot_func,
+		        sum(run_func) as run_func,
+		        sum(case when due_date &lt; to_char(now(),'yyyy-mm-dd') then 1
+		             else 0 end) as program_com_target,
+		        sum(case when sit_case_type != 'NO_TGT' then 1 else 0 end) as sit_target,
+		        sum(case when sit_case_type = 'NO_TEST' then 1 else 0 end) as sit_notest,
+		        sum(case when sit_case_type = 'COMPLETED' then 1 else 0 end) as sit_complete,
+		        sum(case when sit_case_type = 'TESTING' then 1 else 0 end) as sit_testing,
+		        nvl(sum(sit_statement*100), 0) as sit_sum_coverage,
+		        sum(case when sit_statement &lt; 0.65 then 1 else 0 end) as under_sit_coverage,
+		        sum(case when check_target_yn = 'Y' then 1 else 0 end) as check_target,
+		        sum(file_size) as file_size,
+		        sum(case when last_commit_date is not null and last_commit_date = stat_date then 1 else 0 end) as change_file,
+		        sum(case when due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is not null then 1 else 0 end) as svn_reg,
+		        sum(case when svn_file_path is not null then 1 else 0 end) as svn_reg_full,
+		        sum(case when sit_run_yn != '-' then 1 else 0 end) as sit_run_target,
+		        sum(case when sit_run_yn = 'Y' and sit_include_yn = 'Y' then 1 else 0 end) as sit_run,
+		        sum(case when sit_run_yn != '-' and sit_include_yn = 'Y' then 1 else 0 end) sit_run_include,
+		        sum(case when sit_run_yn != '-' and sit_include_yn = 'N' then 1 else 0 end) sit_run_exclude,
+		        sum(case when due_date &lt; to_char(now(),'yyyy-mm-dd') and done_ratio &lt; 100 and svn_file_path is null then 1 else 0 end) as no_reg_svn
+		from intg_quality_detail
+		where 1=1
+		and stat_date = #{statDate}
+		group by stat_date, team, module, function, developer, program_type
+	) a
+	</insert>
+	
+	<select id="selectQaulityDetailListByProgramType" parameterType="QualityDetail" resultType="QualitySummary">
+	select program_type as programType,
+	       count(1) as pgTotal
+	from intg_quality_detail
+	where stat_date = to_char(now(), 'yyyy-mm-dd')
+	<if test="team != null and team == 'Order-무선'">
+	and team = 'Order'
+	and module in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team == 'Order-유선'">
+	and team = 'Order'
+	and module not in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team != 'Order-무선' and team != 'Order-유선'">
+	and team = #{team}
+	</if> 
+	<if test="module != null">
+	and module = #{module}
+	</if>
+	<if test="function != null">
+	and function = #{function}
+	</if>
+	<if test="developer != null">
+	and developer = #{developer}
+	</if>
+	<if test="searchFilter == null">
+		<choose>
+			<when test="searchType != null and searchType == 'pgComplete'">
+			and done_ratio = 100
+			</when>
+			<when test="searchType != null and searchType == 'pgDelay'">
+			and done_ratio &lt; 100 and due_date &lt; to_char(now(),'yyyy-mm-dd')
+			</when>
+			<when test="searchType != null and searchType == 'unUsedSource'">
+			and unused_yn = 'Y'
+			</when>
+			<when test="searchType != null and searchType == 'utTarget'">
+			and ut_case_type != 'NO_TGT'
+			</when>
+			<when test="searchType != null and searchType == 'utComplete'">
+			and ut_case_type = 'COMPLETED'
+			</when>
+			<when test="searchType != null and searchType == 'utTesting'">
+			and ut_case_type = 'TESTING'
+			</when>
+			<when test="searchType != null and searchType == 'utNotest'">
+			and ut_case_type = 'NO_TEST'
+			</when>
+			<when test="searchType != null and searchType == 'sitTarget'">
+			and sit_case_type != 'NO_TGT'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotest'">
+			and sit_case_type = 'NO_TEST'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotest2'">
+			and sit_case_type IN ('NO_TEST','TESTING') 
+			</when>
+			<when test="searchType != null and searchType == 'utNotest2'">
+			and ut_case_type IN ('NO_TEST','TESTING')
+			</when>
+			<when test="searchType != null and searchType == 'sitTesting'">
+			and sit_case_type = 'TESTING'
+			</when>
+			<when test="searchType != null and searchType == 'sitComplete'">
+			and sit_case_type = 'COMPLETED'
+			</when>
+			<when test="searchType != null and searchType == 'runTarget'">
+			and run_yn != '-'
+			</when>
+			<when test="searchType != null and searchType == 'notRun'">
+			and run_yn = 'N'  and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotRun'">
+			and sit_run_yn = 'N' and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'utCoverage'">
+			and statement &lt; 0.65 and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'underSitCoverage'">
+			and sit_statement &lt; 0.65 and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'underStatement'">
+			and total_statement &lt; 10 and run_yn !='-' and svn_file_path is not null
+			</when>
+			<when test="searchType != null and searchType == 'checkTarget'">
+			and check_target_yn = 'Y'
+			</when>
+			<when test="searchType != null and searchType == 'changeSource'">
+			and last_commit_date is not null and last_commit_date = stat_date
+			</when>
+		</choose>
+	</if>
+	<if test="searchFilter != null and searchFilter == 'nosvn'">
+	and due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is null
+	</if>
+	<if test="searchFilter != null and searchFilter == 'qualityTarget'">
+	and due_date &gt;= #{startDate} and due_date &lt;= #{dueDate}
+	</if>
+	<if test="searchOption != null and searchOption == 'noQuality'">
+	and case when (
+               (done_ratio &lt; 100 and due_date &lt; to_char(now(),'yyyy-mm-dd')) 
+               or unused_yn = 'Y' or ut_case_type = 'NO_TEST'
+               or run_yn = 'N' or (statement &lt; 0.65 and run_yn !='-')
+               or (total_statement &lt; 10 and run_yn !='-' and svn_file_path is not null)
+               or check_target_yn = 'Y'
+               or (due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is null)
+               ) then '비정상' 
+          else '정상' end  = '비정상'
+	</if>
+	<if test="programType != null and programType != 'SJ'">
+	and program_type = #{programType}
+	</if>
+	<if test="programType != null and programType == 'SJ'">
+	and program_type in ('SO','JO')
+	</if>
+	group by program_type
+	</select>
+	<select id="selectQualityDetailList" parameterType="QualityDetail" resultType="QualityDetail">
+	select team,
+	       module,
+	       function,
+	       developer,
+	       program_type as programType,
+	       program_id as programId,
+	       loc,
+	       total_statement as totalStatement,
+	       run_statement as runStatement,
+	       unused_yn as unusedYn,
+	       case when ut_case_type = 'NO_TGT' then '비대상'
+	            when ut_case_type = 'NO_TEST' then 'UT누락'
+	            when ut_case_type = 'TESTING' then 'UT진행중'
+	            when ut_case_type = 'COMPLETED' then 'UT완료'
+	            else '-' end as utCaseType,
+	       issue_id as issueId,
+	       start_date as startDate,
+	       due_date as dueDate,
+	       done_ratio as doneRatio,
+	       run_yn as runYn,
+	       round(statement*100,2) as statement,
+	       ut_jira_id as utJiraId, 
+	       total_func as totalFunction,
+	       run_func as runFunction,
+	       case when sit_case_type = 'NO_TGT' then '비대상'
+	            when sit_case_type = 'NO_TEST' then 'SIT누락'
+	            when sit_case_type = 'TESTING' then 'SIT진행중'
+	            when sit_case_type = 'COMPLETED' then 'SIT완료'
+	            else '-' end as sitCaseType,
+	       sit_run_yn as sitRunYn,
+	       round(sit_statement*100,2) as sitStatement,
+	       sit_jira_id as sitJiraId,
+	       count(1) over() as total,
+	       svn_file_path as svnFilePath,
+	       decode(svn_file_path, null, 'N', 'Y') as svnRegYn,
+	       filename,
+	       program_name as programName,
+	       check_target_yn as checkTargetYn,
+	       check_message as checkMessage,
+	       file_size/1024 as fileSize2,
+	       last_commit_date as lastCommitDate,
+	       case when (
+	                  (done_ratio &lt; 100 and due_date &lt; to_char(now(),'yyyy-mm-dd')) 
+	                  or unused_yn = 'Y' or ut_case_type = 'NO_TEST'
+	                  or run_yn = 'N' or (statement &lt; 0.65 and run_yn !='-')
+	                  or (total_statement &lt; 10 and run_yn !='-' and svn_file_path is not null)
+	                  or check_target_yn = 'Y'
+	                  or (due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is null)
+	                  ) then '비정상' 
+	             else '정상' end as devStatus,
+	        sit_include_yn as sitIncludeYn
+	from intg_quality_detail
+	where stat_date = to_char(now(), 'yyyy-mm-dd')
+	<if test="team != null and team == 'Order-무선'">
+	and team = 'Order'
+	and module in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team == 'Order-유선'">
+	and team = 'Order'
+	and module not in ('기기', '신규','무선상품')
+	</if>
+	<if test="team != null and team != 'Order-무선' and team != 'Order-유선'">
+	and team = #{team}
+	</if> 
+	<if test="module != null">
+	and module = #{module}
+	</if>
+	<if test="function != null">
+	and function = #{function}
+	</if>
+	<if test="developer != null">
+	and developer = #{developer}
+	</if>
+	<if test="searchFilter == null">
+		<choose>
+			<when test="searchType != null and searchType == 'pgComplete'">
+			and done_ratio = 100
+			</when>
+			<when test="searchType != null and searchType == 'pgDelay'">
+			and done_ratio &lt; 100 and due_date &lt; to_char(now(),'yyyy-mm-dd')
+			</when>
+			<when test="searchType != null and searchType == 'unUsedSource'">
+			and unused_yn = 'Y'
+			</when>
+			<when test="searchType != null and searchType == 'utTarget'">
+			and ut_case_type != 'NO_TGT'
+			</when>
+			<when test="searchType != null and searchType == 'utComplete'">
+			and ut_case_type = 'COMPLETED'
+			</when>
+			<when test="searchType != null and searchType == 'utTesting'">
+			and ut_case_type = 'TESTING'
+			</when>
+			<when test="searchType != null and searchType == 'utNotest'">
+			and ut_case_type = 'NO_TEST'
+			</when>
+			<when test="searchType != null and searchType == 'sitTarget'">
+			and sit_case_type != 'NO_TGT'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotest'">
+			and sit_case_type = 'NO_TEST'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotest2'">
+			and sit_case_type IN ('NO_TEST','TESTING') 
+			</when>
+			<when test="searchType != null and searchType == 'utNotest2'">
+			and ut_case_type IN ('NO_TEST','TESTING')
+			</when>
+			<when test="searchType != null and searchType == 'sitTesting'">
+			and sit_case_type = 'TESTING'
+			</when>
+			<when test="searchType != null and searchType == 'sitComplete'">
+			and sit_case_type = 'COMPLETED'
+			</when>
+			<when test="searchType != null and searchType == 'runTarget'">
+			and run_yn != '-'
+			</when>
+			<when test="searchType != null and searchType == 'notRun'">
+			and run_yn = 'N'  and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'sitNotRun'">
+			and sit_run_yn = 'N' and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'utCoverage'">
+			and statement &lt; 0.65 and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'underSitCoverage'">
+			and sit_statement &lt; 0.65 and run_yn !='-'
+			</when>
+			<when test="searchType != null and searchType == 'underStatement'">
+			and total_statement &lt; 10 and run_yn !='-' and svn_file_path is not null
+			</when>
+			<when test="searchType != null and searchType == 'checkTarget'">
+			and check_target_yn = 'Y'
+			</when>
+			<when test="searchType != null and searchType == 'changeSource'">
+			and last_commit_date is not null and last_commit_date = stat_date
+			</when>
+			<when test="searchType != null and searchType == 'sitRunTarget'">
+			and sit_run_yn != '-'
+			</when>
+			<when test="searchType != null and searchType == 'sitExclude'">
+			and sit_run_yn != '-' and sit_include_yn = 'N'
+			</when>
+		</choose>
+	</if>
+	<if test="searchFilter != null and searchFilter == 'nosvn'">
+	and due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is null
+	</if>
+	<if test="searchFilter != null and searchFilter == 'qualityTarget'">
+	and due_date &gt;= #{startDate} and due_date &lt;= #{dueDate}
+	</if>
+	<if test="searchOption != null and searchOption == 'noQuality'">
+	and case when (
+               (done_ratio &lt; 100 and due_date &lt; to_char(now(),'yyyy-mm-dd')) 
+               or unused_yn = 'Y' or ut_case_type = 'NO_TEST'
+               or run_yn = 'N' or (statement &lt; 0.65 and run_yn !='-')
+               or (total_statement &lt; 10 and run_yn !='-' and svn_file_path is not null)
+               or check_target_yn = 'Y'
+               or (due_date &lt; to_char(now(),'yyyy-mm-dd') and svn_file_path is null)
+               ) then '비정상' 
+          else '정상' end  = '비정상'
+	</if>
+	<if test="programType != null and programType != 'SJ'">
+	and program_type = #{programType}
+	</if>
+	<if test="programType != null and programType == 'SJ'">
+	and program_type in ('SO','JO')
+	</if>
+	limit #{limit} offset (#{page} - 1) * #{limit}
+	</select>
+	
+	<select id="selectQualityHistorySummary" parameterType="QualityHistorySummary" resultType="QualityHistorySummary">
+	select 
+	       <if test="searchModuleList == null">
+	       team, 
+	       module,
+	       originalTeam,
+	       case when team = 'Billing' then '01.Billing'
+	       	    when team = 'B-RDS' then '02.B-RDS'
+	       	    when team = 'Order-무선' then '03.Order-무선'
+	       	    when team = 'Order-유선' then '04.Order-유선'
+	       	    when team = 'CDM' then '05.CDM'
+	       	    when team = 'DIH' then '06.DIH'
+	       	    else ''
+	       end as sortTeam,     
+	       module as originalModule,
+	       </if>
+	       <if test="searchModuleList != null">
+	       team||'-'||module as team,
+	       function as module,
+	       originalTeam,
+	       module as originalModule,
+	       function as originalFunction,
+	       </if>
+	       pgTotal as pgTotal1,
+	       pgComplete as pgComplete1,
+	       pgComTarget1,
+	       pgComTarget2,
+	       case when module = '모바일BSS' then pgComTarget2 else svnReg2 end as svnReg2,
+	       pgDelay1,
+	       pgDelay2,
+	       decode(pgComTarget1, 0, 0, round((pgComTarget1-pgDelay1)*100/pgComTarget1, 2)) as comRatio1,
+	       decode(pgComTarget2, 0, 0, round((pgComTarget2-pgDelay2)*100/pgComTarget2, 2)) as comRatio2,
+	       unusedSource1,
+	       unusedSource2,
+	       underStatement1,
+	       underStatement2,
+	       utTarget1,
+	       utTarget2,
+	       utNoTest1,
+	       utNoTest2,
+	       decode(utTarget1, 0, 0, round((utTarget1-utNoTest1-utTesting1)*100/utTarget1, 2)) as utNoTestRatio1,
+	       decode((utComplete2 + utTesting2), 0, 0, round(utComplete2*100/(utComplete2 + utTesting2), 2)) as utNoTestRatio2,
+	       utComplete2,
+	       utTesting2,
+	       runTarget1,
+	       runTarget2,
+	       notRun1,
+	       notRun2,
+	       decode(runTarget1, 0, 0, round((runTarget1-notRun1)*100/runTarget1, 2)) as runRatio1,
+	       decode(runTarget2, 0, 0, round((runTarget2-notRun2)*100/runTarget2, 2)) as runRatio2,
+	       pgComTarget1,
+	       pgComTarget2,
+	       decode(runTarget1, 0, 0, round(sumCoverage1/runTarget1, 2)) as coverageRatio1,
+	       decode(runTarget2, 0, 0, round(sumCoverage2/runTarget2, 2)) as coverageRatio2,	       
+	       decode((sitComplete2 + sitTesting2), 0, 0, round(sitComplete2*100/(sitComplete2 + sitTesting2), 2)) as sitNoTestRatio2,
+	       decode(runTarget1, 0, 0, round(sitSumCoverage1/runTarget1, 2)) as sitCoverageRatio1,
+	       decode(runTarget2, 0, 0, round(sitSumCoverage2/runTarget2, 2)) as sitCoverageRatio2,
+	       sitComplete2,
+	       sitTesting2,
+	       checkTarget2,
+	       sitTarget2,
+	       fileSize2/(1024*1024) as fileSize2,
+	       fileSize1/(1024*1024) as fileSize1,
+	       changeFile2,
+	       changeFile1,
+	       decode(sitRunTarget, 0, 0, round(sitRun*100/sitRunTarget, 2)) as sitRunRatio,
+	       decode(sitRunTarget, 0, 0, round(sitRunInclude*100/sitRunTarget, 2)) as sitInclude,
+	       sitRunExclude as sitExclude,
+	       sitRun,
+	       sitRunTarget,
+	       case when module = '모바일BSS' then 0 else sitNoTest2 end as sitNoTest2,
+	       case when module = '모바일BSS' then 0 else sitNoTest1 end as sitNoTest1,
+	       noRegSvn
+	from (
+		select case when module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(team, 'Order', 'Order-유선', team) end as team, module,
+		           <if test="searchModuleList != null">
+			       function,
+			       </if>
+			       team as originalTeam,
+			       case when module in ('AR','신규', '인터넷') then 1 
+		            when module in ('청구','기기','IPTV') then 2
+		            when module in ('BCOL','무선상품','SOIP') then 3
+		            when module in ('WiBro') then 4
+		            else 5 end module_sort,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), program_com_target, 0)) as pgComTarget1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), program_com_target, 0)) as pgComTarget2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), svn_reg, 0)) as svnReg2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), program_total, 0)) as pgTotal,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), program_complete, 0)) as pgComplete,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), program_delay, 0)) as pgDelay1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), program_delay, 0)) as pgDelay2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), unused_source, 0)) as unusedSource1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), unused_source, 0)) as unusedSource2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), under_statement, 0)) as underStatement1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), under_statement, 0)) as underStatement2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), ut_target, 0)) as utTarget1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), ut_target, 0)) as utTarget2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), ut_notest, 0)) as utNoTest1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), ut_notest, 0)) as utNoTest2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), ut_testing, 0)) as utTesting1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), ut_testing, 0)) as utTesting2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), ut_complete, 0)) as utComplete2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), run_target, 0)) as runTarget1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), run_target, 0)) as runTarget2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), not_run, 0)) as notRun1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), not_run, 0)) as notRun2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), sum_coverage, 0)) as sumCoverage1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sum_coverage, 0)) as sumCoverage2,		       
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), sit_target, 0)) as sitTarget1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_target, 0)) as sitTarget2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), sit_testing, 0)) as sitTesting1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_testing, 0)) as sitTesting2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_complete, 0)) as sitComplete2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), sit_notest, 0)) as sitNoTest1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_notest, 0)) as sitNoTest2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), sit_sum_coverage, 0)) as sitSumCoverage1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_sum_coverage, 0)) as sitSumCoverage2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), check_target, 0)) as checkTarget2,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), file_size, 0)) as fileSize2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), file_size, 0)) as fileSize1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), change_file, 0)) as changeFile2,
+		       sum(decode(stat_date, to_char(now()-1, 'yyyy-mm-dd'), change_file, 0)) as changeFile1,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_run_target, 0)) as sitRunTarget,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_run, 0)) as sitRun,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_run_include, 0)) as sitRunInclude,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), sit_run_exclude, 0)) as sitRunExclude,
+		       sum(decode(stat_date, to_char(now(), 'yyyy-mm-dd'), no_reg_svn, 0)) as noRegSvn         
+		from intg_quality_info
+		where stat_date >= to_char(now()-1, 'yyyy-mm-dd')
+		<if test="searchModuleList != null">
+			and module in 
+			<foreach collection="searchModuleList" item="item" separator="," open="(" close=")">
+			#{item}
+			</foreach>
+		</if>
+		group by team, case when module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(team, 'Order', 'Order-유선', team) end, module
+		<if test="searchModuleList != null">
+	    ,function
+	    </if>
+	) a
+	order by case when team = 'Billing' then '01.Billing'
+	       	    when team = 'B-RDS' then '02.B-RDS'
+	       	    when team = 'Order-무선' then '03.Order-무선'
+	       	    when team = 'Order-유선' then '04.Order-유선'
+	       	    when team = 'CDM' then '05.CDM'
+	       	    when team = 'DIH' then '06.DIH'
+	       	    else ''
+	       end, module_sort
+	<if test="searchModuleList != null">
+    ,function
+    </if>
+	</select>
+	
+	<select id="selectQualityHistoryChart" parameterType="QualityHistorySummary" resultType="QualityHistorySummary">
+		select to_char(to_date(stat_date,'yyyy-mm-dd'),'mm/dd') as statDate,
+			   stat_date as originStatDate,
+		       team, 
+		       <if test="searchModuleList != null and searchFunctionList == null">
+		       module,
+		       </if>
+		       <if test="searchModuleList != null and searchFunctionList != null">
+		       function as module,
+			   </if>
+		       decode(pgComTarget2, 0, 0, round((pgComTarget2-pgDelay2)*100/pgComTarget2, 2)) as comRatio2,
+		       checkTarget2,
+		       unusedSource2,
+		       underStatement2,
+		       decode((utComplete2+utTesting2), 0, 0, round(utComplete2*100/(utComplete2+utTesting2), 2)) as utNoTestRatio2,
+		       decode(runTarget2, 0, 0, round((runTarget2-notRun2)*100/runTarget2, 2)) as runRatio2,
+		       decode(runTarget2, 0, 0, round(sumCoverage2/runTarget2, 2)) as coverageRatio2,
+		       decode(sitComplete2, 0, 0, round(sitComplete2*100/(sitComplete2+sitTesting2), 2)) as sitNoTestRatio2,
+		       decode(runTarget2, 0, 0, round(sitSumCoverage2/runTarget2, 2)) as sitCoverageRatio2,
+		       decode(sitRunTarget, 0, 0, round(sitRun*100/sitRunTarget, 2)) as sitRunRatio,
+		       fileSize2/1024 as fileSize2,
+		       changeFile2,
+		       sitNoTest2,
+		       utNoTest2,
+		       case when svnNotReg &lt; 0 then 0 else svnNotReg end as svnNotReg
+		from (
+			select stat_date,
+			       case when module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(team, 'Order', 'Order-유선', team) end as team, 
+			       <if test="searchModuleList != null">
+			       module,
+			       </if>
+			       <if test="searchFunctionList != null">
+				   function,
+				   </if>
+			       sum(program_com_target) as pgComTarget2,
+			       sum(program_delay) as pgDelay2,
+			       sum(unused_source) as unusedSource2,
+			       sum(under_statement) as underStatement2,
+			       sum(ut_target) as utTarget2,
+			       sum(ut_notest) as utNoTest2,
+			       sum(ut_testing) as utTesting2,
+			       sum(ut_complete) as utComplete2,
+			       sum(run_target) as runTarget2,
+			       sum(not_run) as notRun2,
+			       sum(sum_coverage) as sumCoverage2,
+			       sum(sit_target) as sitTarget2,
+			       sum(sit_testing) as sitTesting2,
+			       sum(sit_complete) as sitComplete2,
+			       sum(sit_notest) as sitNoTest2,
+			       sum(sit_sum_coverage) as sitSumCoverage2,
+			       sum(check_target) as checkTarget2,
+			       sum(file_size) as fileSize2,
+			       sum(change_file) as changeFile2,
+			       sum(sit_run_target) as sitRunTarget,
+		       	   sum(sit_run) as sitRun,
+		       	   sum(case when module = '모바일BSS' then 0 else program_com_target-svn_reg end) as svnNotReg  
+			from intg_quality_info
+			where stat_date >= to_char(now()-13, 'yyyy-mm-dd')
+			<if test="searchModuleList != null">
+				and module in 
+				<foreach collection="searchModuleList" item="item" separator="," open="(" close=")">
+				#{item}
+				</foreach>
+			</if>
+			<if test="searchFunctionList != null">
+				and function in 
+				<foreach collection="searchFunctionList" item="item" separator="," open="(" close=")">
+				#{item}
+				</foreach>
+			</if>
+			group by stat_date, case when module in ('기기', '무선상품', '신규') then 'Order-무선'
+		            else  decode(team, 'Order', 'Order-유선', team) end
+			<if test="searchModuleList != null">
+		    ,module
+		    </if>
+		    <if test="searchFunctionList != null">
+		    ,function
+		    </if>
+		) a
+		order by stat_date, team
+		<if test="searchModuleList != null">
+	    ,module
+	    </if>
+	    <if test="searchFunctionList != null">
+	    ,function
+	    </if>
+	</select>
+	
+	
+	<select id="selectNotUsedStatByLocal" parameterType="NotUsedStat" resultType="NotUsedStat">
+	SELECT unnest(asset_id_list) as filePath 
+	FROM e2e_nuse_stat 
+	WHERE asset_colec_hst_id = (
+		select  max(asset_colec_hst_id) from e2e_nuse_stat 
+		where asset_colec_hst_id &gt; #{assetColectHstId}
+	) AND div = 'static' 
+	</select>
+	
+	<select id="selectMaxNotUsedStat" resultType="NotUsedStat">
+	SELECT MAX(nuse_stat_id) as nuseStatId
+	FROM go_nuse_stat
+	</select>
+	
+	<select id="selectE2ENotUsedStat" parameterType="NotUsedStat" resultType="NotUsedStat">
+	SELECT unnest(asset_id_list) as filePath 
+	FROM go_nuse_stat 
+	WHERE asset_colec_hst_id in (
+		select  max(asset_colec_hst_id) from go_nuse_stat 
+		where 1=1
+		<if test="assetColectHstId != null and assetColectHstId != 0">
+		and asset_colec_hst_id &gt; #{assetColectHstId}
+		</if>
+		and asset_env = 'DEV2'
+		union all
+		select  max(asset_colec_hst_id) from go_nuse_stat 
+		where 1=1
+		<if test="assetColectHstId != null and assetColectHstId != 0">
+		and asset_colec_hst_id &gt; #{assetColectHstId}
+		</if>
+		and asset_env = 'DEV3'
+	) AND div = 'static' 
+	</select>
+	
+	<select id="selectQualityInterfaceSummaryBySystem" parameterType="InterfaceSummary" resultType="InterfaceSummary">
+	select ownTeam,
+		   sourceTeam,
+	       case when sourceModule = 'BCC' then '요금온라인'
+	            when sourceModule = 'COM' then '공통영역'
+	            when sourceModule = ' ' then 'RDS'
+	            else sourceModule end sourceModule,
+	       targetTeam,
+	       case when targetModule = 'BCC' then '요금온라인'
+	            when targetModule = 'COM' then '공통영역'
+	            when targetModule = ' ' then 'RDS'
+	            else targetModule end targetModule,
+	       linkType,
+	       linkWay,
+	       sourceClassTotal,
+	       sourceMethodTotal,
+	       targetClassTotal,
+	       targetMethodTotal,
+	       round(sourc_run_yn*100.0/sourceMethodTotal,2) as sourceRunRatio,
+           round(target_run_yn*100.0/targetMethodTotal,2) as targetRunRatio,
+       	   sourc_run_yn as sourceRunYn,
+       	   target_run_yn as targetRunYn
+	from (
+			select own_team as ownTeam, 
+			       source_system as sourceTeam,
+			       source_system as sourceModule,
+			       target_system as targetTeam,
+			       target_system as targetModule,
+			       interface_pattern as linkType,
+			       'source' as linkWay,
+			       sum(1) as sourceClassTotal,
+			       sum(1) as sourceMethodTotal,
+			       sum(1) as targetClassTotal,
+			       sum(1) as targetMethodTotal,
+			       count(distinct  (case when run_yn = 'Y' then interface_id||'.'||source_system end)) as sourc_run_yn,
+			       count(distinct  (case when run_yn = 'Y' then interface_id||'.'||target_system end)) as target_run_yn
+			from intg_quality_interface
+			where stat_date = to_char(now(), 'yyyy-mm-dd')
+			and interface_type like #{relationType}||'%'
+			group by own_team, interface_pattern, source_system, target_system
+	) a 
+	where 1=1
+	order by  ownTeam, sourceTeam, sourceModule, targetTeam, targetModule
+	</select>
+	<select id="selectQualityInterfaceSummary" parameterType="InterfaceSummary" resultType="InterfaceSummary">
+	select sourceTeam,
+	       case when sourceModule = 'BCC' then '요금온라인'
+	            when sourceModule = 'COM' then '공통영역'
+	            when sourceModule = ' ' then 'RDS'
+	            else sourceModule end sourceModule,
+	       targetTeam,
+	       case when targetModule = 'BCC' then '요금온라인'
+	            when targetModule = 'COM' then '공통영역'
+	            when targetModule = ' ' then 'RDS'
+	            else targetModule end targetModule,
+	       linkType,
+	       linkWay,
+	       sourceClassTotal,
+	       sourceMethodTotal,
+	       targetClassTotal,
+	       targetMethodTotal,
+	       <if test="relationType != null and relationType == 'CLASS'">
+	       round(sourc_run_yn*100.0/sourceMethodTotal,2) as sourceRunRatio,
+           round(target_run_yn*100.0/targetMethodTotal,2) as targetRunRatio,
+           </if>
+           <if test="relationType != null and relationType == 'SERVICE'">
+           round(sourc_run_yn*100.0/sourceMethodTotal,2) as sourceRunRatio,
+           round(target_run_yn*100.0/targetMethodTotal,2) as targetRunRatio,
+           </if>
+       	   sourc_run_yn as sourceRunYn,
+       	   target_run_yn as targetRunYn
+	from (
+		select team as sourceTeam, 
+		       decode(module,'-','구분없음', module) as sourceModule, 
+		       t_team as targetTeam, 
+		       decode(t_module,'-','구분없음',t_module) as targetModule,
+		       max(case when relation_type = 'CLASS' then '클래스 호출' else '서비스연동' end) as linkType, 
+		       'source' as linkWay,
+		       count(distinct s_file_path) as sourceClassTotal,
+		       count(distinct s_file_path||'.'||s_op) as sourceMethodTotal,
+		       count(distinct t_file_path) as targetClassTotal,
+		       count(distinct t_file_path||'.'||t_op) as targetMethodTotal,
+		       <if test="relationType != null and relationType == 'CLASS'">
+		       count(distinct  (case when s_op_run_yn = 'Y' then s_file_path||'.'||s_op end)) as sourc_run_yn,
+		       count(distinct  (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end))as target_run_yn
+		       </if>
+		       <if test="relationType != null and relationType == 'SERVICE'">
+		       count(distinct  (case when s_op_run_yn = 'Y' then s_file_path||'.'||s_op end)) as sourc_run_yn,
+		       count(distinct  (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as target_run_yn
+		       </if>
+		from intg_quality_relation
+		where 1=1
+		and stat_date = to_char(now(), 'yyyy-mm-dd')
+		<if test="relationType != null and relationType == 'SERVICE' and sourceTeam != null">
+			<choose>
+				<when test="sourceTeam == 'Billing'">
+				and team in ('Billing','BCC')
+				</when>
+				<when test="sourceTeam == 'Order'">
+				and team in ('Order','ORD')
+				</when>
+				<when test="sourceTeam == 'RDS'">
+				and team in ('B-RDS','RDS')
+				</when>
+				<otherwise>
+				and team not in ('B-RDS','RDS', 'Billing','BCC', 'Order','ORD')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="sourceModule != null">
+		<choose>
+			<when test="sourceModule == 'Order-무선'">
+			and team = 'Order'
+			and module in ('신규','기기','무선상품')
+			</when>
+			<when test="sourceModule == 'Order-유선'">
+			and team = 'Order'
+			and module not in ('신규','기기','무선상품')
+			</when>
+			<otherwise>
+			and module = #{sourceModule}
+			</otherwise>
+		</choose>
+		</if>
+		<if test="relationType != null">
+		and relation_type = #{relationType}
+		</if>
+		and module != t_module
+		group by team, module, t_team, t_module
+		union all
+		select 
+		       t_team as sourceTeam, 
+		       decode(t_module,'-','구분없음',t_module) as sourceModule,
+		       team as targetTeam, 
+		       decode(module,'-','구분없음', module) as targetModule, 
+		       max(case when relation_type = 'CLASS' then '클래스 호출' else '서비스연동' end) as linkType, 
+		       'target' as linkWay,
+		       count(distinct t_file_path) as sourceClassTotal,
+		       count(distinct t_file_path||'.'||t_op) as sourceMethodTotal,
+		       count(distinct s_file_path) as targetClassTotal,
+		       count(distinct s_file_path||'.'||s_op) as targetMethodTotal,
+		       <if test="relationType != null and relationType == 'CLASS'">
+		       count(distinct  (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as sourc_run_yn,
+		       count(distinct  (case when s_op_run_yn = 'Y' then s_file_path||'.'||s_op end)) as target_run_yn
+		       </if>
+		       <if test="relationType != null and relationType == 'SERVICE'">
+		       count(distinct  (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as sourc_run_yn,
+		       count(distinct  (case when s_op_run_yn = 'Y' then s_file_path||'.'||s_op end)) as target_run_yn
+		       </if>
+		from intg_quality_relation
+		where 1=1
+		and stat_date = to_char(now(), 'yyyy-mm-dd')
+		<if test="relationType != null and relationType == 'SERVICE' and sourceTeam != null">
+			<choose>
+				<when test="sourceTeam == 'Billing'">
+				and t_team in ('Billing','BCC')
+				</when>
+				<when test="sourceTeam == 'Order'">
+				and t_team in ('Order','ORD')
+				</when>
+				<when test="sourceTeam == 'RDS'">
+				and t_team in ('B-RDS','RDS')
+				</when>
+				<otherwise>
+				and t_team not in ('B-RDS','RDS', 'Billing','BCC', 'Order','ORD')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="sourceModule != null">
+		<choose>
+			<when test="sourceModule == 'Order-무선'">
+			and t_team = 'Order'
+			and t_module in ('신규','기기','무선상품')
+			</when>
+			<when test="sourceModule == 'Order-유선'">
+			and t_team = 'Order'
+			and t_module not in ('신규','기기','무선상품')
+			</when>
+			<otherwise>
+			and t_module = #{sourceModule}
+			</otherwise>
+		</choose>
+		</if>
+		<if test="relationType != null">
+		and relation_type = #{relationType}
+		</if>
+		and module != t_module
+		group by  t_team, t_module, team, module
+	) a 
+	where 1=1
+	<if test="relationType != null and relationType == 'SERVICE' and sourceTeam != null">
+		<choose>
+			<when test="sourceTeam == 'Billing'">
+			and sourceTeam in ('Billing','BCC')
+			</when>
+			<when test="sourceTeam == 'Order'">
+			and sourceTeam in ('Order','ORD')
+			</when>
+			<when test="sourceTeam == 'RDS'">
+			and sourceTeam in ('B-RDS','RDS')
+			</when>
+			<otherwise>
+			and sourceTeam not in ('B-RDS','RDS', 'Billing','BCC', 'Order','ORD')
+			</otherwise>
+		</choose>
+	</if>
+	<if test="sourceModule != null">
+	<choose>
+		<when test="sourceModule == 'Order-무선'">
+		and sourceTeam = 'Order'
+		and sourceModule in ('신규','기기','무선상품')
+		</when>
+		<when test="sourceModule == 'Order-유선'">
+		and sourceTeam = 'Order'
+		and sourceModule not in ('신규','기기','무선상품')
+		</when>
+		<otherwise>
+		and sourceModule = decode(#{sourceModule}, '-', '구분없음', #{sourceModule})
+		</otherwise>
+	</choose>
+	</if>
+	<if test="relationType != null and relationType == 'SERVICE'">
+	and sourceTeam not in ('AUTH', 'B2C', 'B2B', 'CDM')
+	</if>
+	order by  sourceTeam, sourceModule, targetTeam, targetModule
+	</select>
+	
+	<select id="selectQualityInterfaceList" parameterType="InterfaceDetail" resultType="InterfaceDetail">
+	select a.*,
+	       count(1) over() as total
+	from (
+		select team as sourceTeam,
+		       case when module = 'BCC' then '요금온라인'
+		            when module = 'COM' then '공통영역'
+		            when module = ' ' then 'RDS'
+		            else module end as sourceModule,
+		       t_team as targetTeam,
+		       case when t_module = 'BCC' then '요금온라인'
+		            when t_module = 'COM' then '공통영역'
+		            when t_module = ' ' then 'RDS'
+		            else t_module end as targetModule,
+		       s_file_path as sourceFilePath,
+		       t_file_path as targetFilePath,
+		       s_op as sourceOperation,
+		       t_op as targetOperation,
+		       round(s_file_statement*100, 2) as sourceFileStatement,
+	       	   round(t_file_statement*100, 2) as targetFileStatement,
+		       nvl(s_run_yn,'-') as sourceRunYn,
+		       nvl(t_run_yn,'-') as targetRunYn,
+		       s_op_statement as sourceOperationStatement,
+		       t_op_statement as targetOperationStatement,
+		       relation_nm as relationName,
+		       'source' as linkWay,
+		       s_op_run_yn as sourceOperationRunYn,
+		       t_op_run_yn as targetOperationRunYn,
+		       relation_type as relationType
+		from intg_quality_relation
+		where stat_date = to_char(now(), 'yyyy-mm-dd')
+		<if test="programType != null and programType != 'SJ'">
+		and s_file_path like '%'||#{programType}
+		</if>
+		<if test="programType != null and programType == 'SJ'">
+		and (s_file_path like '%SO' or s_file_path like '%JO')
+		</if>
+		<choose>
+			<when test="sourceModule == 'Order-무선'">
+			and module in ('신규','기기','무선상품')
+			</when>
+			<when test="sourceModule == 'Order-유선4대LOB'">
+			and module in ('인터넷','IPTV','SOIP','WiBro')
+			</when>
+			<when test="sourceModule == 'Order-유선기타'">
+			and team = 'Order' and module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') 
+			</when>
+			<otherwise>
+			and module = #{sourceModule}
+			</otherwise>
+		</choose> 
+		<choose>
+			<when test="targetModule == 'Order-무선'">
+			and t_module in ('신규','기기','무선상품')
+			</when>
+			<when test="targetModule == 'Order-유선4대LOB'">
+			and t_module in ('인터넷','IPTV','SOIP','WiBro')
+			</when>
+			<when test="targetModule == 'Order-유선기타'">
+			and t_team = 'Order' and t_module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') 
+			</when>
+			<otherwise>
+			and t_module = #{targetModule}
+			</otherwise>
+		</choose>
+		union all
+		select t_team as sourceTeam,
+		       case when t_module = 'BCC' then '요금온라인'
+		            when t_module = 'COM' then '공통영역'
+		            when t_module = ' ' then 'RDS'
+		            else t_module end as sourceModule,
+		       team as targetTeam,
+		       case when module = 'BCC' then '요금온라인'
+		            when module = 'COM' then '공통영역'
+		            when module = ' ' then 'RDS'
+		            else module end as targetModule,
+		       t_file_path as sourceFilePath,
+		       s_file_path as targetFilePath,
+		       t_op as sourceOperation,
+		       s_op as targetOperation,
+		       round(t_file_statement*100,2) as sourceFileStatement,
+	           round(s_file_statement*100,2) as targetFileStatement,
+		       nvl(t_run_yn,'-') as sourceRunYn,
+		       nvl(s_run_yn,'-') as targetRunYn,
+		       t_op_statement as sourceOperationStatement,
+		       s_op_statement as targetOperationStatement,
+		       relation_nm as relationName,
+		       'target' as linkWay,
+		       t_op_run_yn as sourceOperationRunYn,
+		       s_op_run_yn as targetOperationRunYn,
+		       relation_type as relationType
+		from intg_quality_relation
+		where stat_date = to_char(now(), 'yyyy-mm-dd')
+		<if test="programType != null and programType != 'SJ'">
+		and t_file_path like '%'||#{programType}
+		</if>
+		<if test="programType != null and programType == 'SJ'">
+		and (t_file_path like '%SO' or t_file_path like '%JO')
+		</if>
+		<choose>
+			<when test="sourceModule == 'Order-무선'">
+			and t_module in ('신규','기기','무선상품')
+			</when>
+			<when test="sourceModule == 'Order-유선4대LOB'">
+			and t_module in ('인터넷','IPTV','SOIP','WiBro')
+			</when>
+			<when test="sourceModule == 'Order-유선기타'">
+			and t_team = 'Order' and t_module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') 
+			</when>
+			<otherwise>
+			and t_module = #{sourceModule}
+			</otherwise>
+		</choose> 
+		<choose>
+			<when test="targetModule == 'Order-무선'">
+			and module in ('신규','기기','무선상품')
+			</when>
+			<when test="targetModule == 'Order-유선4대LOB'">
+			and module in ('인터넷','IPTV','SOIP','WiBro')
+			</when>
+			<when test="targetModule == 'Order-유선기타'">
+			and team = 'Order' and module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') 
+			</when>
+			<otherwise>
+			and module = #{targetModule}
+			</otherwise>
+		</choose>
+	) a
+	where 1=1
+	<if test="linkWay != null">
+	and linkWay = #{linkWay}
+	</if>
+	<if test="relationType != null">
+	and relationType = #{relationType}
+	</if>
+	<if test="relationName != null">
+	and relationName = #{relationName}
+	</if>
+	order by sourceTeam, sourceModule, targetTeam, targetModule, sourceFilePath, targetFilePath, sourceOperation, targetOperation
+	limit #{limit} offset (#{page} - 1) * #{limit}
+	</select>
+	
+	<select id="selectQualityTestProgramCount" parameterType="QualityTest" resultType="QualityTest">
+	  select 
+	  	     programCount,
+	         programRunCount,
+	         programType,
+	         round(decode(programCount, 0, 0, programRunCount*100/programCount), 2) as programRunRaio,
+	         round(decode(total, 0, 0, programCount*100/total), 2) as programRatio,
+	         total
+	  from (
+		  select programCount,
+		         programRunCount,
+		         programType,
+		         sum(programCount) over() as total
+		  from (
+			  SELECT sum(program_total) as programCount,
+			  		 sum(sit_run) as programRunCount, 
+			         case when program_type in ('SO','JO') then 'SO/JO' else program_type end as programType,
+			         case when case when program_type in ('SO','JO') then 'SO/JO' else program_type end = 'UI' then 1
+			              when case when program_type in ('SO','JO') then 'SO/JO' else program_type end = 'ESB' then 2
+			              when case when program_type in ('SO','JO') then 'SO/JO' else program_type end = 'SO/JO' then 3
+			              when case when program_type in ('SO','JO') then 'SO/JO' else program_type end = 'BOC' then 4
+			              when case when program_type in ('SO','JO') then 'SO/JO' else program_type end = 'BO' then 5
+			              else 6 end sort_no 
+			  FROM intg_quality_info
+			  where stat_date = to_char(now(),'yyyy-mm-dd')
+			  and team = #{team}
+			  <if test="module != null">
+			  and module = #{module}
+			  </if>
+			  group by case when program_type in ('SO','JO') then 'SO/JO' else program_type end
+		  ) a
+		  order by sort_no
+	) x
+	</select>
+	
+	<select id="selectQualtiyTestRealtion" parameterType="QualityTest" resultType="QualityTest">
+	 select t_team as team, 
+	         t_module as module, 
+	         program_type as programType, 
+	         count(distinct t_file_path||'.'||t_op) as relCount,
+	         count(distinct (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as relRunCount,
+	         t_team||'-'||t_module||'-'||program_type||'-'||relationWay as relationId,
+	         decode(t_module, ' ', t_team, decode(t_module,'-','구분없음',t_module)) as relationText,
+	         relationWay,
+	         false as leaf,
+	         relation_type as relationType,
+	         relation_nm as relationName
+	  from  (
+		  select t_team, case when t_module = 'BCC' then 'BCOL'
+		            when t_module = 'COM' then '공통'
+		            else t_module end as t_module, 
+		  		 substring(relation_nm, position('-' in relation_nm)+1) as program_type, t_file_path, 'source'::varchar as relationWay,
+		         t_op_run_yn, t_op, relation_nm, relation_type
+		  from intg_quality_relation where stat_date = to_char(now(),'yyyy-mm-dd')
+		  and s_file_path in (
+			  select case when program_type in ('ESB','UI','SO') then program_id 
+			              else replace(filename,'.','/')
+			              end as filename 
+			  from intg_quality_detail
+			  where stat_date = to_char(now(),'yyyy-mm-dd')
+			  and team = #{team}
+			  <if test="module != null">
+			  and module = #{module}
+			  </if>
+			  <if test="programType != null and programType != 'SJ'"> 
+			  and program_type = #{programType}
+			  </if>
+			  <if test="programType != null and programType == 'SJ'">
+			  and program_type in ('SO','JO') 
+			  </if>
+		  ) or (
+		  	  team = #{team} 
+			  <if test="module != null">
+			  and module = #{module} 
+			  </if>
+			  <if test="programType != null and programType != 'SJ'"> 
+			  and s_file_path like '%'||#{programType}
+			  </if>
+			  <if test="programType != null and programType == 'SJ'">
+			  and (s_file_path like '%SO' or s_file_path like '%JO')
+			  </if>
+		  )
+		  union all
+		  select team, case when module = 'BCC' then 'BCOL'
+		            when module = 'COM' then '공통'
+		            else module end as module, substring(relation_nm, 0, position('-' in relation_nm)) as program_type, 
+		            s_file_path, 'target'::varchar as relationWay,
+		         	s_op_run_yn, s_op, relation_nm, relation_type
+		  from intg_quality_relation where stat_date = to_char(now(),'yyyy-mm-dd')
+		  and t_file_path in (
+			  select case when program_type in ('ESB','UI','SO') then program_id 
+			              else replace(filename,'.','/')
+			              end as filename 
+			  from intg_quality_detail
+			  where stat_date = to_char(now(),'yyyy-mm-dd')
+			  and team = #{team}
+			  <if test="module != null">
+			  and module = #{module}
+			  </if>
+			  <if test="programType != null and programType != 'SJ'"> 
+			  and program_type = #{programType}
+			  </if>
+			  <if test="programType != null and programType == 'SJ'">
+			  and program_type in ('SO','JO') 
+			  </if>
+		  ) or (
+		  	  t_team = #{team} 
+			  <if test="module != null">
+			  and t_module = #{module} 
+			  </if>
+			  <if test="programType != null and programType != 'SJ'"> 
+			  and t_file_path like '%'||#{programType}
+			  </if>
+			  <if test="programType != null and programType == 'SJ'">
+			  and (t_file_path like '%SO' or t_file_path like '%JO')
+			  </if>
+		  )
+	  )
+	  where 1=1
+	  and relation_nm != 'PIPELINE-TABLE'
+	  and relation_nm != 'BO_SO'
+	  <if test="module != null">
+	  and t_module != #{module}
+	  </if> 
+	  group by t_team, t_module, program_type, relationWay, relation_type, relation_nm
+	  order by relationWay, program_type, t_team, t_module
+	</select>
+	
+	<delete id="deleteProgramRelation" parameterType="QualityDetail">
+	DELETE from intg_program_rel
+	where 1=1
+	</delete>
+	
+	<insert id="insertProgramRelation" parameterType="QualityRel">
+	INSERT INTO intg_program_rel(
+            team, module, s_file_path, t_file_path, s_op, t_op, s_run_yn, 
+            t_run_yn, s_op_run_yn, t_op_run_yn, t_team, t_module, relation_nm)
+    VALUES (#{team}, #{module}, #{sourceFilePath}, #{targetFilePath}, #{sourceOperation}, #{targetOperation}, #{sourceRunYn}, 
+            #{targetRunYn}, #{sourceOperationRunYn}, #{targetOperationRunYn}, #{targetTeam}, #{targetModule}, #{relationName})
+	</insert>
+	
+	<select id="selectQualtiyTestRealtionChart" parameterType="QualityTest" resultType="QualityTest">
+	select module,
+	       sum(relCount) as relCount,
+	       sum(relRunCount) as relRunCount
+	from (
+		select t_team as team, 
+			  case when t_team = 'Order' and t_module in ('신규','기기','무선상품') then 'Order-무선'
+				when t_team = 'Order' and t_module in ('인터넷','IPTV','SOIP','WiBro') then 'Order-유선4대LOB'
+				when t_team = 'Order' and t_module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') then 'Order-유선기타'
+			   else t_module
+			   end as module,
+			 program_type as programType, 
+			 count(distinct t_file_path||'.'||t_op) as relCount,
+			 count(distinct (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as relRunCount,
+			 t_team||'-'||t_module||'-'||program_type as relationId,
+			 decode(t_module, ' ', t_team, decode(t_module,'-','구분없음',t_module)) as relationText,
+			 relationWay,
+			 false as leaf,
+			 relation_type as relationType,
+			 relation_nm as relationName
+		  from  (
+			  select t_team, case when t_module = 'BCC' then 'BCOL'
+				    when t_module = 'COM' then '공통'
+				    when t_module = ' ' then 'B-RDS'
+				    when t_module = '-' then t_team
+				    else t_module end as t_module, 
+					 substring(relation_nm, position('-' in relation_nm)+1) as program_type, t_file_path, 'source'::varchar as relationWay,
+				 t_op_run_yn, t_op, relation_nm, relation_type
+			  from intg_quality_relation where stat_date = to_char(now(),'yyyy-mm-dd')
+			  and s_file_path in (
+				  select case when program_type in ('ESB','UI','SO') then program_id 
+					      else replace(filename,'.','/')
+					      end as filename 
+				  from intg_quality_detail
+				  where stat_date = to_char(now(),'yyyy-mm-dd')
+				  and team = #{team}
+				  <if test="module != null">
+				  and module = #{module}
+				  </if>
+			  ) or (
+			  	  team = #{team} 
+				  <if test="module != null">
+				  and module = #{module} 
+				  </if>
+				  <if test="programType != null and programType != 'SJ'"> 
+				  and s_file_path like '%'||#{programType}
+				  </if>
+				  <if test="programType != null and programType == 'SJ'">
+				  and (s_file_path like '%SO' or s_file_path like '%JO')
+				  </if>
+			  )
+			  union all
+			  select team, case when module = 'BCC' then 'BCOL'
+				    when module = 'COM' then '공통'
+				    when module = ' ' then 'B-RDS'
+				    when module = '-' then t_team
+				    else module end as module, substring(relation_nm, 0, position('-' in relation_nm)) as program_type, 
+				    s_file_path, 'target'::varchar as relationWay,
+					s_op_run_yn, s_op, relation_nm, relation_type
+			  from intg_quality_relation where stat_date = to_char(now(),'yyyy-mm-dd')
+			  and t_file_path in (
+				  select case when program_type in ('ESB','UI','SO') then program_id 
+					      else replace(filename,'.','/')
+					      end as filename 
+				  from intg_quality_detail
+				  where stat_date = to_char(now(),'yyyy-mm-dd')
+				  and team = #{team}
+				  <if test="module != null">
+				  and module = #{module}
+				  </if>
+			  ) or (
+			  	  t_team = #{team} 
+				  <if test="module != null">
+				  and t_module = #{module} 
+				  </if>
+				  <if test="programType != null and programType != 'SJ'"> 
+				  and t_file_path like '%'||#{programType}
+				  </if>
+				  <if test="programType != null and programType == 'SJ'">
+				  and (t_file_path like '%SO' or t_file_path like '%JO')
+				  </if>
+			  )
+		  )
+		  where 1=1
+		  and relation_nm != 'PIPELINE-TABLE'
+		  and relation_nm != 'BO_SO'
+		  <if test="module != null">
+		  and t_module != #{module}
+		  </if>
+		  group by t_team, t_module, program_type, relationWay, relation_type, relation_nm
+	  ) x 
+	  group by team, module
+	</select>
+	
+	<select id="selectQualtiyTestRealtionHistChart" parameterType="QualityTest" resultType="QualityTest">
+	select to_char(to_date(stat_date,'yyyy-mm-dd'),'mm/dd') as statDate,
+	       round(sum(relRunCount1)*100/sum(relCount1),2) as sourceRunRatio,
+	       round(sum(relRunCount2)*100/sum(relCount2),2) as targetRunRatio
+	from (
+		select stat_date, 
+		       relationWay,
+		       sum(decode(relationWay, 'source', relRunCount, 0)) as relRunCount1,
+		       sum(decode(relationWay, 'target', relRunCount, 0)) as relRunCount2,
+		       sum(decode(relationWay, 'source', relCount,0)) as relCount1,
+		       sum(decode(relationWay, 'target', relCount,0)) as relCount2
+		from (
+			select stat_date, t_team as team, 
+				 case when t_team = 'Order' and t_module in ('신규','기기','무선상품') then 'Order-무선'
+					when t_team = 'Order' and t_module in ('인터넷','IPTV','SOIP','WiBro') then 'Order-유선4대LOB'
+					when t_team = 'Order' and t_module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') then 'Order-유선기타'
+				   else t_module
+				   end as module, 
+				 program_type as programType, 
+				 count(distinct t_file_path||'.'||t_op) as relCount,
+				 count(distinct (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as relRunCount,
+				 t_team||'-'||t_module||'-'||program_type as relationId,
+				 decode(t_module, ' ', t_team, decode(t_module,'-','구분없음',t_module)) as relationText,
+				 relationWay,
+				 false as leaf,
+				 relation_type as relationType,
+				 relation_nm as relationName
+			  from  (
+				  select stat_date, t_team, case when t_module = 'BCC' then 'BCOL'
+					    when t_module = 'COM' then '공통'
+					    when t_module = ' ' then 'B-RDS'
+					    when t_module = '-' then t_team
+					    else t_module end as t_module, 
+						 substring(relation_nm, position('-' in relation_nm)+1) as program_type, t_file_path, 'source'::varchar as relationWay,
+					 t_op_run_yn, t_op, relation_nm, relation_type
+				  from intg_quality_relation where stat_date &gt;= to_char(now()-13,'yyyy-mm-dd')
+				  and (s_file_path) in (
+					  select case when program_type in ('ESB','UI','SO') then program_id 
+						      else replace(filename,'.','/')
+						      end as filename 
+					  from intg_quality_detail
+					  where stat_date = to_char(now(),'yyyy-mm-dd')
+					   and team = #{team}
+					  <if test="module != null">
+					  and module = #{module}
+					  </if>
+				  ) or (
+				  	  team = #{team} 
+					  <if test="module != null">
+					  and module = #{module} 
+					  </if>
+					  and s_file_path not like '%DO%'
+					  <if test="programType != null and programType != 'SJ'"> 
+					  and s_file_path like '%'||#{programType}
+					  </if>
+					  <if test="programType != null and programType == 'SJ'">
+					  and (s_file_path like '%SO' or s_file_path like '%JO')
+					  </if>
+				  )
+				  union all
+				  select stat_date, team, case when module = 'BCC' then 'BCOL'
+					    when module = 'COM' then '공통'
+					    when module = ' ' then 'B-RDS'
+					    when module = '-' then t_team
+					    else module end as module, substring(relation_nm, 0, position('-' in relation_nm)) as program_type, 
+					    s_file_path, 'target'::varchar as relationWay,
+						s_op_run_yn, s_op, relation_nm, relation_type
+				  from intg_quality_relation where stat_date &gt;= to_char(now()-13,'yyyy-mm-dd')
+				  and (t_file_path) in (
+					  select case when program_type in ('ESB','UI','SO') then program_id 
+						      else replace(filename,'.','/')
+						      end as filename 
+					  from intg_quality_detail
+					  where stat_date = to_char(now(),'yyyy-mm-dd')
+					   and team = #{team}
+					  <if test="module != null">
+					  and module = #{module}
+					  </if>
+				  ) or (
+				  	  t_team = #{team} 
+					  <if test="module != null">
+					  and t_module = #{module} 
+					  </if>
+					  and t_file_path not like '%DO%'
+					  <if test="programType != null and programType != 'SJ'"> 
+					  and t_file_path like '%'||#{programType}
+					  </if>
+					  <if test="programType != null and programType == 'SJ'">
+					  and (t_file_path like '%SO' or t_file_path like '%JO')
+					  </if>
+				  )
+			  )
+			  where 1=1
+			  and stat_date &gt;= to_char(now()-13,'yyyy-mm-dd')
+			  and relation_nm != 'PIPELINE-TABLE'
+			  and relation_nm != 'BO_SO'
+			  <if test="module != null">
+			  and t_module != #{module}
+			  </if>
+			  group by stat_date, t_team, t_module, program_type, relationWay, relation_type, relation_nm
+		  ) x 
+		  where programType != 'DO'
+		  group by stat_date, relationWay
+	  ) z 
+	  group by to_char(to_date(stat_date,'yyyy-mm-dd'),'mm/dd')
+	  order by to_char(to_date(stat_date,'yyyy-mm-dd'),'mm/dd')
+	</select>
+	
+	<select id="selectQualityTestRelationChangeChart" parameterType="QualityTest" resultType="QualityTest">
+	select to_char(to_date(stat_date,'yyyy-mm-dd'),'mm/dd') as statDate,
+		   stat_date as originalStatDate,
+	       module,
+	       sum(relCount1) as relCount1,
+	       sum(relCount2) as relCount2
+	from (
+		select stat_date,
+		       team, module,
+		       relationWay,
+		       sum(decode(relationWay, 'source', relRunCount, 0)) as relRunCount1,
+		       sum(decode(relationWay, 'target', relRunCount, 0)) as relRunCount2,
+		       sum(decode(relationWay, 'source', relCount,0)) as relCount1,
+		       sum(decode(relationWay, 'target', relCount,0)) as relCount2
+		from (
+			select stat_date, t_team as team, 
+				 case when t_team = 'Order' and t_module in ('신규','기기','무선상품') then 'Order-무선'
+					when t_team = 'Order' and t_module in ('인터넷','IPTV','SOIP','WiBro') then 'Order-유선4대LOB'
+					when t_team = 'Order' and t_module not in ('신규','기기','무선상품', '인터넷','IPTV','SOIP','WiBro') then 'Order-유선기타'
+				   else t_module
+				   end as module, 
+				 program_type as programType, 
+				 count(distinct t_file_path||'.'||t_op) as relCount,
+				 count(distinct (case when t_op_run_yn = 'Y' then t_file_path||'.'||t_op end)) as relRunCount,
+				 t_team||'-'||t_module||'-'||program_type as relationId,
+				 decode(t_module, ' ', t_team, decode(t_module,'-','구분없음',t_module)) as relationText,
+				 relationWay,
+				 false as leaf,
+				 relation_type as relationType,
+				 relation_nm as relationName
+			  from  (
+				  select stat_date, t_team, case when t_module = 'BCC' then 'BCOL'
+					    when t_module = 'COM' then '공통'
+					    when t_module = ' ' then 'B-RDS'
+					    when t_module = '-' then t_team
+					    else t_module end as t_module, 
+						 substring(relation_nm, position('-' in relation_nm)+1) as program_type, t_file_path, 'source'::varchar as relationWay,
+					 t_op_run_yn, t_op, relation_nm, relation_type
+				  from intg_quality_relation where stat_date >= to_char(now()-13,'yyyy-mm-dd')
+				  and (s_file_path) in (
+					  select case when program_type in ('ESB','UI','SO') then program_id 
+						      else replace(filename,'.','/')
+						      end as filename 
+					  from intg_quality_detail
+					  where stat_date = to_char(now(),'yyyy-mm-dd')
+					  and team = #{team}
+					  <if test="module != null">
+					  and module = #{module}
+					  </if>
+				  ) or (
+				  	  team = #{team} 
+					  <if test="module != null">
+					  and module = #{module} 
+					  </if>
+					  <if test="programType != null and programType != 'SJ'"> 
+					  and s_file_path like '%'||#{programType}
+					  </if>
+					  <if test="programType != null and programType == 'SJ'">
+					  and (s_file_path like '%SO' or s_file_path like '%JO')
+					  </if>
+				  )
+				  union all
+				  select stat_date, team, case when module = 'BCC' then 'BCOL'
+					    when module = 'COM' then '공통'
+					    when module = ' ' then 'B-RDS'
+					    when module = '-' then t_team
+					    else module end as module, substring(relation_nm, 0, position('-' in relation_nm)) as program_type, 
+					    s_file_path, 'target'::varchar as relationWay,
+						s_op_run_yn, s_op, relation_nm, relation_type
+				  from intg_quality_relation where stat_date >= to_char(now()-13,'yyyy-mm-dd')
+				  and (t_file_path) in (
+					  select case when program_type in ('ESB','UI','SO') then program_id 
+						      else replace(filename,'.','/')
+						      end as filename 
+					  from intg_quality_detail
+					  where stat_date = to_char(now(),'yyyy-mm-dd')
+					  and team = #{team}
+					  <if test="module != null">
+					  and module = #{module}
+					  </if>
+				  ) or (
+				  	  t_team = #{team} 
+					  <if test="module != null">
+					  and t_module = #{module} 
+					  </if>
+					  <if test="programType != null and programType != 'SJ'"> 
+					  and t_file_path like '%'||#{programType}
+					  </if>
+					  <if test="programType != null and programType == 'SJ'">
+					  and (t_file_path like '%SO' or t_file_path like '%JO')
+					  </if>
+				  )
+			  )
+			  where 1=1
+			  and stat_date &gt;= to_char(now()-13,'yyyy-mm-dd')
+			  and relation_nm != 'PIPELINE-TABLE'
+			  and relation_nm != 'BO_SO'
+			  <if test="module != null">
+			  and t_module != #{module}
+			  </if>
+			  group by stat_date, t_team, t_module, program_type, relationWay, relation_type, relation_nm
+		  ) x
+		  where programType != 'DO' 
+		  group by stat_date, team, module, relationWay
+	  ) z 
+	  group by stat_date, module
+	  order by stat_date, module
+	</select>
+	
+	<delete id="deleteQualityInterface" parameterType="QualityDetail">
+	DELETE from intg_quality_interface
+	where 1=1
+	and stat_date = #{statDate}
+	</delete>
+	
+	<insert id="insertQualityInterface" parameterType="QualityInterface">
+	INSERT INTO intg_quality_interface(
+            stat_date, interface_id, interface_pattern, own_team, own_module, 
+            source_system, target_system, run_yn, interface_type)
+    VALUES (#{statDate}, #{interfaceId}, #{interfacePattern}, #{ownTeam}, #{ownModule}, 
+            #{sourceSystem}, #{targetSystem}, #{runYn}, #{interfaceType})
+	</insert>
+	
+	<delete id="deleteQualityTestProgram" parameterType="QualityDetail">
+	DELETE from intg_quality_test_pg
+	where 1=1
+	</delete>
+	
+	<insert id="insertQualityTestProgram" parameterType="QualityTestProgram">
+	INSERT INTO intg_quality_test_pg (issue_id, program_id, ts_program_id, test_type, test_jira_id)
+    VALUES (#{issueId}, #{programId}, #{testStartProgramId}, #{testType}, #{testJiraId})
+	</insert>
+</mapper>

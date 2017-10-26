@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="based">
+
+	<select id="selectUserList" parameterType="BasedUser" resultType="BasedUser">
+		SELECT
+			  id as userId, 
+			  name as userName, 
+			  user_no as userNo, 
+			  user_type as userType, 
+			  email as emailAddress, 
+			  phone_number as phoneNumber, 
+			  status as status, 
+			  password as  userPassword, 
+	       	  to_char(create_date, 'yyyy-MM-dd HH24:mi:ss') as createDate, 
+	       	  to_char(last_active_date, 'yyyy-MM-dd HH24:mi:ss') as lastActiveDate,
+	       	  to_char(expiration_date, 'yyyy-MM-dd HH24:mi:ss') as expirationDate,
+	       	  default_org_id as defaultOrgId, 
+	          photo_path as photoPath,
+	          count(1) over() as total
+	  	FROM smrt_sys_user
+	  	WHERE 1=1
+	  	<if test="userId != null">
+	  	AND id like #{userId}||'%'
+	  	</if>
+	  	<if test="userName != null">
+	  	AND name like '%'||#{userName}||'%'
+	  	</if>
+	  	<if test="searchValue != null">
+	  	AND (id like #{searchValue}||'%' or name like '%'||#{searchValue}||'%')
+	  	</if>
+	  	ORDER BY create_date DESC
+	  	<if test="maxRowSize == 0">
+	  	limit #{limit} offset (#{page} - 1) * #{limit}
+	  	 </if>
+	  	 <if test="maxRowSize != 0">
+	  	 limit #{maxRowSize}
+	  	 </if>
+	</select>
+	
+	<select id="selectOrgUserList" parameterType="BasedUser" resultType="BasedUser">
+	select org_id as defaultOrgId,
+	       id as userId,
+	       name as userName,
+	       status as status,
+	       'R' as mode 
+	from smrt_rel_user_org a, 
+	     smrt_sys_user b
+	where b.id = a.user_id 
+	and a.org_id = #{defaultOrgId}
+	ORDER BY b.id ASC
+  	<if test="maxRowSize == 0">
+  	limit #{limit} offset (#{page} - 1) * #{limit}
+	</if>
+	<if test="maxRowSize != 0">
+	limit #{maxRowSize}
+	</if> 
+	</select>
+	
+	<select id="selectOrgRoleList" parameterType="BasedRole" resultType="BasedRole">
+	SELECT a.role_id as roleId, 
+	       a.target_id as orgId,
+	       b.name as roleName,
+	       'R' as mode
+	FROM smrt_rel_role a,
+	     smrt_role b
+	WHERE relation_type = #{relationType}
+	and b.id = a.role_id
+	and a.target_id = #{orgId}
+	</select>
+	
+	<select id="selectRoleList" parameterType="BasedRole" resultType="BasedRole">
+	SELECT target_id as targetId,
+		   role_id as roleId,
+		   relation_type as relationType
+	FROM smrt_rel_role
+	WHERE 1=1
+	<if test="targetId != null">
+	AND target_id = #{targetId}
+	</if>
+	<if test="relationType != null">
+	AND relation_type = #{relationType}
+	</if>
+	</select> 
+	
+	<select id="selectOrgList" parameterType="BasedOrg" resultType="BasedOrg">
+	SELECT id as orgId,
+		   name as orgName,
+		   org_type as orgType,
+		   org_dtl_type as orgDetailType
+	FROM smrt_org
+	WHERE 1=1
+	</select>
+	
+	<select id="selectOrgRelationList" parameterType="BasedOrgRel" resultType="BasedOrgRel">
+	SELECT source_org_id as sourceOrgId,
+		   target_org_id as targetOrgId,
+		   relation_type as relationType
+	FROM smrt_org_rel
+	WHERE 1=1
+	<if test="relationType != null">
+	AND relation_type = #{relationType}
+	</if> 
+	</select>
+	
+	<select id="selectOrgTrees" parameterType="BasedOrg" resultType="BasedOrg">
+	WITH RECURSIVE q AS (
+	select id as orgId,
+	       name||case when org_dtl_type = 'TEAM' then '(팀)'
+	                      when org_dtl_type = 'MODULE' then '(모듈)'
+	                      else '' end as orgName,
+	       name as originalOrgName,
+	       org_type as orgType,
+	       b.target_org_id as parentOrgId,
+	       org_dtl_type as orgDetailType,
+	       (select case when count(1) &gt; 0 then 0 else 1 end  from smrt_org_rel where source_org_id = a.id) AS leaf
+		from smrt_org a,
+		     smrt_org_rel b
+		where 1=1
+		AND b.source_org_id = a.id
+		AND b.relation_type = 'PARENT'
+		<if test="orgId != null">
+		AND id = #{orgId}
+		</if>
+		<if test="parentOrgId != null">
+		AND b.target_org_id = #{parentOrgId}
+		</if>
+		<if test="orgType != null">
+		AND org_type = #{orgType}
+		</if>
+		<if test="parentOrgId == null"> 
+		and b.target_org_id = 'TOP'
+		</if>
+		union all
+		select id as orgId,
+		       name||case when org_dtl_type = 'TEAM' then '(팀)'
+		                      when org_dtl_type = 'MODULE' then '(모듈)'
+		                      else '' end as orgName,
+		       name as originalOrgName,
+		       org_type as orgType,
+		       b.target_org_id as parentOrgId,
+		       org_dtl_type as orgDetailType,
+		       (select case when count(1) &gt; 0 then 0 else 1 end  from smrt_org_rel where source_org_id = a.id) AS leaf
+		from smrt_org a,
+			 smrt_org_rel b
+		JOIN q ON q.orgId = b.target_org_id
+		where 1=1
+		AND b.source_org_id = a.id
+		AND b.relation_type = 'PARENT'
+		<if test="orgId != null">
+		AND id = #{orgId}
+		</if>
+		<if test="parentOrgId != null">
+		AND b.target_org_id = #{parentOrgId}
+		</if>
+		<if test="orgType != null">
+		AND org_type = #{orgType}
+		</if>
+	)
+	SELECT * FROM q
+	</select>
+	
+	<select id="selectUser" parameterType="BasedUser" resultType="BasedUser">
+	SELECT id as userId,
+		  name as userName, 
+		  user_no as userNo, 
+		  user_type as userType, 
+		  email as emailAddress, 
+		  phone_number as phoneNumber, 
+		  status as status, 
+		  password as  userPassword, 
+       	  to_char(create_date, 'yyyy-MM-dd HH24:mi:ss') as createDate, 
+       	  to_char(last_active_date, 'yyyy-MM-dd HH24:mi:ss') as lastActiveDate,
+       	  to_char(expiration_date, 'yyyy-MM-dd HH24:mi:ss') as expirationDate,
+       	  default_org_id as defaultOrgId, 
+          photo_path as photoPath
+	FROM smrt_sys_user
+	WHERE id = #{userId}
+	</select>
+	
+	<insert id="insertUser" parameterType="BasedUser">
+	INSERT INTO smrt_sys_user(
+            id, name, user_no, user_type, email, phone_number, status, password, 
+            create_date, last_active_date, expiration_date, default_org_id, 
+            photo_path)
+    VALUES (#{userId}, #{userName}, #{userNo}, #{userType}, #{emailAddress}, #{phoneNumber}, #{status}, #{userPassword}, 
+            now(), null, to_date('9999-12-31','YYYY-MM-DD'), #{defaultOrgId}, 
+            #{photoPath})
+	</insert>
+	
+	<select id="selectSysProperites" parameterType="SysPropertie" resultType="SysPropertie">
+	SELECT sys_prprt_id as sysPropertieId, 
+		   sys_prprt_value as sysPropertieValue
+	FROM smrt_sys_propertie
+	WHERE 1=1
+	</select>
+	
+	<select id="selectResourceList" parameterType="BasedResource" resultType="BasedResource">
+	SELECT 
+		  c.id AS resourceId,
+		  c.name AS resourceName,
+		  c.parent_id AS parentResourceId,
+		  c.resource_type AS resourceTypeCode,
+		  c.url AS url,
+		  b.name as parentResourceName,
+		  <if test="viewType == null">
+		  case when c.resource_type = 'MENU' then 0
+		       when c.url is null and c.content is null then 0
+		       else 1 end as leaf,
+		  </if>
+		  <if test="viewType != null">
+		  (select case when count(1) &gt; 0 then 0 else 1 end  from smrt_resource where parent_id = c.id) AS leaf,
+		  </if>
+		  <if test="viewType == null and resourceId != null">
+		  c.content as resourceContent,
+		  </if>
+		  <if test="adminYn !=null">
+		  c.content as resourceContent,
+		  </if>
+		  c.sort_no as sortNo,
+		  case when c.icon_cls is null then 'x-fa fa-leanpub' else c.icon_cls end as iconCls
+	FROM smrt_resource c
+		 left outer join smrt_resource b on b.id = c.parent_id
+	WHERE 1=1
+	<if test="viewType == null">
+	AND c.resource_type IN ('MENU','PAGE', 'IMAGE')
+	</if>
+	<if test="resourceId != null">
+	AND c.id = #{resourceId}
+	</if>
+	<if test="parentResourceId != null and allData == null">
+	AND c.parent_id = #{parentResourceId}
+	</if>
+	<if test="resourceTypeCode != null">
+	AND c.resource_type = #{resourceTypeCode}
+	</if>
+	<if test="parentResourceId == null and resourceId == null">
+	AND c.parent_id = 'TOP'
+	</if>
+	<if test="parentResourceId != null">
+	AND c.parent_id = #{parentResourceId}
+	</if>
+	order by c.sort_no, c.id  asc
+	</select>
+	
+	<select id="selectResourceRoleList" parameterType="BasedResourceRole" resultType="BasedResourceRole">
+	SELECT c.role_id as roleId, 
+	       'Y' as includeYn,
+	       false as exclude,
+	       b.id as resourceId,
+	       b.name as resourceName,
+	       b.resource_type as resourceType,
+	       b.url as url 
+	  FROM smrt_rel_auth_res a,
+	       smrt_resource b,
+	       smrt_rel_role_auth c
+	  WHERE 1=1
+	  and b.id = a.resource_id
+	  and a.auth_id = c.auth_id
+	  <if test="roleId != null">
+	  AND c.role_id = #{roleId}
+	  </if>
+	  <if test="resourceId != null">
+	  AND b.id = #{resourceId}
+	  </if>
+	</select>
+	
+	<select id="selectMenuServiceList" parameterType="BasedResource" resultType="BasedResource">
+	SELECT 
+		  a.id AS resourceId,
+		  a.name AS resourceName,
+		  a.parent_id AS parentResourceId,
+		  b.name AS parentResourceName,
+		  a.resource_type AS resourceTypeCode,
+		  a.url AS url,
+		  a.sort_no as sortNo
+	FROM smrt_resource a,
+	     smrt_resource b
+	WHERE 1=1
+	AND b.id = a.parent_id
+	AND a.resource_type IN ('CONTENT')
+	START WITH a.parent_id = #{resourceId}
+	CONNECT BY PRIOR a.id = a.parent_id
+	order by a.sort_no, a.id  asc
+	</select>
+	
+	<select id="selectCommonFileList" parameterType="BasedFile" resultType="BasedFile">
+	SELECT a.file_seq as fileNo,
+	       file_name as fileName,
+	       file_pys_name as filePysName,
+	       file_full_path as filePath,
+	       file_extension as fileExtension,
+	       file_size as fileSize,
+	       'R' as dataMode
+	FROM smrt_comn_file a,
+	     smrt_rel_comn_file b
+	WHERE 1=1
+	AND b.file_seq = a.file_seq
+	<if test="fileNo == 0">
+	AND b.relation_type = #{relationType}
+	AND b.target_id = #{targetId}
+	</if>
+	<if test="fileNo != 0">
+	AND a.file_seq = ${fileNo}
+	</if>
+	</select>
+	
+	<select id="selectCommonFileNextSeq" resultType="java.lang.Integer">
+	SELECT nextval('file_seq') as fileNo 
+	</select>
+	<insert id="insertCommonFile" parameterType="BasedFile">
+	INSERT INTO smrt_comn_file (file_seq, file_name, file_pys_name, file_full_path, file_extension, file_size)
+	VALUES (#{fileNo}, #{fileName}, #{filePysName}, #{filePath}, #{fileExtension}, #{fileSize})
+	</insert>
+	
+	<insert id="insertCommonFileRelation" parameterType="BasedFile">
+	INSERT INTO smrt_rel_comn_file (file_seq, target_id, relation_type)
+	VALUES (#{fileNo}, #{targetId}, #{relationType})
+	</insert>
+	
+	<delete id="deleteCommonFile" parameterType="BasedFile">
+	DELETE FROM smrt_comn_file
+	WHERE file_seq = #{fileNo}
+	</delete>
+	
+	<delete id="deleteCommonFileRelation" parameterType="BasedFile">
+	DELETE FROM smrt_rel_comn_file
+	WHERE file_seq = #{fileNo}
+	</delete>
+	
+	<update id="updateResource" parameterType="BasedResource">
+	UPDATE smrt_resource
+	SET sort_no = #{sortNo}
+	    ,parent_id = #{parentResourceId}
+	WHERE id = #{resourceId}
+	</update>
+	
+	<update id="updateResourceByContent" parameterType="BasedResource">
+	UPDATE smrt_resource
+	SET name = #{resourceName},
+	    resource_type = #{resourceTypeCode}
+	    <if test="url != null">
+	    , url = #{url}
+	    </if>
+	     <if test="resourceContent != null">
+	    , content = #{resourceContent}
+	    </if>
+	WHERE id = #{resourceId}
+	</update>
+	
+	<insert id="insertResource" parameterType="BasedResource">
+	INSERT INTO smrt_resource (id, name, parent_id, resource_type, url, content, sort_no)
+	VALUES (#{resourceId}, #{resourceName}, #{parentResourceId}, #{resourceTypeCode}, #{url}, #{resourceContent}, #{sortNo})
+	</insert>
+	
+	<delete id="deleteResource" parameterType="Resource">
+	DELETE FROM smrt_resource
+	WHERE id = #{resourceId}
+	</delete>
+	
+	<insert id="insertResourceRole" parameterType="ResourceRole">
+	INSERT INTO smrt_rel_auth_res (auth_id, resource_id)
+	VALUES (#{roleId}, #{resourceId})
+	</insert>
+	
+	<delete id="deleteResourceRole" parameterType="ResourceRole">
+	DELETE FROM smrt_rel_auth_res
+	WHERE auth_id = #{roleId}
+	AND resource_id = #{resourceId}
+	</delete>
+	
+	<select id="selecteRoleList" parameterType="Role" resultType="Role">
+	SELECT id as roleId,
+	       name as roleName,
+	       'R' as mode
+	FROM smrt_role
+	WHERE 1=1
+	<if test="roleName != null">
+	AND name like #{roleName}||'%'
+	</if>
+	</select>
+	
+	<select id="selectUserRoleList" parameterType="UserRole" resultType="UserRole">
+	SELECT target_id as userId,
+		   role_id as roleId
+	FROM smrt_rel_role
+	WHERE 1=1
+	<if test="userId != null">
+	AND tartget_id = #{userId}
+	AND relation_type = 'USER'
+	</if>
+	</select> 
+	
+	<delete id="deleteUserRole" parameterType="UserInfo">
+	DELETE FROM smrt_rel_role
+	WHERE tatget_id = #{userId}
+	AND relation_type = 'USER'
+	</delete>
+	
+	<insert id="inserUserRole" parameterType="UserRole">
+	INSERT INTO smrt_rel_role (target_id, role_id, relation_type)
+	VALUES (#{userId}, #{roleId}, 'USER')
+	</insert>
+	
+	<insert id="insertRole" parameterType="BasedRole">
+	INSERT INTO smrt_role (id, name)
+	VALUES (#{roleId}, #{roleName})
+	</insert>
+	<update id="updateRole" parameterType="BasedRole">
+	UPDATE smrt_role
+	SET name = #{roleName}
+	WHERE id = #{roleId}
+	</update>
+	
+	<delete id="deleteRole" parameterType="BasedRole">
+	DELETE FROM smrt_role
+	WHERE id = #{roleId}
+	</delete>
+	
+	<select id="selectRoleInUserList" parameterType="BasedRole" resultType="BasedRole">
+	select a.target_id as userId,
+	       b.name as userName,
+	       a.role_id as roleId,
+	       c.name as roleName,
+	       count(1) over() as total,
+	       'R' as mode
+	from smrt_rel_role a, 
+	     smrt_sys_user b,
+	     smrt_role c
+	where 1=1
+	<if test="roleId !=null">
+	and a.role_id = #{roleId}
+	</if>
+	and b.id = a.target_id
+	and a.relation_type = 'USER'
+	and c.id = a.role_id
+	limit #{limit} offset (#{page} - 1) * #{limit}
+	</select>
+	
+	<select id="selectRoleAuthList" parameterType="BasedResource" resultType="BasedResource">
+	   SELECT    a.id AS resourceId,
+			  a.name AS resourceName,
+			  a.parent_id AS parentResourceId,
+			  b.name AS parentResourceName,
+			  a.resource_type AS resourceTypeCode,
+			  case when c.auth_id is null then false else true end AS include,
+			  case when c.auth_id is null then true else false end AS exclude,
+			  level||'단계' AS resourceDepth,
+			  #{roleId} as roleId
+		FROM smrt_resource a,
+		     smrt_resource b,
+		     smrt_rel_auth_res c,
+		     smrt_rel_role_auth d
+		WHERE 1=1
+		AND b.id (+) = a.parent_id
+		and d.auth_id (+) = c.auth_id
+		and d.role_id (+) = #{roleId}
+		and c.resource_id (+) = a.id
+		AND a.resource_type IN ('MENU','PAGE', 'IMAGE')
+		START WITH a.parent_id = #{parentResourceId}
+		CONNECT BY PRIOR a.id = a.parent_id
+	</select>
+	
+	<select id="selectServiceAuthList" parameterType="BasedResource" resultType="BasedResource">
+		SELECT    a.id AS resourceId,
+			  a.name AS resourceName,
+			  a.parent_id AS parentResourceId,
+			  b.name AS parentResourceName,
+			  a.resource_type AS resourceTypeCode,
+			  case when c.include_yn = 'Y' then false else true end AS include,
+			  case when c.include_yn = 'N' or c.include_yn is null then true else false end AS exclude,
+			  level||'단계' AS resourceDepth,
+			  #{roleId} as roleId
+		FROM smrt_resource a,
+		     smrt_resource b,
+		     smrt_rel_auth_res c,
+		     smrt_rel_role_auth d
+		WHERE 1=1
+		AND b.id (+) = a.parent_id
+		and d.auth_id (+) = c.auth_id
+		and d.role_id (+) = #{roleId}
+		and c.resource_id (+) = a.id
+		AND a.resource_type = 'CONTENT'
+		START WITH a.parent_id = #{parentResourceId}
+		CONNECT BY PRIOR a.id = a.parent_id
+	</select>
+	
+	<delete id="deleteAuth" parameterType="BasedResource">
+	DELETE FROM smrt_rel_auth_res
+	WHERE resource_id = #{resourceId}
+	AND auth_id = #{roleId}
+	</delete>
+	
+	<insert id="mergeAuth" parameterType="BasedResource">
+	INSERT INTO smrt_rel_auth_res (resource_id, auth_id, include_yn)
+	VALUES (#{resourceId}, #{authId}, #{includeYn})
+	</insert>
+	
+	<delete id="deleteRelRole" parameterType="BasedResource">
+	DELETE FROM smrt_rel_role_auth
+	WHERE role_id = #{roleId}
+	AND auth_id = #{authId}
+	</delete>
+	
+	<insert id="mergeRelRole" parameterType="BasedResource">
+	INSERT INTO smrt_rel_role_auth (role_id, auth_id, include_yn)
+	VALUES (#{roleId}, #{authId}, #{includeYn})
+	</insert>
+	
+	<delete id="deleteRoleUser" parameterType="Role">
+	DELETE FROM smrt_rel_role
+	WHERE role_id = #{roleId} and target_id = #{userId} and relation_type = 'USER'
+	</delete>
+	
+	<update id="insertRoleUser" parameterType="Role">
+	insert into smrt_rel_role (role_id, target_id, relation_type)
+	values (#{roleId}, #{userId}, 'USER')
+	</update>
+	
+	<select id="selectMainResourceInfo" resultType="HashMap">
+	SELECT a.url,
+		   a.id as resourceId,
+		   a.name as resourceName,
+		   a.resource_type as resourceType,
+		   a.content as resourceContent,
+		   b.name as parentResourceName 
+	FROM smrt_resource a,
+		 smrt_resource b 
+	WHERE 1=1
+	and b.id = a.parent_id
+	and a.id = (
+	select sys_prprt_value from smrt_sys_propertie where sys_prprt_id = 'MAIN_RESOURCE_ID')
+    limit 1
+	</select>
+	
+	<insert id="insertSendQueue" parameterType="SendQueue">
+	INSERT INTO smrt_send_queue(
+            send_que_id, send_req_date, send_date, send_type, send_target, 
+            send_status, send_subject, send_description)
+    VALUES (#{sendQueId}, #{sendReqDate}, #{sendDate}, #{sendType}, #{sendTarget}, 
+            #{sendStatus}, #{sendSubject}, #{sendDescription})
+	</insert>
+	<update id="updateSendQueue" parameterType="SendQueue">
+	UPDATE smrt_send_queue
+	SET send_status = #{sendStatus}
+	   ,send_date = #{sendDate}
+	WEHRE send_que_id = #{sendQueId}
+	</update>
+	
+	<delete id="deleteOrgUser" parameterType="BasedUser">
+	DELETE FROM smrt_rel_user_org
+	WHERE user_id = #{userId} AND org_id = #{defaultOrgId}
+	</delete>
+	
+	<insert id="insertOrgUser" parameterType="BasedUser">
+	INSERT INTO smrt_rel_user_org (user_id, org_id)
+	VALUES (#{userId}, #{defaultOrgId})
+	</insert>
+</mapper>

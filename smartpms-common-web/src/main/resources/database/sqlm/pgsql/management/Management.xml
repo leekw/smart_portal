@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="management">
+	
+    <select id="selectDeliverablesLogList" resultType="DeliverablesLog" parameterType="DeliverablesLog">
+	 SELECT dlog_seq as dlogSeq, 
+	       team as team, 
+	       module as module, 
+	       tm_value as tmValue, 
+	       open_phase as openPhase, 
+	       dbt_phase as dbtPhase,
+	       phase_id as phaseId,
+	       task_group_key as taskGroupKey, 
+	       int_doc_id as intDocId, 
+	       doc_name as docName,
+	       doc_description as docDescription, 
+	       task_run_range as taskRunRange,
+	       review_term as reviewTerm,
+	       com_due_date as comDueDate,
+	       com_due_desc as comDueDesc, 
+	       ref_due_date as refDueDate,
+	       ref_due_desc as refDueDesc, 
+	       sign_off_type as signOffType, 
+	       qa_verify_yn as qaVerifyYn, 
+	       traking_yn as trakingYn, 
+	       template_yn as templateYn,
+	       checklist_yn as checklistYn, 
+	       biz_review_yn as bizReviewYn, 
+	       sm_review_yn as smReviewYn, 
+	       file_type as fileType, 
+	       file_naming_rule as fileNamingRule, 
+	       cr_jira_id as crJiraId, 
+	       ref_sign_off_yn as refSignOffYn, 
+	       multi_doc_review_yn as multiDocReviewYn,
+	       dlog_description as dlogDescription
+	  FROM intg_dlog
+	</select>
+	
+	<select id="selectMetaList" resultType="MetaInfo" parameterType="MetaInfo">
+	SELECT meta_seq as metaSeq, 
+		   meta_div as metaDiv, 
+		   meta_name as metaName, 
+		   meta_full_name as metaFullName, 
+		   meta_description as metaDescription, 
+       	   sys_info as sysInfo, 
+       	   remark as remark,
+       	   case when meta_type = 'MAND' then '차세대 프로젝트 필수용어'
+       	        when meta_type = 'NRML' then '일반용어'
+       	        when meta_type = 'BIZZ' then '업무용어'
+       	        else '' end  as metaType
+  	FROM intg_meta
+  	WHERE 1=1
+  	<if test="metaType != null">
+  	and meta_type = #{metaType}
+  	</if>
+	</select>
+		
+	
+</mapper>
