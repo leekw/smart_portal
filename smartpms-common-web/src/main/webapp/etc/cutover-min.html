@@ -1,0 +1,483 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+       <title>kt BSS Project Cutover Dashboard</title>
+       <!-- <link rel="stylesheet" type="text/css" href="/int/resources/ext-theme-neptune/build/resources/ext-theme-neptune-all-debug.css"> -->
+       <link rel="stylesheet" type="text/css" href="/int/resources/theme-triton/resources/theme-triton-all-debug.css">
+       <meta http-equiv="X-UA-Compatible" content="IE=9">
+       <meta charset="UTF-8">
+       
+        <script type="text/javascript" src="/int/resources/js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="/int/resources/ext/ext-all.js"></script>
+        <script type ="text/javascript" src="/int/ext/core/core.js"></script>
+        <script type="text/javascript">
+        Ext.require([ 
+             'Ext.layout.container.*',
+             'Ext.window.Window',
+             'Ext.data.*'
+         ]);
+        </script>
+		
+		 <style type="text/css">
+			html, body{ height:100%; padding:0px; margin:0px; overflow: hidden;}
+			
+			.tbText{line-height:14px; font:15px "돋움",Dotum,Verdana,Arial,AppleGothic,sans-serif;}
+			
+			.stat{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			
+			.folder{
+				border:2px solid RGB(0, 0, 0);
+				color: #ffffff;
+				background: RGB(100, 100, 100);
+			}
+			.folder .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.ready{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			.ready .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.inprogress{
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+			}
+			.inprogress .gantt_task_progress{
+				background: #23964d;
+			}
+			   
+			.close{
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+			}
+			.close .gantt_task_progress{
+				background: #547dab;
+			}
+			
+			.delay{
+				background: RGB(242, 153, 153);
+			}
+			.delay .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.h1{ font-size:40px;font-family:Verdana,"돋움";color:#777; }
+						   
+			.today_task_cell{ border-left:2px solid #ff2424; }
+			.today_scale_cell{ background: #ff2424; }
+			
+			.stat_title{
+				background-color:#ffffff;
+				text-align:center;
+				padding-left:5px;
+				padding-right:5px;
+				Bold;
+				font-weight: bold;
+				background: RGB(240, 240, 240);
+				font-size:12px;font-family:Verdana,"돋움";
+			}
+			
+			.stat_text1{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:20px;font-family:Verdana,"돋움";color:#777;
+			}
+			
+			.stat_text2{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:17px;font-family:Verdana,"돋움";color:#777;
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_other{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:20px;font-family:Verdana,"돋움";color:#777;
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_ready{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(172, 172, 172);
+				color: #ffffff;
+				background: RGB(200, 200, 200);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_inprogress{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_close{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_delay{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(186, 46, 46);
+				color:#ffffff;
+				background: RGB(242, 153, 153);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_fail{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:17px;font-family:Verdana,"돋움";color:RGB(186, 46, 46);
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_success{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:17px;font-family:Verdana,"돋움";color:#8c66ff;
+				cursor:pointer;cursor:hand;
+			}
+			
+    	</style>
+    	<script type="text/javascript">
+    		var sPos;
+    		var tasks = {};
+    		var jira_dashboard = "";
+    		var _cutoverTh = '전환이행 시나리오';
+    		var _jobStep = 'PA1-1 본오픈';
+    		function _callAjax(url, params, callbackFunc) {
+    			Ext.getBody().mask("Loading...");
+    			Ext.Ajax.request({
+    				url: url,
+    				method : 'POST',
+    				headers : {'Content-Type' : 'application/json'},
+    				timeout: 600000,
+    				params : (Ext.JSON.encode(params)),
+    				success: function(res, eOtps) {
+    					console.log("success");
+    					callbackFunc(res);
+    					Ext.getBody().unmask();
+    				},
+    				failure: function(res, eOtps) {
+    					console.log("failure");
+    					Ext.getBody().unmask();
+    				}
+    				
+    			});
+    		}
+    		function _callbackDashboardInfo(res) {
+    			fn_getJiraInfo(res)
+    		}
+    		function _callbackJiraDataRefresh(res) {
+    			var temp = res.responseText;
+    			var jiraData = Ext.JSON.decode(temp).jiraData;
+    			statSet(jiraData);
+    			
+    		}
+    		function _callbackJiraData(res) {
+    			var temp = res.responseText;
+    			var jiraData = Ext.JSON.decode(temp).jiraData;
+    			var teamKind = jiraData.teamKind;
+    			var sysKind = jiraData.sysKind;
+				$("#teamKind").val(teamKind);
+				$("#sysKind").val(sysKind);
+				$("#ft").val("__" + teamKind + "__");
+				$("#sysft").val("__" + sysKind + "__");
+				
+				statSet(jiraData);
+			
+				
+				var isAdmin = jiraData.isAdmin;
+				if(isAdmin == "Y"){
+					parent.Ext.getCmp('jira-sync').show();
+				}
+				
+				if($("#interval_minute").val() != ""){
+					clientIntervalRefresh();
+				}
+    		}
+    		function _callbackSync() {
+    			parent.document.location.href = "/int/main/view.do";
+    		}
+			var _type = null;
+			var _filterName = null;
+			function filterData(type) {
+				isAddEvent = true;
+				isScrollTo = false;
+				_type = type != null ? type : _type;
+				if (_type != null) {
+					if (_type == "total_cnt"){
+						_filterName = "대상건수";
+					} else if(_type == "progress_count") {
+						_filterName = "진행건수";
+					} else if(_type == "other_cnt") {
+						_filterName = "잔여건수";
+					} else if(_type == "ready_cnt") {
+						_filterName = "할당대기";
+					} else if(_type == "ing_cnt") {
+						_filterName = "진행중";
+					} else if(_type == "ing_progress_cnt") {
+						_filterName = "진행중 - 작업요청";
+					} else if(_type == "ing_started_cnt") {
+						_filterName = "진행중 - 작업진행중";
+					} else if(_type == "delay_cnt") {
+						_filterName = "지연";
+					} else if(_type == "delay_open_cnt") {
+						_filterName = "지연 - 시작지연";
+					} else if(_type == "delay_progress_cnt") {
+						_filterName = "지연 - 종료지연";
+					} else if(_type == "finish_cnt") {
+						_filterName = "작업완료";
+					} else if(_type == "fail_cnt") {
+						_filterName = "작업종료 - 비정상종료";
+					} else if(_type == "success_cnt") {
+						_filterName = "작업종료 - 정상종료";
+					}
+				}
+				_callAjax('/int/jira/cutover/data/get.json', { cutoverTh : _cutoverTh, filterType: _type, jobStep:_jobStep }, this._callbackJiraDataRefresh);
+				parent.window.Ext.main.getApplication().getController('Main').reloadGridRecord(type);
+			}
+			var isAddEvent  = false;
+			var _lastSyncDate = null;
+			function statSet(jiraData){
+				var totalCnt = jiraData.statInfo.totalCnt;
+				var readyCnt = jiraData.statInfo.readyCnt;
+				var ingCnt = jiraData.statInfo.ingCnt;
+				var ingProgressCnt = jiraData.statInfo.ingProgressCnt;
+				var ingStartedCnt = jiraData.statInfo.ingStartedCnt;
+				var delayCnt = jiraData.statInfo.delayCnt;
+				var delayOpenCnt = jiraData.statInfo.delayOpenCnt;
+				var delayProgressCnt = jiraData.statInfo.delayProgressCnt;
+				var finishCnt = jiraData.statInfo.finishCnt;
+				var lastSyncDate = jiraData.statInfo.lastSyncDate;
+				var progressCount = jiraData.statInfo.progressCount;
+				var successCnt = jiraData.statInfo.successCnt;
+				var failCnt = jiraData.statInfo.failCnt;
+				var otherCnt = parseInt(totalCnt) - (parseInt(progressCount) + parseInt(finishCnt));
+				
+				$("#total_cnt").html('<span class="total_cnt" style="cursor:pointer;cursor:hand;">' + totalCnt + '</span>/<span class="progress_count" style="cursor:pointer;cursor:hand;">' + progressCount  + '</span>');
+				$("#other_cnt").text(otherCnt);
+				$("#ready_cnt").text(readyCnt);
+    			$("#ing_cnt").text(ingCnt);
+    			$("#ing_progress_cnt").text(ingProgressCnt);
+    			$("#ing_started_cnt").text(ingStartedCnt);
+    			$("#delay_cnt").text(delayCnt);
+    			$("#delay_open_cnt").text(delayOpenCnt);
+    			$("#delay_progress_cnt").text(delayProgressCnt);
+    			$("#finish_cnt").text(finishCnt);
+    			$("#fail_cnt").text(failCnt);
+    			$("#success_cnt").text(successCnt);
+				if (!isAddEvent) {
+	    			$(document).on('click','.total_cnt', function(){
+	    				filterData('total_cnt');
+	    			});
+	    			$(document).on('click','.progress_count', function(){
+	    				filterData('progress_count');
+	    			});
+	    			$(document).on('click','#other_cnt', function(){
+	    				filterData('other_cnt');
+	    			});
+	    			$(document).on('click','#ready_cnt', function(){
+	    				filterData('ready_cnt');
+	    			});
+	    			$(document).on('click','#ing_cnt', function(){
+	    				filterData('ing_cnt');
+	    			});
+	    			$(document).on('click','#ing_progress_cnt', function(){
+	    				filterData('ing_progress_cnt');
+	    			});
+	    			$(document).on('click','#ing_started_cnt', function(){
+	    				filterData('ing_started_cnt');
+	    			});
+	    			$(document).on('click','#delay_cnt', function(){
+	    				filterData('delay_cnt');
+	    			});
+	    			$(document).on('click','#delay_open_cnt', function(){
+	    				filterData('delay_open_cnt');
+	    			});
+	    			$(document).on('click','#delay_progress_cnt', function(){
+	    				filterData('delay_progress_cnt');
+	    			});
+	    			$(document).on('click','#finish_cnt', function(){
+	    				filterData('finish_cnt');
+	    			});
+	    			$(document).on('click','#success_cnt', function(){
+	    				filterData('success_cnt');
+	    			});
+	    			$(document).on('click','#fail_cnt', function(){
+	    				filterData('fail_cnt');
+	    			});
+				} 
+    			
+    			var finish_per = (finishCnt / totalCnt * 100).toFixed(1) + "%";
+    			$("#finish_per").text(finish_per);
+    			
+    			_lastSyncDate = lastSyncDate;
+    			
+    			parent.window.Ext.getCmp('main-acc').setTitle('Cut-Over TaskList - Last Sync : ' + _lastSyncDate);
+    			if (_filterName != null) {
+					parent.window.Ext.getCmp('main-acc').header.setHtml("<span style='padding:0 0 0 88%;font-weight: bold;'>(Filter :" + _filterName + ")</span");
+    			}
+    				
+			} 
+			var isScrollTo = true;
+			function dataReload(cutoverTh, parentCallYn, jobStep){
+				isAddEvent = true;
+				_cutoverTh = cutoverTh != null ? cutoverTh : _cutoverTh;
+				_jobStep = jobStep != null ? jobStep : _jobStep;
+				isScrollTo = parentCallYn == null ? true : false;
+				_callAjax('/int/jira/cutover/data/get.json', { cutoverTh : _cutoverTh, filterType: _type, jobStep: _jobStep }, this._callbackJiraDataRefresh);
+			}
+			
+			function jiraSync(param, step){
+				if(confirm("Sync. 하시겠습니까?")){
+					var postUrl = "/int/jira/sync/process.json";
+					_callAjax(postUrl, { cutoverTh : param, jobStep: step }, this._callbackSync);
+				}
+			}
+			
+			var interval;
+			function clientIntervalRefresh(){
+				var interval_minute = $("#interval_minute").val();
+				interval = window.setInterval(dataReload, 1000 * 60 * interval_minute);
+			}
+			
+			function goJiraDashboard() {
+		        var url = jira_dashboard;
+			    var option = "left=100,top=100,width=1200,height=600,location=no,titlebar=no,scrollbars=yes";
+		    	var popup = window.open(url, 'Jira', option);
+		        popup.focus();
+			}
+			
+			function fn_getJiraInfo(res) {
+				var temp = res.responseText;
+				var data = Ext.JSON.decode(temp).jiraInfo;
+			    jira_dashboard = data.jiraDashboard;
+			}
+			var checkboxArray = [];
+			var checkboxArraySys = [];
+			function initOption() {
+				var interval_minute = $("#interval_minute", document).val();
+	        	
+	        	var teamKind = $("#teamKind", document).val();
+	        	var teams = teamKind.split("__");
+	        	var filterVal = $("#ft", document).val();
+	        	
+	        	for(var i = 0; i < teams.length; i++){
+	        		var checked = false;
+	        		if(filterVal.indexOf("__"+teams[i]+"__") > - 1){
+	        			checked = true;
+	        		}
+	        		checkboxArray.push({name: teams[i], boxLabel: teams[i], id: 'check_' + i, checked : checked});
+	        	}
+	        	
+	        	var sysKind = $("#sysKind", document).val();
+	        	var sys = sysKind.split("__");
+	        	var filterValSys = $("#sysft", document).val();
+	        	
+	        	for(var i = 0; i < sys.length; i++){
+	        		var checked = false;
+	        		if(filterValSys.indexOf("__"+sys[i]+"__") > - 1){
+	        			checked = true;
+	        		}
+	        		checkboxArraySys.push({name: sys[i], boxLabel: sys[i], id: 'checksys_' + i, checked : checked});
+	        	}
+			}
+			
+
+    	</script>
+    </head>
+    <body>
+    <script type="text/javascript">
+    	_callAjax('/int/jira/info/get.json', {}, this._callbackDashboardInfo);
+    	
+    	_callAjax('/int/jira/cutover/data/get.json', { cutoverTh : '전환이행 시나리오', jobStep:'PA1-1 본오픈' }, this._callbackJiraData);
+    	
+    </script>
+	
+	<div id="status" style="padding:2px;width:100%; height:62px; background-color:#ffffff; border-bottom:1px solid #cecece; ">
+	<table style="width:100%;" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="left" valign="top">
+			<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+			<tr style="height:20px;">
+				<td style="" class="stat_title">대상건수/진행건수</td>
+				<td style="" class="stat_title">잔여건수</td>
+				<td style="" class="stat_title">할당대기</td>
+				<td style="" class="stat_title" colspan="3">진행중</td>
+				<td style="" class="stat_title" colspan="3">작업완료</td>
+				<td style="" class="stat_title" colspan="3">지연</td>
+				<td style="" class="stat_title">완료율</td>
+			</tr>
+			<tr style="height:20px;"> 
+				<td style="" class="stat_text1" rowspan="2" id="total_cnt"></td>
+				<td style="" class="stat_other" rowspan="2" id="other_cnt"></td>
+				<td style="" class="stat_ready" rowspan="2" id="ready_cnt"></td>
+				<td style="" class="stat_inprogress" rowspan="2" id="ing_cnt"></td>
+				<td style="" class="stat_title">작업요청</td>
+				<td style="" class="stat_title">작업진행중</td>
+				<td style="" class="stat_close" rowspan="2" id=finish_cnt></td>
+				<td style="" class="stat_title">정상완료</td>
+				<td style="" class="stat_title">비정상완료</td>
+				<td style="" class="stat_delay" rowspan="2" id="delay_cnt"></td>
+				<td style="" class="stat_title">시작지연</td>
+				<td style="" class="stat_title">종료지연</td>
+				<td style="" class="stat_text1" rowspan="2" id="finish_per"></td>
+			</tr>
+			<tr style="height:20px;">
+				<td style="" class="stat_text2" id="ing_progress_cnt"></td>
+				<td style="" class="stat_text2" id="ing_started_cnt"></td>
+				<td style="" class="stat_text2" id="success_cnt"></td>
+				<td style="" class="stat_text2" id="fail_cnt"></td>
+				<td style="" class="stat_text2" id="delay_open_cnt"></td>
+				<td style="" class="stat_text2" id="delay_progress_cnt"></td>
+				
+			</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+	</div>
+	
+	
+		<input type="hidden" id="ft"/>
+		<input type="hidden" id="sysft"/>
+		<input type="hidden" id="teamKind"/>
+		<input type="hidden" id="sysKind"/>
+		<input type="hidden" id="grid_w" value="10"/>
+		<input type="hidden" id="interval_minute" value=""/>
+
+	    </body>
+	</html>

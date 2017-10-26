@@ -1,0 +1,92 @@
+
+#app-header {
+background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #8fc33a), color-stop(100%, #739b2e));
+background-image: -webkit-linear-gradient(top, #8fc33a, #739b2e);
+background-image: -moz-linear-gradient(top, #8fc33a, #739b2e);             
+background-image: -o-linear-gradient(top, #8fc33a, #739b2e);
+background-image: -ms-linear-gradient(top, #8fc33a, #739b2e);
+background-image: linear-gradient(top, #8fc33a, #739b2e);
+filter: progid:DXImageTransform.Microsoft.gradient.(GradientType=0, startColorstr='#8fc33a', endColorstr='#739b2e');
+border-bottom: 1px solid #567422;
+}
+#app-header-title {
+padding: 15px 10px 10px 31px;
+color: white;
+font-size: 18px;
+font-weight: bold;
+text-shadow: 0 1px 0 #4e691f;
+}
+// There is no required CSS for this plugin to work properly 
+// but here is what is being used to style this demo
+.horizontal-nav {
+  border-radius: 6px;
+}
+.horizontal-nav ul {
+position: absolute;
+  left: 180px;
+  top : -12px;
+  float: left;
+  list-style:none;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 6px;
+}
+.horizontal-nav ul li {
+  float: left;
+}
+.horizontal-nav ul li:first-child {
+  border-left: 0 none;
+}
+.horizontal-nav ul li a {
+  display: block;
+  padding: 10px 20px;
+  color: #fff;
+  text-decoration:none;
+  border-top: 1px solid rgba(255,255,255, 0.25);
+  border-left: 1px solid rgba(255,255,255, 0.25);
+}
+.horizontal-nav ul li:first-child a {
+  border-left: 0 none;
+}
+.horizontal-nav ul li a:hover {
+  background: #567422;
+}
+.horizontal-nav ul li:first-child a {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.horizontal-nav ul li:last-child a {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.rowedit .x-grid-cell{
+	background-color : #ffffcc !important;
+}
+.rowerror .x-grid-cell{
+	background-color : #ffbbbb !important;
+}
+.fa-check-circle:before{color:#eea236}
+.main-logo {
+	color: #ffffff;
+  	display: block;
+ 	font-size: 24px;
+}
+.main-logo2 {
+	background-color : #ffffff !important;
+}
+.x-viewport, .x-viewport > .x-body {
+	touch-action : auto;
+}
+.top-user-name {
+	color : #ffffff !important;
+}
+.x-panel-header-default {
+ 
+ }
+ .x-panel-body-default {
+ 	
+ }
+ .x-panel-header-title-default {
+ }
+ 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="notice">
+	
+	<select id="selectNoticeList" resultType="Notice" parameterType="Notice">
+	SELECT notice_id as noticeId, 
+	       notice_title as noticeTitle, 
+	       notice_team as noticeTeam, 
+	       notice_level as noticeLevel, 
+	       notice_create_date as noticeCreateDate, 
+	       notie_publish_type as noticePublishType, 
+	       notice_publish_date as noticePublishDate, 
+	       notice_retry_count as noticeRetryCount, 
+	       notice_retry_cycle as noticeRetryCycel, 
+	       notice_description as noticeDescription,
+	       'R' as dataMode,
+	       notice_template as noticeTemplate,
+	       notice_main_yn as noticeMainYn,
+	       decode(notice_main_yn, 'Y', true, false) as main
+	  FROM smrt_notice a
+	  WHERE 1=1
+	  <if test="startSearchDate != null">
+	  AND notice_publish_date &lt;= #{endSearchDate} 
+	  AND notice_publish_date &gt;= #{startSearchDate}
+	  </if>
+	  <if test="noticeId != 0">
+	  AND notice_id = #{noticeId}
+	  </if>
+	  <if test="noticeMainYn != null">
+	  AND notice_main_yn = #{noticeMainYn}
+	  </if>
+	  order by noticeId desc
+	</select>
+		
+	<insert id="insertNotice" parameterType="Notice">
+	INSERT INTO smrt_notice(
+            notice_id, notice_title, notice_team, notice_level, notice_create_date, 
+            notie_publish_type, notice_publish_date, notice_retry_count, 
+            notice_retry_cycle, notice_description, mail_group_id, notice_template, notice_main_yn)
+    VALUES (nextval('notice_seq'), #{noticeTitle}, #{noticeTeam}, #{noticeLevel}, to_char(now(), 'YYYY-MM-DD HH24:MI:SS'), 
+            #{noticePublishType}, #{noticePublishDate}, #{noticeRetryCount}, 
+            #{noticeRetryCycle}, #{noticeDescription}, #{mailGroupId}, #{noticeTemplate}, decode(#{main}, true, 'Y','N'));
+	
+	</insert>
+	
+	<update id="updateNotice" parameterType="Notice">
+	UPDATE smrt_notice
+	SET notice_title = #{noticeTitle}
+	<if test="noticeTeam != null">
+	, notice_team = #{noticeTeam}
+	</if>
+	<if test="noticeLevel != null">
+	, notice_level = #{noticeLevel}
+	</if>
+	<if test="noticeDescription != null">
+	, notice_description = #{noticeDescription}
+	</if>
+	<if test="mailGroupId != null">
+	, mail_group_id = #{mailGroupId}
+	</if>
+	<if test="noticeTemplate != null">
+	, notice_template = #{noticeTemplate}
+	</if>
+	<if test="noticePublishType != null">
+	, notie_publish_type = #{noticePublishType}
+	</if>
+	, notice_main_yn = decode(#{main}, true, 'Y','N')
+	WHERE notice_id = #{noticeId}
+	</update>
+	
+	<delete id="deleteNotice" parameterType="Notice">
+	DELETE FROM smrt_notice
+	WHERE notice_id = #{noticeId}
+	</delete>
+	
+
+</mapper>

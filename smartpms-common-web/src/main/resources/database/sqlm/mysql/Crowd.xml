@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="crowd">
+	
+	<select id="selectedCrowdUserList" parameterType="CrowdUserInfo" resultType="CrowdUserInfo">
+	select id as id,
+	       user_name as userName,
+	       lower_user_name as lowerUserName,
+	       active as active,
+	       created_date as createdDate,
+	       updated_date as updatedDate,
+	       display_name as displayName,
+	       email_address as emailAddress,
+	       directory_id as directoryId,
+	       credential as credential
+	from cwd_user
+	where 1=1
+	and (created_date >= #{createdDate}
+	or updated_date >= #{updatedDate})
+	</select>
+	
+</mapper>

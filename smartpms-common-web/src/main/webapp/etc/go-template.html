@@ -1,0 +1,284 @@
+ <style type="text/css">
+			html, body{ height:100%; padding:0px; margin:0px; overflow: hidden;}
+			
+			.tbText{line-height:14px; font:15px "돋움",Dotum,Verdana,Arial,AppleGothic,sans-serif;}
+			
+			.stat{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			
+			.folder{
+				border:2px solid RGB(0, 0, 0);
+				color: #ffffff;
+				background: RGB(100, 100, 100);
+			}
+			.folder .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.ready{
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+			}
+			.ready .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.inprogress{
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+			}
+			.inprogress .gantt_task_progress{
+				background: #23964d;
+			}
+			   
+			.close{
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+			}
+			.close .gantt_task_progress{
+				background: #547dab;
+			}
+			
+			.delay{
+				background: RGB(242, 153, 153);
+			}
+			.delay .gantt_task_progress{
+				background: #db2536;
+			}
+			
+			.h1{ font-size:40px;font-family:Verdana,"돋움";color:#777; }
+						   
+			.today_task_cell{ border-left:2px solid #ff2424; }
+			.today_scale_cell{ background: #ff2424; }
+			
+			.stat_title{
+				background-color:#ffffff;
+				text-align:center;
+				padding-left:5px;
+				padding-right:5px;
+				Bold;
+				font-weight: bold;
+				background: RGB(240, 240, 240);
+				font-size:15px;font-family:Verdana,"돋움";
+			}
+			
+			.stat_text1{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:12px;font-family:Verdana,"돋움";
+			}
+			
+			.stat_text2{
+				background-color:#ffffff;
+				text-align:center;
+				font-size:20px;font-family:Verdana,"돋움";color:#777;
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_ready{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(172, 172, 172);
+				color: #000000;
+				background: RGB(200, 200, 200);
+				font-size:20px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_inprogress{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(127, 188, 100);
+				color:#ffffff;
+				background: RGB(167, 217, 145);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_close{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(53, 136, 197);
+				color:#ffffff;
+				background: RGB(130, 183, 222);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_delay{
+				padding-left:3px;
+				padding-right:3px;
+				text-align:center;
+				border:2px solid RGB(186, 46, 46);
+				color:#ffffff;
+				background: RGB(242, 153, 153);
+				font-size:30px;font-family:Verdana,"돋움";
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_fail{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:30px;font-family:Verdana,"돋움";color:RGB(186, 46, 46);
+				cursor:pointer;cursor:hand;
+			}
+			
+			.stat_success{
+				padding-left:3px;
+				padding-right:3px;
+				background-color:#ffffff;
+				text-align:center;
+				font-size:30px;font-family:Verdana,"돋움";color:#8c66ff;
+				cursor:pointer;cursor:hand;
+			}
+			
+    	</style>
+
+   <div style="padding:10 2 2 2px;width:60%; height:60px; background-color:#000000;">
+	<table style="width:100%;" cellspacing="0" cellpadding="0">
+	<tbody>
+			<tr>
+				<td align="center"><h2><font color="white">PA1-1 업무전환 -</font> <font color="green">GO</font><font color="white">/</font><font color="red">No-go</font> <font color="white">의사결정 Report<br>(2016.2.10 @ 00:00)</font></h2></td>
+			</tr>
+	</tbody>
+	</table>
+   </div>
+   <div id="status" style="padding:10px; width:60%; height:90px; background-color:#ffffff; border-bottom:1px solid #cecece; ">
+   <table style="width:100%; background-color:#ffffff;" cellspacing="1" cellpadding="0">
+	<tbody>
+		<tr style="height:28px;">
+			<td width="50%" class="stat_title">프로젝트 업무전환 종합 의견</td>
+			<td width="50%" class="stat_title">잔여 이슈 전환 , Business 영향도</td>
+		</tr>
+		<tr>
+			<td align="left" valign="top" rowspan="3">
+			<div style="padding: 2 2 2 2px;">
+			◎ Cut-Over Task 진행현황
+			</div>
+			<table style="width:100%;" cellspacing="0" cellpadding="0">
+			<tbody><tr>
+				<td align="left" valign="top">
+					<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+					<tbody><tr style="height:28px;">
+						<td style="" class="stat_title">완료율</td>
+						<td style="" class="stat_title">대상건수</td>
+						<td style="" class="stat_title">완료건수</td>
+						<td style="" class="stat_title">지연건수</td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">98.2</td>
+						<td style="" class="stat_text1">112</td>
+						<td style="" class="stat_text1">110</td>
+						<td style="" class="stat_text1">2</td>
+					</tr>
+					</tbody></table>
+				</td>
+			</tr>
+			</tbody>
+			</table>
+			<div style="padding: 10 10 10 10px;">
+			◎ 업무 전황 프로젝트/영역 종합 의견
+			</div>
+			<table style="width:100%;" cellspacing="0" cellpadding="0">
+			<tbody><tr>
+				<td align="left" valign="top">
+					<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+					<tbody><tr style="height:28px;">
+						<td style="" class="stat_title">영역구분</td>
+						<td style="" class="stat_title">AP</td>
+						<td style="" class="stat_title">인프라</td>
+						<td style="" class="stat_title">데이터</td>
+						<td style="" class="stat_title">연동</td>
+						<td style="" class="stat_title">현장</td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">차세대</td>
+						<td style="background-color:green;" class="stat_text1">GO</td>
+						<td style="background-color:yellow;" class="stat_text1">Concerned</td>
+						<td style="background-color:red;" class="stat_text1">No-GO</td>
+						<td style="background-color:green;" class="stat_text1">GO</td>
+						<td style="background-color:green;" class="stat_text1">GO</td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">LE</td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:yellow;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">SM</td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+					</tr>
+					<tr style="height:28px;">
+						<td style="" class="stat_title">Non-BSS</td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:yellow;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:green;" class="stat_text1"></td>
+						<td style="background-color:yellow;" class="stat_text1"></td>
+					</tr>
+					</tbody></table>
+				</td>
+			</tr>
+			</tbody>
+			</table>
+			</td>
+	      <td style="background-color:#ffffff;" align="left" valign="top" >
+			<table style="width:100%; background-color:#cecece;" cellspacing="1" cellpadding="0">
+			<tbody><tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">영향도 등급</td>
+				<td style="" class="stat_title">대상업무</td>
+				<td style="" class="stat_title">잔여이슈</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">1등급(Critical)</td>
+				<td style="" class="stat_text1">주요 업무(10대 업무)</td>
+				<td style="" class="stat_text1">N/A</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">2등급(Major)</td>
+				<td style="" class="stat_text1">일반 업무</td>
+				<td style="" class="stat_text1">N/A</td>
+			</tr>
+			<tr style="height:28px;">
+				<td style="" class="stat_title" width="80px">3등급(Minor)</td>
+				<td style="" class="stat_text1">단순 기능</td>
+				<td style="" class="stat_text1">- 이슈화</td>
+			</tr>
+			</tbody>
+			</table>
+	     </td>
+	   </tr>
+	   <tr style="height:28px;">
+		 <td width="50%" class="stat_title">잔여 이슈 전환 조치방안</td>
+	   </tr>
+	   <tr>
+		 <td style="background-color:#ffffff;" align="left" valign="top" >
+			<div style="padding: 10 2 2 2px; background-color:#ffffff;">
+			 <p><b>◎ '16.2.19 11:00 am까지 조치 완료 예정</b></p>
+			 
+			 <p> - 잔여이슈 #1/ 상세조치 내용/ 목표시간</p>
+			 <p> - 잔여이슈 #2/ 상세조치 내용/ 목표시간</p>
+			</div>
+		</td>
+	  </tr>
+	</tbody>
+	</table>
+    </div>

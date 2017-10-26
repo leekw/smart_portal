@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+	<localRepository>/Users/ags0688/Documents/.m2/jira-rest/repository</localRepository>
+
+	<pluginGroups>
+		<pluginGroup>org.apache.maven.plugins</pluginGroup>
+	</pluginGroups>
+	
+	<mirrors>
+		<mirror>
+			<id>nexus</id>
+			<mirrorOf>central</mirrorOf>
+			<url>http://122.35.179.162:8081/nexus/content/groups/public/</url>
+		</mirror>
+	</mirrors>
+     
+
+	<!-- <servers>
+		<server>
+			<id>release</id>
+			<username>jios</username>
+			<password>jios123</password>
+		</server>
+	</servers>
+
+	<mirrors>
+		<mirror>
+			<id>nexus</id>
+			<mirrorOf>central</mirrorOf>
+			<url>http://jios.net:8080/nexus/content/groups/jios/</url>
+		</mirror>
+	</mirrors>
+
+	<profiles>
+		<profile>
+			<id>jios</id>
+		</profile>
+	</profiles>
+
+	<activeProfiles>
+		<activeProfile>jios</activeProfile>
+	</activeProfiles> -->
+
+</settings>

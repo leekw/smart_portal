@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int="http://www.springframework.org/schema/smart"
+	xmlns:int-file="http://www.springframework.org/schema/smart/file"
+	xmlns:int-jms="http://www.springframework.org/schema/smart/jms"
+	xmlns:int-stream="http://www.springframework.org/schema/smart/stream"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+			
+	<!-- Ehcache 설정 -->
+    <bean id="smartCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager" ref="ehCacheManager"/>
+	</bean>
+    <bean id="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:properties/ehcache-smart.xml"/>
+	</bean>
+	
+	<!--  Default CacheManager -->
+    <bean id="defaultCacheManager" class="net.smart.common.support.cache.smartCacheManagerImpl"  scope="prototype">
+    	<property name="ehCache" ref="smartCache"/>
+    	<property name="cacheName" value="smartDefaultCache"/>
+    </bean>
+	
+	<!-- MBean for monitoring -->
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true"/>
+	</bean>
+	<!-- Management Service for monitoring -->
+	<bean id="managementService" class="net.sf.ehcache.management.ManagementService" init-method="init">
+		<constructor-arg index="0" ref="ehCacheManager" type="net.sf.ehcache.CacheManager"/>
+		<constructor-arg index="1" ref="mbeanServer" type="javax.management.MBeanServer"/>
+		<constructor-arg index="2" type="boolean" value="true"/>
+		<constructor-arg index="3" type="boolean" value="true"/>
+		<constructor-arg index="4" type="boolean" value="true"/>
+		<constructor-arg index="5" type="boolean" value="true"/>
+	</bean>
+    
+</beans>

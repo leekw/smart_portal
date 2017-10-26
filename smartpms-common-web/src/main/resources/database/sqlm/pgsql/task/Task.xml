@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="task">
+	
+	<select id="selectTaskList" resultType="Task" parameterType="GanttInfo">
+	SELECT id,
+	       text,
+	       start_date,
+	       end_date,
+	       duration,
+		   parent,
+		   leaf,
+		   open,
+		   color,
+		   decode(leaf,1, parent, null) as closeId,
+		   summary,
+		   closeYn,
+		   exposureType
+	FROM (
+		SELECT id,
+			   text,
+			   start_date,
+			   end_date,
+			   duration,
+			   decode(id, #{searchTask}, '0', parent) as parent,
+			   (select case when count(1) &gt; 0 then 0 else 1 end  from intg_task where parent = a.id) AS leaf,
+			   (select count(1) from intg_task where parent = a.id) as count,
+			   true as open,
+			   color,
+			   summary,
+			   sort_no,
+			   close_yn as closeYn,
+			   exposure_type as exposureType
+		FROM intg_task a
+		WHERE 1=1
+		AND task_type = #{taskType}
+		<if test="exposureType != null">
+		and exposure_type = #{exposureType}
+		</if>
+		<if test="startDate != null and endDate != null">
+		and (start_date between #{startDate} and #{endDate} 
+		or end_date between #{startDate} and #{endDate})
+		</if>
+		<if test="searchTask != null">
+		START WITH id = #{searchTask}
+		CONNECT BY PRIOR id = parent
+		</if>
+	) x
+	order by sort_no, id
+	</select>
+	
+	<select id="selectTaskLinkList" resultType="TaskLink" parameterType="GanttInfo">
+	SELECT id,
+		   source,
+		   target,
+		   type
+	FROM intg_task_link
+	WHERE task_type = #{taskType}
+	</select>
+	
+	<insert id="insertTask" parameterType="Task">
+	INSERT INTO intg_task (id, text, start_date, end_date, duration, parent, color, task_type, summary, close_yn, sort_no, exposure_type)
+	VALUES (#{id}, #{text}, #{start_date}, #{end_date}, #{duration}, #{parent}, #{color}, #{taskType}, #{summary}, #{closeYn}, 99999, #{exposureType} )
+	</insert>
+	
+	<update id="updateTask" parameterType="Task">
+	UPDATE intg_task
+	SET start_date = #{start_date}
+	, end_date = #{end_date}
+	<if test="text != null">
+	, text = #{text}
+	</if>
+	<if test="duration != null">
+	, duration = #{duration}
+	</if>
+	<if test="parent != null">
+	, parent = #{parent}
+	</if>
+	<if test="color != null">
+	, color = #{color}
+	</if>
+	<if test="taskType != null">
+	, task_type = #{taskType}
+	</if>
+	<if test="summary != null">
+	, summary = #{summary}
+	</if>
+	<if test="closeYn != null">
+	, close_yn = #{closeYn}
+	</if>
+	<if test="exposureType != null">
+	, exposure_type = #{exposureType}
+	</if>
+	WHERE id = #{id}
+	</update>
+	
+	<delete id="deleteTask" parameterType="Task">
+	DELETE FROM intg_task
+	WHERE id = #{id} 
+	</delete>
+	
+	<insert id="insertTaskLink" parameterType="TaskLink">
+	INSERT INTO intg_task_link (id, source, target, type, task_type)
+	VALUES (#{id}, #{source}, #{target}, #{type}, #{taskType})
+	</insert>
+	
+	<delete id="deleteTaskLink" parameterType="TaskLink">
+	DELETE FROM intg_task_link
+	WHERE id = #{id}
+	</delete>
+</mapper>

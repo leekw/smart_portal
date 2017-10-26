@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="analysis">
+	<select id="selectAnalysisRawList" parameterType="AnalysisRaw" resultType="AnalysisRaw">
+	SELECT a.service_name as serviceName, 
+		   a.repo_name as repoName, 
+		   to_char(a.analysis_date,'yyyy-mm-dd') as analysisDateByString, 
+		   vulnerability as vulnerability, 
+		   cwe as cwe, 
+		   security_rule as securityRule, 
+		   severity as severity, 
+		   full_location as fullLocation, 
+		   file as file, 
+		   source as source, 
+		   result_message as resultMessage, 
+		   area as area, 
+		   tool as tool,
+		   b.team as team,
+		   b.manager as manager,
+		   a.order_no as orderNo,
+		   analysis_result_id as analysisResultId
+	FROM smrt_analysis_result a
+	     left outer join smrt_analysis_manage_info b 
+        		on b.service_name = a.service_name and b.repo_name = a.repo_name
+	WHERE 1=1
+	<if test="area != null">
+	AND area = #{area}
+	</if>
+	<if test="tool != null">
+	and tool = #{tool}
+	</if>
+	<if test="serviceName != null">
+	AND a.service_name = #{serviceName}
+	</if>
+	<if test="repoName != null">
+	AND a.repo_name = #{repoName}
+	</if>
+	<if test="analysisDateByString != null">
+	AND a.analysis_date = to_date(#{analysisDateByString} , 'YYYY-MM-DD')
+	</if>
+	<if test="analysisDateByString == null">
+	AND a.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
+	</if>
+	<if test="severity != null">
+	AND severity = #{severity}
+	</if>
+	<if test="orderNo != 0">
+	AND a.order_no = #{orderNo}
+	</if>
+	<if test="team != null">
+	AND b.team = #{team}
+	</if>
+	<if test="manager != null">
+	AND b.manager = #{manager}
+	</if>
+	ORDER BY a.analysis_date DESC
+	</select>
+	
+	<select id="selectAnalysisResultList" parameterType="AnalysisResult" resultType="AnalysisResult">
+	SELECT a.analysis_result_id as analysisResultId, 
+	       target_yn as targetYn, 
+	       remark as remark, 
+	       attach_file_url as attachFileUrl,
+	       attach_file_name as attachFileName,
+	       status as status, 
+	       case when status = 'INPROGRESS' then '조치중'
+	            when status = 'COMPLETED' then '완료'
+	            else 'N/A' end as statusName, 
+	       ref_key as refKey
+	FROM smrt_analysis_confirm a,
+	     smrt_analysis_result b
+	WHERE b.analysis_result_id = a.analysis_result_id
+	<if test="serviceName != null">
+	AND b.service_name = #{serviceName}
+	</if>
+	<if test="repoName != null">
+	AND b.repo_name = #{repoName}
+	</if>
+	<if test="analysisDateByString != null">
+	AND b.analysis_date = to_date(#{analysisDateByString} , 'YYYY-MM-DD')
+	</if>
+	<if test="analysisResultId == 0 and analysisDateByString == null">
+	AND b.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
+	</if>
+	<if test="analysisResultId != 0">
+	AND a.analysis_result_id = #{analysisResultId}
+	</if>
+	</select>
+	
+	<select id="selectAnalysisMaxOrderNo" parameterType="AnalysisRaw" resultType="java.lang.Integer">
+	SELECT MAX(order_no) as orderNo
+	FROM smrt_analysis_result
+	WHERE 1=1
+	<if test="area != null">
+	AND area = #{area}
+	</if>
+	<if test="tool != null">
+	and tool = #{tool}
+	</if>
+	<if test="serviceName != null">
+	AND service_name = #{serviceName}
+	</if>
+	<if test="repoName != null">
+	AND repo_name = #{repoName}
+	</if>
+	</select>
+	
+	<insert id="insertAnalysisRaw" parameterType="AnalysisRaw">
+	INSERT INTO smrt_analysis_result(
+	analysis_result_id, service_name, repo_name, analysis_date, 
+	vulnerability, cwe, security_rule, severity, full_location,
+	 file, source, result_message, area, tool, order_no, manager, team)
+	VALUES (nextval('analysis_result_seq'), #{serviceName}, #{repoName}, #{analysisDate},
+	        #{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
+	        #{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
+	</insert>
+	
+	<select id="selectAnalysisTopList" parameterType="AnalysisTop" resultType="AnalysisTop">
+	SELECT MAX(service_name) as serviceName, 
+		   MAX(repo_name) as repoName, 
+		   MAX(target_name) as targetName, 
+		   MAX(team_name) as teamName, 
+		   secutiry_rule as securityRule, 
+		   SUM(detection_count) as detectionCount, 
+		   SUM(measure_count) as measureCount, 
+		   MAX(area) as area,
+		   round(SUM(measure_count)/SUM(detection_count), 2)*100 as measureRatio
+	FROM smrt_analysis_top
+	WHERE 1=1
+	<if test="area != null">
+	AND area = #{area}
+	</if>
+	<if test="area != null and area == 'Lib'">
+	GROUP BY service_name, repo_name, target_name, team_name, secutiry_rule
+	</if> 
+	<if test="area != null and area != 'Lib'">
+	GROUP BY secutiry_rule
+	</if> 
+	ORDER BY SUM(detection_count) DESC
+	LIMIT 10
+	</select>
+	
+	<select id="selectAnalysisSummaryList" parameterType="AnalysisSummary" resultType="AnalysisSummary">
+	SELECT service_name as serviceName, 
+		   repo_name as repoName, 
+		   to_char(analysis_date,'yyyy-mm-dd') as analysisDateByString, 
+		   order_no as orderNo, 
+		   team as team, 
+		   manager as manager, 
+		   critical_count as criticalCount, 
+		   high_count as highCount, 
+		   major_count as majorCount, 
+		   low_count as lowCount, 
+		   measure_status as measureStatus, 
+		   veering_check1 as veeringCheck1, 
+		   veering_check2 as veeringCheck2, 
+		   final_status as finalStatus,
+		   area as area
+	FROM smrt_analysis_summary
+	WHERE 1=1
+	<if test="area != null">
+	AND area = #{area}
+	</if>
+	ORDER BY order_no DESC
+	</select>
+	
+	<insert id="insertAnalysisResult" parameterType="AnalysisResult">
+	INSERT INTO smrt_analysis_confirm
+	(analysis_confirm_id, analysis_result_id, target_yn, remark, attach_file_url, attach_file_name, status, ref_key)
+	VALUES (nextVal('analysis_confirm_seq'), #{analysisResultId}, #{targetYn}, #{remark}, #{attachFileUrl}, #{attachFileName}, #{status}, #{refKey})
+	</insert>
+	
+	<update id="updateAnalysisResult" parameterType="AnalysisResult">
+	UPDATE smrt_analysis_confirm
+	SET target_yn = #{targetYn},
+	    remark = #{remark},
+	    attach_file_url = #{attachFileUrl},
+	    status = #{status},
+	    ref_key = #{refKey},
+	    attach_file_name = #{attachFileName}
+	WHERE analysis_result_id = #{analysisResultId}
+	</update>
+	
+	<select id="selectAnalysisSummaryByWorkTarget" parameterType="AnalysisSummary" resultType="AnalysisSummary">
+	select service_name as serviceName, 
+           repo_name as repoName, 
+           to_char(analysis_date,'YYYY-MM-DD') as analysisDateByString,
+           order_no as orderNo,
+           max(veering_check1) as veeringCheck1, 
+		   max(veering_check2) as veeringCheck2, 
+		   max(final_status) as finalStatus
+    from smrt_analysis_summary 
+    where final_status != '완료'
+    group by service_name, repo_name, analysis_date, order_no
+	</select>
+	
+	<delete id="deleteAnalysisTop" parameterType="AnalysisSummary">
+	DELETE FROM smrt_analysis_top
+	WHERE 1=1
+	AND service_name = #{serviceName}
+	AND repo_name = #{repoName}
+	AND analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
+	AND order_no = #{orderNo}
+	</delete>
+	
+	<insert id="insertAnalysisTop" parameterType="AnalysisSummary">
+	insert into smrt_analysis_top		
+        select service_name, repo_name, null as target_name,
+               team, security_rule,
+               sum(count) as detection_count,
+               sum(case when status = 'COMPLETED' then count else 0 end) as measuer_count,
+               nextVal('analysis_top_seq') as analysis_top_id,
+               area,
+               analysis_date, 
+               order_no
+        from (
+            select a.area, a.service_name, a.repo_name, b.team as team, analysis_date, order_no, a.security_rule, c.status, count(*) as count
+            from smrt_analysis_result a
+                 left outer join smrt_analysis_manage_info b 
+                    on b.service_name = a.service_name and b.repo_name = a.repo_name
+                 left outer join smrt_analysis_confirm c
+                    on c.analysis_result_id = a.analysis_result_id
+            where 1=1
+            AND a.service_name = #{serviceName}
+			AND a.repo_name = #{repoName}
+			AND a.analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
+			AND a.order_no = #{orderNo}
+            group by a.area, a.service_name, a.repo_name, b.team, analysis_date, order_no, a.security_rule, c.status
+            order by count(1) desc
+        ) a
+        group by area, service_name, repo_name, team, analysis_date, order_no, security_rule
+	</insert>
+	
+	<delete id="deleteAnalysisSummary" parameterType="AnalysisSummary">
+	DELETE FROM smrt_analysis_summary
+	WHERE 1=1
+	AND service_name = #{serviceName}
+	AND repo_name = #{repoName}
+	AND analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
+	AND order_no = #{orderNo}
+	</delete>
+
+	<insert id="insertAnalysisSummary" parameterType="AnalysisSummary">
+	insert into smrt_analysis_summary
+    select nextval('analysis_summary_seq'), service_name, repo_name, analysis_date, order_no, team, manager,
+           max(case when severity = 'Critical' then count else 0 end) as critical_count,
+           max(case when severity = 'High' then count else 0 end) as high_count,
+           max(case when severity = 'Major' then count else 0 end) as major_count,
+           max(case when severity = 'Low' then count else 0 end) as low_count,
+           max(case when completed_count = count then '완료' when completed_count = 0 then '조치중' else 'N/A' end) as measure_status,
+           max(#{veeringCheck1}),
+           max(#{veeringCheck2}), 
+           max(#{finalStatus}), 
+           area
+    from (
+        select a.area, a.service_name, a.repo_name, a.analysis_date, a.order_no, b.team, b.manager, a.severity, count(*) as count,
+               sum(case when c.status = 'COMPLETED' then 1 else 0 end) as completed_count
+        from smrt_analysis_result a
+             left outer join smrt_analysis_manage_info b 
+        		on b.service_name = a.service_name and b.repo_name = a.repo_name
+        	 left outer join smrt_analysis_confirm c
+        	    on c.analysis_result_id = a.analysis_result_id
+        where 1=1
+        AND a.service_name = #{serviceName}
+		AND a.repo_name = #{repoName}
+		AND a.analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
+		AND a.order_no = #{orderNo}
+        group by a.area, a.service_name, a.repo_name, a.analysis_date, a.order_no, b.team, b.manager, a.severity
+    ) a
+    group by area, service_name, repo_name, analysis_date, order_no, team, manager
+	</insert>
+	
+	<update id="updateAnalysisSummary" parameterType="AnalysisSummary">
+	UPDATE smrt_analysis_summary
+	SET veering_check1= #{veeringCheck1}, 
+	    veering_check2= #{veeringCheck2}, 
+	    final_status= #{finalStatus}
+	WHERE service_name = #{serviceName}
+	AND repo_name = #{repoName}
+	AND analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
+	AND order_no = #{orderNo}
+	</update>
+	
+</mapper>

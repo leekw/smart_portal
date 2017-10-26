@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title> 프로젝트 진행현황</title>
+	<script src='/int/resources/dhtmlx-gantt/dhtmlxscheduler.js'></script>
+	<script src='/int/resources/dhtmlx-gantt/ext/dhtmlxscheduler_year_view.js'></script>
+	<script src='/int/resources/dhtmlx-gantt/sh_locale_kr.js'></script>
+	<script type="text/javascript" src="/int/resources/ext/ext-all.js"></script>
+    <script type ="text/javascript" src="/int/ext/core/core.js"></script>
+    <script type="text/javascript">
+	</script>
+	<!-- <link rel="stylesheet" type="text/css" href="/int/resources/ext-theme-neptune/build/resources/ext-theme-neptune-all-debug.css"> -->
+	<link rel="stylesheet" type="text/css" href="/int/resources/theme-triton/resources/theme-triton-all-debug.css">
+	<link rel="stylesheet" type="text/css" href="/int/resources/theme-int/Admin-all.css">
+	<link rel="stylesheet" href="/int/resources/dhtmlx-gantt/dhtmlxscheduler.css" type="text/css" media="screen" title="no title" charset="utf-8">
+
+	<style type="text/css">
+		html, body {
+			margin: 0px;
+			padding: 0px;
+			height: 100%;
+			overflow: hidden;
+		}
+		
+	</style>
+</head>
+<script type="text/javascript">
+
+	
+	function _getData(url, params, callbackFunc) {
+    	_processServer(url, params, callbackFunc);
+	}
+	
+	function _processServer(url, params, callbackFunc) {
+		Ext.getBody().mask("Processing...");
+		Ext.Ajax.request({
+			url: url,
+			method : 'POST',
+			headers : {'Content-Type' : 'application/json'},
+			timeout: 600000,
+			params : (Ext.JSON.encode(params)),
+			success: function(res, eOtps) {
+				Ext.getBody().unmask();
+				if (callbackFunc != null)
+					callbackFunc(res);
+			},
+			failure: function(res, eOtps) {
+				Ext.getBody().unmask();
+			}
+			
+		});
+	}
+	
+	function init(res) {
+		var temp = res.responseText;
+		var data = Ext.JSON.decode(temp).gantt.data;
+		
+		scheduler.config.readonly = true;
+		scheduler.config.default_date = "%Y년  %M %d일";
+		scheduler.config.month_date = "%Y년  %M";
+		scheduler.config.xml_date = "%Y-%m-%d %H:%i";
+		var date = new Date();
+		if (parent != null) {
+			date = parent._schedule_date;
+		}
+		
+		
+		scheduler.init('scheduler_here', date, "month");
+		scheduler.parse(data, 'json');
+	}
+	
+	function initData() {
+		_getData('/int/task/gantt/get.json', {taskType : 'PROJECT'}, this.init);
+	}
+</script>
+<body onload="initData();">
+	<div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100%;'>
+		<div class="dhx_cal_navline">
+			<div class="dhx_cal_prev_button">&nbsp;</div>
+			<div class="dhx_cal_next_button">&nbsp;</div>
+			<div class="dhx_cal_today_button"></div>
+			<div class="dhx_cal_date"></div>
+			<div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div>
+			<div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
+			<div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div>
+			<div class="dhx_cal_tab" name="year_tab" style="right:280px;"></div>
+		</div>
+		<div class="dhx_cal_header">
+		</div>
+		<div class="dhx_cal_data">
+		</div>
+	</div>
+</body>

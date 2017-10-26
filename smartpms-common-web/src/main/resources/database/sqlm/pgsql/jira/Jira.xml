@@ -1,0 +1,927 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "src/org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd"> 
+<mapper namespace="jira">
+	
+	<sql id="columnCutover">
+		job_id												jobId
+		,start_expect_date									startExpectDate
+		,start_expect_time									startExpectTime
+		,duration											duration
+		,end_expect_date									endExpectDate
+		,end_expect_time									endExpectTime
+		,system_type										systemType
+		,job_step											jobStep
+		,job_type											jobType
+		,x_category											xCategory
+		,y_category											yCategory
+		,job_sort_id										jobSortId
+		,task												task
+		,activity											activity
+		,pre_job											preJob
+		,job_execution_team									jobExecutionTeam
+		,job_executor										jobExecutor
+		,back_up											backUp
+		,job_check_list										jobCheckList
+		,caution											caution
+		,start_execution_date								startExecutionDate
+		,end_execution_date									endExecutionDate
+		,supervisor											supervisor
+		,kt_supervisor										ktSupervisor
+		,etc												etc
+		,jira_id											jiraId
+		,jira_status										jiraStatus
+		,jira_due_date										jiraDueDate
+		,resolution											resolution
+		,cutover_th											cutoverTh
+		,assignee											assignee
+		,islink												issueLink
+		,pre_job											preJob
+	</sql>
+	
+	<select id="selectCutoverList" parameterType="Cutover" resultType="Cutover">
+	SELECT
+ 	  	<include refid="columnCutover"/>
+	FROM
+	  	TB_CUTOVER
+	WHERE
+		cutover_th = #{cutoverTh}
+	<if test="jobStep != null" >
+	AND job_step = #{jobStep}
+	</if>
+	ORDER BY job_id,start_expect_date,y_category,job_execution_team,job_id
+	</select>
+	
+	<select id="selectCutoverThGroup" resultType="CommonCode">
+		SELECT
+	 	  	cutover_th				commonCode,
+	 	  	cutover_th				commonCodeName
+		FROM
+		  	TB_CUTOVER
+		GROUP BY
+			cutover_th
+	</select>
+	
+	<select id="selectTransitionStep" resultType="CommonCode">
+		SELECT
+	 	  	job_step				commonCode,
+	 	  	job_step				commonCodeName
+		FROM
+		  	TB_CUTOVER
+		GROUP BY
+			job_step
+	</select>
+	<select id="selectCutvoerDefaultValue" resultType="JiraDefaultData">
+	SELECT cutover_sn as cutoverScenario
+	       ,cutover_tr as cutoverTransition
+	       ,cutover_tr_dtl as cutoverTransitionDetail
+	       ,defect_project as defectProjectId
+	       ,defect_issue_type as defectIssueTypeId
+	       ,defect_que_channel as defectQueChannelId
+	       ,defect_biz_type as defectBizTypeId
+	       ,request_project as changeRequestProjectId
+	       ,request_issue_type as changeRequestIssueTypeId
+	FROM intg_default_data
+	</select>
+	<select id="selectJiraInfo" resultType="JiraInfo">
+	SELECT
+ 	  	 jira_url as jiraUrl
+ 	  	,jira_id as jiraId
+ 	  	,jira_pwd as jiraPwd
+ 	  	,jira_project as jiraProject
+ 	  	,jira_dashboard as jiraDashboard
+	FROM
+	  	TB_CUTOVER_JIRA_INFO
+	LIMIT 1
+	</select>
+	<select id="selectJiraAdminList" resultType="UserInfo">
+	SELECT
+		user_id as userId, 
+		ip as ip
+	FROM 
+		TB_CUTOVER_ADMIN
+	</select>
+	<select id="selectMaxSyncDate" resultType="String">
+		SELECT
+		 	TO_CHAR(MAX(last_sync_date),'YYYY-MM-DD HH24:MI:SS') lastSyncDate
+		FROM 
+		 	TB_CUTOVER_JIRA_INFO
+	</select>
+	<update id="updateMaxSyncDate"> 
+		 UPDATE
+		 	TB_CUTOVER_JIRA_INFO
+		 SET
+		 	last_sync_date = now()::timestamp without time zone
+	</update>
+	<update id="updateCutover" parameterType="SourceJiraInfo">
+		UPDATE
+			TB_CUTOVER
+		SET
+			duration				= #{duration}
+			,jira_id				= #{jiraId}
+			,jira_status			= #{jiraStatus}
+			,resolution				= #{resolution}
+			,modify_date			= #{modifyDate}
+			,start_expect_date      = #{startExpectDate}
+			,end_expect_date        = #{endExpectDate}
+			,assignee               = #{assignee}
+			,last_sync_date			= now()::timestamp without time zone
+		WHERE
+			job_id = #{jobId}
+	</update>
+	<update id="updateCutoverIssueLink" parameterType="SourceJiraLink">
+		UPDATE
+			TB_CUTOVER
+		SET
+			islink				= #{target}
+		WHERE
+			jira_id = #{source}
+	</update>
+	<delete id="deleteOpenIssue" parameterType="SourceJiraInfo">
+	DELETE FROM intg_open_issue
+	WHERE 1=1
+	</delete>
+	<update id="insertOpenIssue" parameterType="SourceJiraInfo">
+	with t_issue as (
+	select #{jiraId} as jira_id,
+	       #{jiraStatus} as jira_status,
+	       #{resolution} as jira_resolution, 
+		   #{summary} as jira_summary, 
+		   #{activity} as description,
+		   #{priority} as priority,
+		   #{queChannel} as que_channel, 
+		   #{bizType} as biz_type, 
+		   #{jiraDueDate} as jira_due,
+		   #{jiraCreateDate} as jira_create_date
+	),
+	update_issue as (
+	update intg_open_issue a
+		set a.jira_status = t_issue.jira_status,
+		    a.jira_resolution = t_issue.jira_resolution,
+		    a.jira_summary = t_issue.jira_summary,
+		    a.description = t_issue.description,
+		    a.priority = t_issue.priority,
+		    a.que_channel = t_issue.que_channel,
+		    a.biz_type = t_issue.biz_type,
+		    a.jira_due = t_issue.jira_due,
+		    a.jira_create_date = t_issue.jira_create_date
+		from t_issue where a.jira_id = t_issue.jira_id 
+	)
+	insert into intg_open_issue(
+            jira_id, jira_status, jira_resolution, jira_summary, description, 
+            priority, que_channel, biz_type, jira_due, jira_create_date)
+	select t_issue.jira_id,
+	       t_issue.jira_status,
+	       t_issue.jira_resolution,
+	       t_issue.jira_summary,
+	       t_issue.description,
+	       t_issue.priority,
+	       t_issue.que_channel,
+	       t_issue.biz_type,
+	       t_issue.jira_due,
+	       t_issue.jira_create_date
+	from t_issue where not exists (select 1 from intg_open_issue a where a.jira_id = t_issue.jira_id)
+	</update>
+	<select id="selectOpenIssueList" resultType="SourceJiraInfo" parameterType="SourceJiraInfo">
+	select ji.pkey as jiraId,
+		    st.pname as jiraStatus,
+		    ifnull(re.pname,'') as resolution,
+		    ji.summary,
+		    ifnull(ji.DESCRIPTION,'') as activity,
+		    ji.priority,
+		    ifnull(date_format(ji.DUEDATE, '%Y-%m-%d %H:%i:%s'),'') as jiraDueDate,
+		    cfo.customvalue as queChannel,
+		    cfo2.customvalue as bizType,
+		    date_format(ji.CREATED, '%Y-%m-%d %H:%i:%s') as jiraCreateDate
+	from jiraissue ji
+		  left join resolution re on ji.RESOLUTION = re.ID
+		  join issuestatus st on ji.issuestatus = st.ID,
+		  customfieldvalue cfv,
+	     customfieldoption cfo,
+	     customfieldvalue cfv2,
+	     customfieldoption cfo2,
+	     customfieldvalue cfv3,
+	     customfieldvalue cfv4
+	where ji.PROJECT = #{projectId}
+	and ji.issuetype = #{issueTypeId}
+	and ji.id = cfv.ISSUE
+	and cfv.STRINGVALUE = cfo.id
+	and cfv.customfield = #{queChannelId}
+	and cfo.customfield = #{queChannelId}
+	and ji.id = cfv2.ISSUE
+	and cfv2.STRINGVALUE = cfo2.id
+	and cfv2.customfield = #{bizTypeId}
+	and cfo2.customfield = #{bizTypeId}
+	and ji.id = cfv3.ISSUE
+    and cfv3.customfield = 15147
+    and cfv3.STRINGVALUE = '17398'
+    and ji.id = cfv4.ISSUE
+    and cfv4.customfield = 15148
+    and cfv4.STRINGVALUE = '17403'
+	and (ji.CREATED >= date_format(#{searchDate},'%Y-%m-%d %H:%i:%s')
+	or ji.UPDATED >= date_format(#{searchDate},'%Y-%m-%d %H:%i:%s'))
+	order by ji.pkey
+	</select>
+	<select id="selectSourceCutoverList" resultType="SourceJiraInfo" parameterType="SourceJiraInfo">
+	select 
+		    ji.pkey as jiraId,
+		    st.pname as jiraStatus,
+		    re.pname as resolution,
+		    ji.summary,
+		    ji.DESCRIPTION as activity,
+		    ji.PRIORITY,
+		    date_format(ji.DUEDATE, '%Y-%m-%d %H:%i:%s') as jiraDueDate,
+		    cv1.STRINGVALUE as jobId,
+		    ct.CUSTOMVALUE as cutoverTh,
+		    step.CUSTOMVALUE as jobStep,
+		    wt.CUSTOMVALUE as yCategory,
+		    cv2.TEXTVALUE as xCategory,
+		    wc.CUSTOMVALUE as workCategory,
+		    lt.CUSTOMVALUE as largeType,
+		    cv3.TEXTVALUE as task,
+		    round(cv4.NUMBERVALUE) as duration,
+		    ust.CUSTOMVALUE as systemType,
+		    cv5.STRINGVALUE as jobSortId,
+		    cv6.STRINGVALUE as preJob,
+		    date_format(cv7.DATEVALUE, '%Y-%m-%d %H:%i:%s') as startExpectDate,
+		    date_format(cv8.DATEVALUE, '%Y-%m-%d %H:%i:%s') as endExpectDate,
+		    date_format(cv9.DATEVALUE, '%Y-%m-%d %H:%i:%s') as startExecutionDate,
+		    date_format(cv10.DATEVALUE, '%Y-%m-%d %H:%i:%s') as endExecutionDate,
+		    jet.CUSTOMVALUE as jobExecutionTeam,
+		    (select display_name from cwd_user where user_name = cv11.STRINGVALUE limit 1) as jobExecutor,
+		     (select display_name from cwd_user where user_name = cv12.STRINGVALUE limit 1) as ktSupervisor,
+		     (select display_name from cwd_user where user_name = cv13.STRINGVALUE limit 1) as supervisor,
+		     (select display_name from cwd_user where user_name = ji.assignee limit 1) as assignee
+		from jiraissue ji
+		     left join	issuestatus st on ji.issuestatus = st.ID
+		     left join resolution re on ji.RESOLUTION = re.ID
+		     left join customfieldvalue cv1 on ji.id = cv1.ISSUE  and cv1.customfield = 14509   -- Task-ID
+		     left join customfieldvalue cv2 on ji.id = cv2.ISSUE  and cv2.customfield = 14508   -- 중분류
+		     left join customfieldvalue cv3 on ji.id = cv3.ISSUE  and cv3.customfield = 14510   -- Task
+		     left join customfieldvalue cv4 on ji.id = cv4.ISSUE  and cv4.customfield = 14532   -- 예정경과시간
+		     left join customfieldvalue cv5 on ji.id = cv5.ISSUE  and cv5.customfield = 14515   -- 작업 SORT ID
+		     left join customfieldvalue cv6 on ji.id = cv6.ISSUE  and cv6.customfield = 14531   -- 선수행 Task-ID
+		     left join customfieldvalue cv7 on ji.id = cv7.ISSUE  and cv7.customfield = 14527   -- 시작예정일시
+		     left join customfieldvalue cv8 on ji.id = cv8.ISSUE  and cv8.customfield = 14528   -- 종료예정일시
+		     left join customfieldvalue cv9 on ji.id = cv9.ISSUE  and cv9.customfield = 14967   -- 실행시작일시
+		     left join customfieldvalue cv10 on ji.id = cv10.ISSUE  and cv10.customfield = 14968   -- 실행종료일시
+		     left join customfieldvalue cv11 on ji.id = cv11.ISSUE  and cv11.customfield = 14517   -- 작업실행자
+		     left join customfieldvalue cv12 on ji.id = cv12.ISSUE  and cv12.customfield = 14520   -- ktSupervisor
+		     left join customfieldvalue cv13 on ji.id = cv13.ISSUE  and cv13.customfield = 14945   -- 수행사 Supervisor
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14503
+                     and cfo.customfield = 14503
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) ct on ji.id = ct.issue    -- 시나리오 구분
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14504
+                     and cfo.customfield = 14504
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) step on ji.id = step.issue    -- 전환단계
+   		  left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14941
+                     and cfo.customfield = 14941
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) step_dtl on ji.id = step_dtl.issue    -- 전환단계 상세
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14505
+                     and cfo.customfield = 14505
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) wt on ji.id = wt.issue    -- 작업단계
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14506
+                     and cfo.customfield = 14506
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) wc on ji.id = wc.issue    -- 작업구분
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14507
+                     and cfo.customfield = 14507
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) lt on ji.id = lt.issue    -- 대분류
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14514
+                     and cfo.customfield = 14514
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) ust on ji.id = ust.issue    -- 단위서비스구분
+		     left join (
+              select cfv.ISSUE,
+                     cfo.customvalue 
+              from customfieldvalue cfv,
+                   customfieldoption cfo
+              where  cfv.customfield = 14516
+                     and cfo.customfield = 14516
+                     and cfv.STRINGVALUE = cfo.id
+   		  ) jet on ji.id = jet.issue    -- 담당부서
+		where ji.project = 12901
+	      	and ji.issuetype = 114   -- Cut-Over Scenario
+	      	and ji.updated <![CDATA[ >=]]> #{updated}
+	      	and cv1.STRINGVALUE is not null
+	      	<if test="cutoverTh != null">
+	      	and ct.CUSTOMVALUE = #{cutoverTh}
+	      	</if>
+	      	<if test="jobStep != null">
+	      	and step.CUSTOMVALUE = #{jobStep}
+	      	</if>
+	      	<if test="jobStepDetail != null">
+	      	and step_dtl.CUSTOMVALUE = #{jobStepDetail}
+	      	</if>
+		order by ji.pkey desc
+	</select>
+	<update id="deleteCutover" parameterType="Cutover">
+		DELETE FROM
+			TB_CUTOVER
+		WHERE 1=1
+		<if test="cutoverTh != null">
+		AND cutover_th = #{cutoverTh}
+		</if>
+		<if test="jobStep != null" >
+		AND job_step = #{jobStep}
+		</if>
+	</update>
+	<select id="selectJiraIssueLinkList" resultType="SourceJiraLink" >
+	select group_concat(b.pkey,'') as target, 
+		   max(c.pkey) as source 
+	from issuelink a, jiraissue b, jiraissue c
+	where b.ID = source and destination in  (
+	select id from jiraissue where project = 12901 and issuetype = 114)
+	and c.ID = a.destination and b.issuetype != 114
+	group by destination
+	</select>
+	<insert id="insertCutover" parameterType="SourceJiraInfo">
+		INSERT INTO 
+		    TB_CUTOVER(
+		    	job_id
+				,start_expect_date
+				,start_expect_time
+				,duration
+				,end_expect_date
+				,end_expect_time
+				,system_type
+				,job_step
+				,job_type
+				,x_category
+				,y_category
+				,job_sort_id
+				,task
+				,activity
+				,pre_job
+				,job_execution_team
+				,job_executor
+				,back_up
+				,job_check_list
+				,caution
+				,start_execution_date
+				,end_execution_date
+				,supervisor
+				,kt_supervisor
+				,etc
+				,jira_id
+				,jira_status
+				,jira_due_date
+				,reg_date
+				,modify_date
+				,last_sync_date
+				,resolution
+				,cutover_th
+				,assignee
+		    )
+		VALUES(
+				#{jobId}
+				,#{startExpectDate}
+				,#{startExpectTime}
+				,#{duration}
+				,#{endExpectDate}
+				,#{endExpectTime}
+				,#{systemType}
+				,#{jobStep}
+				,#{jobType}
+				,#{xCategory}
+				,#{yCategory}
+				,#{jobSortId}
+				,#{task}
+				,#{activity}
+				,#{preJob}
+				,#{jobExecutionTeam}
+				,#{jobExecutor}
+				,#{backUp}
+				,#{jobCheckList}
+				,#{caution}
+				,#{startExecutionDate}
+				,#{endExecutionDate}
+				,#{supervisor}
+				,#{ktSupervisor}
+				,#{etc}
+				,#{jiraId}
+				,#{jiraStatus}
+				,#{jiraDueDate}
+				,now()::timestamp without time zone
+				,#{modifyDate}
+				,now()::timestamp without time zone
+				,#{resolution}
+				,#{cutoverTh}
+				,#{assignee}
+		    )
+	</insert>
+	
+	<update id="mergeCrowdUser" parameterType="CrowdUserInfo">
+	with t_user as (
+	select #{id} as id, #{userName} as user_name, #{active} as active, 
+		   #{createdDateStr} as created_date, 
+		   #{updatedDateStr} as updated_date,
+		   #{displayName} as display_name,
+		   #{emailAddress} as email_address, 
+		   #{directoryId} as directory_id, 
+		   #{credential} as credential,
+		   #{team} as team
+	),
+	update_user as (
+	update intg_user_info a
+	set a.user_name = t_user.user_name,
+	    a.active = t_user.active,
+	    a.created_date = to_date(t_user.created_date,'yyyymmddhh24miss'),
+	    a.updated_date = to_date(t_user.updated_date,'yyyymmddhh24miss'),
+	    a.display_name = t_user.display_name,
+	    a.email_address = t_user.email_address,
+	    a.directory_id = t_user.directory_id,
+	    a.credential = t_user.credential,
+	    a.team = t_user.team
+	from t_user where a.id = t_user.id 
+	)
+	insert into intg_user_info (id, user_name, active, created_date, updated_date, display_name, email_address, directory_id, credential, team)
+	select t_user.id, t_user.user_name, t_user.active,
+	       to_date(t_user.created_date,'yyyymmddhh24miss'),
+	       to_date(t_user.updated_date,'yyyymmddhh24miss'),
+	       t_user.display_name,
+	       t_user.email_address,
+	       t_user.directory_id,
+	       t_user.credential,
+	       t_user.team
+	from t_user where not exists (select 1 from intg_user_info a where a.id = t_user.id)
+	</update>
+	
+	
+	<select id="selectComponentList" parameterType="JiraComponent" resultType="JiraComponent">
+	select id, project, cname 
+	from component where project = 12612
+	</select>
+	
+	<select id="selectCutoverOptionList" parameterType="JiraOption" resultType="JiraOption">
+	select *
+	from  customfieldoption cfo
+	where  1=1
+	and cfo.customfield in (15104, 15105, 15106, 15107, 15108, 15110, 14942, 14969)
+	and disabled = 'N'
+	order by customfield, sequence
+	</select>
+	
+	<select id="selectCutoverSearchList" parameterType="Cutover" resultType="Cutover">
+	select job_id as jobId,
+	       task as task
+	from intg_cutover
+	WHERE 1=1
+	<if test="cutoverTh != null">
+	and cutover_th = #{cutoverTh}
+	</if>
+	<if test="jobStep != null">
+	and job_step = #{jobStep}
+	</if>
+	<if test="task != null">
+	AND lower(task) like '%'||lower(#{task})||'%'
+	</if>
+	<if test="maxRowSize != 0">
+	limit #{maxRowSize}
+	</if>
+	</select>
+	
+	<select id="selectCutoverJobId" resultType="java.lang.String">
+	select 'PA2-'||nextval('cutover_seq') as jobId
+	</select>
+	<update id="mergeCutover" parameterType="Cutover">
+	with t_ct as (
+	select #{jobId} as job_id, 
+		#{startExpectDate} as start_expect_date, 
+		#{endExpectDate} as end_expect_date,
+		#{systemType} as system_type,
+		#{jobStep} as job_step,
+		#{jobType} as job_type,
+		#{xCategory} as x_category,
+		#{yCategory} as y_category,
+		#{task} as task,
+		#{activity} as activity,
+		#{preJob} as pre_job,
+		#{jobExecutionTeam} as job_execution_team,
+		#{jobExecutor} as job_executor,
+		#{cutoverTh} as cutover_th,
+		#{sortNo} as sort_no,
+		#{itemStatus} as item_status,
+		#{itemAuthor} as item_author,
+		#{supervisor} as supervisor,
+		#{duration} as duration,
+		#{jobCheckList} as job_check_list,
+		#{caution} as caution
+	),
+	update_ct as (
+	update intg_cutover a
+	set a.start_expect_date = t_ct.start_expect_date,
+		a.end_expect_date = t_ct.end_expect_date,
+		a.system_type = t_ct.system_type,
+		a.job_step = t_ct.job_step,
+		a.job_type = t_ct.job_type,
+		a.x_category = t_ct.x_category,
+		a.y_category = t_ct.y_category,
+		a.task = t_ct.task,
+		a.activity = t_ct.activity,
+		a.pre_job = t_ct.pre_job,
+		a.job_execution_team = t_ct.job_execution_team,
+		a.job_executor = t_ct.job_executor,
+		a.cutover_th = t_ct.cutover_th,
+		a.item_status = t_ct.item_status,
+		a.item_author = t_ct.item_author,
+	    a.item_update_date = now()::timestamp without time zone,
+	    a.supervisor = t_ct.supervisor,
+	    a.duration = t_ct.duration,
+	    a.job_check_list = t_ct.job_check_list,
+	    a.caution = t_ct.caution
+	from t_ct where a.job_id = t_ct.job_id
+	)
+	insert into intg_cutover (job_id, start_expect_date, end_expect_date, system_type, job_step, job_type, x_category, y_category, task
+							  ,activity, pre_job, job_execution_team, job_executor, cutover_th, sort_no, item_status, item_author, item_create_date
+							  ,supervisor, duration, job_check_list, caution )
+	select t_ct.job_id, 
+	       t_ct.start_expect_date,
+	       t_ct.end_expect_date,
+	       t_ct.system_type,
+	       t_ct.job_step,
+	       t_ct.job_type,
+	       t_ct.x_category,
+	       t_ct.y_category,
+	       t_ct.task,
+	       t_ct.activity,
+	       t_ct.pre_job,
+	       t_ct.job_execution_team,
+	       t_ct.job_executor,
+	       t_ct.cutover_th,
+	       t_ct.sort_no,
+	       t_ct.item_status,
+	       t_ct.item_author,
+	       now()::timestamp without time zone,
+	       t_ct.supervisor,
+	       t_ct.duration,
+	       t_ct.job_check_list,
+	       t_ct.caution
+	from t_ct where not exists (select 1 from intg_cutover a where a.job_id = t_ct.job_id)
+	</update>
+	
+	<delete id="deleteCutoverByUserAdd" parameterType="Cutover">
+	DELETE FROM intg_cutover
+	WHERE 1=1
+	AND job_id = #{jobId}
+	</delete>
+	
+	<select id="selectCutoverListByAll" parameterType="Cutover" resultType="Cutover">
+	select 
+		a.job_id												jobId
+		,to_char(to_date(start_expect_date, 'YYYY-MM-DD HH24:MI:SS'), 'yyyy-mm-dd') as startExpectDate
+		,to_char(to_date(start_expect_date, 'YYYY-MM-DD HH24:MI:SS'), 'HH24:MI') as startExpectTime
+		,to_char(to_date(end_expect_date, 'YYYY-MM-DD HH24:MI:SS'), 'yyyy-mm-dd') as endExpectDate
+		,to_char(to_date(end_expect_date, 'YYYY-MM-DD HH24:MI:SS'), 'HH24:MI') as endExpectTime
+		,system_type										systemType
+		,job_step											jobStep
+		,job_type											jobType
+		,x_category											xCategory
+		,y_category											yCategory
+		,job_sort_id										jobSortId
+		,task												task
+		,activity											activity
+		,pre_job											preJob
+		,job_execution_team									jobExecutionTeam
+		,c.display_name										jobExecutor
+		,back_up											backUp
+		,job_check_list										jobCheckList
+		,caution											caution
+		,start_execution_date								startExecutionDate
+		,end_execution_date									endExecutionDate
+		,d.display_name											supervisor
+		,kt_supervisor										ktSupervisor
+		,etc												etc
+		,jira_id											jiraId
+		,jira_status										jiraStatus
+		,jira_due_date										jiraDueDate
+		,resolution											resolution
+		,cutover_th											cutoverTh
+		,assignee											assignee
+		,islink												issueLink
+		,pre_job											preJob
+		,item_status										itemStatus
+		,case when item_status = 'VERIFY' then '검증중'
+		      when item_status = 'SUCCESS' then 'JIRA연동완료'
+		      when item_status = 'FAIL' then 'JIRA연동실패'
+		      when item_status = 'CONFIRM' then '확정'
+		      else item_status end as itemStatusName
+		,item_author										itemAuthor
+		,b.code_name as 									jobExecutionTeamName
+		,c.user_name as 					                jobExecutorId
+		,d.user_name as 									supervisorId
+		,jira_sync_message								    jiraSyncMessage
+		,e.code_name 										teamName
+		, 'R' as mode 
+		,extract(epoch from age( to_date(end_expect_date, 'YYYY-MM-DD HH24:MI:SS'), to_date(start_expect_date, 'YYYY-MM-DD HH24:MI:SS')))/60 as duration
+		,decode(f.detail_summary, '', null, f.detail_id) as firstDetailId
+		,g.display_name as itemAuthorName
+		,decode(a.item_create_date, null, null, to_char(a.item_create_date, 'YYYY-MM-DD HH24:MI:SS')) as itemCreateDate
+		,decode(a.item_update_date, null, null, to_char(a.item_update_date, 'YYYY-MM-DD HH24:MI:SS')) as itemUpdateDate
+	from intg_cutover a,
+	     intg_code_info b,
+	     intg_user_info c,
+	     intg_user_info d,
+	     intg_code_info e,
+	     intg_cutover_detail f,
+	     intg_user_info g
+	where 1=1
+	and b.code_type_id(+) = '15107'
+	and b.code_id(+) = a.y_category
+	and e.code_type_id(+) = '15110'
+	and e.code_id(+) = a.job_execution_team
+	and c.user_name(+) = a.job_executor
+	and c.active(+) = 'T'
+	and d.user_name(+) = a.supervisor
+	and d.active(+) = 'T'
+	and g.user_name(+) = a.item_author
+	and g.active(+) = 'T'
+	and f.job_id(+) = a.job_id
+	and f.detail_type(+) = 'Work'
+	<if test="cutoverTh != null">
+	and cutover_th = #{cutoverTh}
+	</if>
+	<if test="jobStep != null">
+	and job_step = #{jobStep}
+	</if>
+	<if test="jobType != null">
+	and job_type = #{jobType}
+	</if>
+	<if test="jobExecutionTeam != null">
+	and job_execution_team = #{jobExecutionTeam}
+	</if>
+	<if test="teams != null and teams.size > 0">
+		and job_execution_team in 
+		<foreach collection="teams" item="team"  open="(" separator="," close=")">
+		 #{team}
+		</foreach>
+	</if>
+	<if test="systemType != null">
+	and system_type = #{systemType}
+	</if>
+	<if test="systems != null and systems.size > 0">
+		and system_type in 
+		<foreach collection="systems" item="system"  open="(" separator="," close=")">
+		 #{system}
+		</foreach>
+	</if>
+	<if test="yCategory != null">
+	and y_category = #{yCategory}
+	</if>
+	order by b.code_name, a.x_category, a.start_expect_date, a.sort_no
+	</select>
+	
+	<update id="updateCutoverSort" parameterType="Cutover">
+	UPDATE intg_cutover
+	set sort_no = #{sortNo}
+	WHERE job_id = #{jobId}
+	</update>
+	
+	<update id="updateCutoverStatus" parameterType="Cutover">
+	UPDATE intg_cutover
+	set item_status = #{itemStatus}
+	WHERE job_id = #{jobId}
+	</update>
+	
+	<update id="updateCutoverPreJob" parameterType="Cutover">
+	UPDATE intg_cutover
+	set pre_job = #{preJob}
+	WHERE job_id = #{jobId}
+	</update>
+	
+	<select id="selectCutoverPreJob" parameterType="Cutover" resultType="Cutover">
+	SELECT pre_job as preJob
+	FROM intg_cutover
+	WHERE job_id = #{jobId}
+	</select>
+	
+	<update id="updateCutoverJiraSync" parameterType="Cutover">
+	UPDATE intg_cutover
+	set last_sync_date = now()::timestamp without time zone
+	<if test="jiraId != null">
+	, jira_id = #{jiraId}
+	</if>
+	<if test="jiraStatus != null">
+	, jira_status = #{jiraStatus}
+	</if>
+	<if test="jiraSyncMessage != null">
+	, jira_sync_message = #{jiraSyncMessage}
+	</if>
+	<if test="assignee != null">
+	, assignee = #{assignee}
+	</if>
+	<if test="itemStatus != null">
+	, item_status = #{itemStatus}
+	</if>
+	<if test="resolution != null">
+	, resolution = #{resolution}
+	</if>
+	where job_id = #{jobId}
+	</update>
+	
+	<delete id="deleteCutoverDetail" parameterType="CutoverDetail">
+	DELETE FROM intg_cutover_detail
+	WHERE job_id = #{jobId}
+	</delete>
+	
+	<insert id="insertCutoverDetail" parameterType="CutoverDetail">
+	INSERT INTO intg_cutover_detail (detail_id, detail_type, job_id, detail_summary, worker, reg_date)
+	VALUES (nextval('curover_detail_seq'), #{detailType}, #{jobId}, #{detailSummary}, #{worker}, now()::timestamp without time zone)
+	</insert>
+	<select id="selectCutoverDetailList" parameterType="CutoverDetail" resultType="CutoverDetail">
+	SELECT detail_id as detailId,
+	       detail_type as detailType,
+	       job_id as jobId,
+	       detail_summary as detailSummary,
+	       worker,
+	       to_char(reg_date, 'YYYY-MM-DD HH24:MI:SS') as regDateStr
+	FROM   intg_cutover_detail
+	WHERE  job_id = #{jobId}
+	and detail_type = #{detailType}
+	</select>
+	
+	<select id="selectCutoverDashboardChartInfo" parameterType="CutoverDashboard" resultType="CutoverDashboard">
+	select total as totalCount,
+	       cnt,
+	       name,
+	       decode(total, 0, 0, cnt*100/total) as data1
+	from (       
+	SELECT count(1) as total,
+	       sum(decode(jira_status, 'Closed', 1, 0)) as  cnt,
+	       max(b.code_name) as name
+	FROM intg_cutover a, 
+	     intg_code_info b
+	where 1=1
+	<if test="cutoverTh != null">
+	and cutover_th = #{cutoverTh}
+	</if>
+	<if test="jobStep != null">
+	and job_step = #{jobStep}
+	</if>
+	<if test="jobType != null">
+	and job_type = #{jobType}
+	</if>
+	<if test="yCategory != null">
+	and y_category = #{yCategory}
+	</if>
+	and b.code_id = a.y_category
+	) x
+		
+	</select>
+	
+	<select id="selectChangeRequestJiraList" parameterType="SourceJiraInfo" resultType="SourceJiraInfo">
+	   select ji.pkey as jiraId,
+			    st.pname as jiraStatus,
+			    date_format(ji.CREATED, '%Y-%m-%d %H:%i:%s') as jiraCreateDate,
+			    ifnull(date_format(ji.DUEDATE, '%Y-%m-%d %H:%i:%s'),'') as jiraDueDate,
+			    ifnull(re.pname,'') as resolution,
+			    ji.summary,
+			    ji.assignee,
+			    ji.reporter
+		from jiraissue ji
+			  left join resolution re on ji.RESOLUTION = re.ID
+			  join issuestatus st on ji.issuestatus = st.ID
+		where ji.PROJECT = #{projectId}
+		and ji.issuetype = #{issueTypeId}
+		and (ji.CREATED >= date_format(#{searchDate},'%Y-%m-%d %H:%i:%s')
+		or ji.UPDATED >= date_format(#{searchDate},'%Y-%m-%d %H:%i:%s'))
+		order by ji.pkey
+	</select>
+	
+	<update id="insertChangeRequest" parameterType="SourceJiraInfo">
+	with t_issue as (
+	select #{jiraId} as jira_id,
+	       #{jiraStatus} as jira_status,
+	       #{resolution} as jira_resolution, 
+		   #{summary} as jira_summary, 
+		   #{assignee} as jira_assignee,
+		   #{reporter} as jira_reporter,
+		   #{jiraCreateDate} as jira_create_date,
+		   #{jiraDueDate} as jira_due
+	),
+	update_issue as (
+	update intg_change_request a
+		set a.jira_status = t_issue.jira_status,
+		    a.jira_resolution = t_issue.jira_resolution,
+		    a.jira_summary = t_issue.jira_summary,
+		    a.jira_assignee = t_issue.jira_assignee,
+		    a.jira_reporter = t_issue.jira_reporter,
+		    a.jira_due = t_issue.jira_due,
+		    a.jira_create_date = t_issue.jira_create_date
+		from t_issue where a.jira_id = t_issue.jira_id 
+	)
+	insert into intg_change_request(
+            jira_id, jira_status, jira_resolution, jira_summary, jira_assignee, 
+            jira_reporter, jira_due, jira_create_date)
+	select t_issue.jira_id,
+	       t_issue.jira_status,
+	       t_issue.jira_resolution,
+	       t_issue.jira_summary,
+	       t_issue.jira_assignee,
+	       t_issue.jira_reporter,
+	       t_issue.jira_due,
+	       t_issue.jira_create_date
+	from t_issue where not exists (select 1 from intg_change_request a where a.jira_id = t_issue.jira_id)
+	</update>
+	
+	<select id="selectChangeRequestJiraComboList" parameterType="ChangeRequestComboInfo" resultType="ChangeRequestComboInfo">
+	  SELECT jira_id as jiraId,
+	       '['||jira_id||']'||jira_summary as summary
+	  FROM intg_change_request
+	  where 1=1
+	  and jira_create_date >= #{searchDate}
+	  <if test="searchValue != null">
+	  and (jira_id like #{searchValue}||'%' or jira_summary like '%'||#{searchValue}||'%')
+	  </if>
+	  and jira_status != 'Closed'
+	</select>
+	
+	<select id="selectChangeRequestJiraLocalList" parameterType="ChangeRequestJira" resultType="ChangeRequestJira">
+	SELECT jira_id as jiraId,
+	       jira_status as jiraStatus,
+	       jira_create_date as jiraCreateDate,
+	       jira_due as jiraDue,
+	       jira_resolution as jiraResolution,
+	       jira_summary as jiraSummary,
+	       jira_assignee as jiraAssignee,
+	       jira_reporter as jiraReporter,
+	       jira_description as jiraDescription,
+	       team,
+	       module
+	FROM intg_change_request
+	WHERE 1=1
+	<if test="jiraId != null">
+	and jira_id like #{jiraId}||'%'
+	</if>
+	<if test="jiraSummary != null">
+	and jira_summary like '%'||#{jiraSummary}||'%'
+	</if>
+	<if test="team != null">
+	and team = #{team}
+	</if>
+	<if test="module != null">
+	and module = #{module}
+	</if>
+	and jira_status != 'Closed'
+	</select>
+	
+	<select id="selectJiraColumnList" parameterType="JiraColumn" resultType="JiraColumn">
+	 SELECT project, 
+	       issue_type_id as issueTypeId, 
+	       issue_type_name as issueTypeName, 
+	       column_key as columnKey, 
+	       column_name as columnName, 
+	       column_type as columnType,
+	       sort_no as sortNo
+	  FROM intg_jira_column
+	  order by project, issue_type_id, sort_no
+	</select>
+	
+	<select id="selectServiceRequestProgramList" parameterType="ServiceRequest" resultType="ServiceRequest">
+	select sr_no as srNo, 
+	       program_id as programId,
+	       done_ratio as doneRatio
+	from program_list 
+	where sr_no != ''
+	and (use_flag not in ('미사용','DIH IF') or use_flag is null)
+	</select>
+</mapper>
