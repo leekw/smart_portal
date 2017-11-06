@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.web.plugin.jira.rest.client.RestClientManager;
 import net.smart.web.plugin.jira.rest.search.SearchService;
 
@@ -64,11 +64,11 @@ public class JqlSearcher implements SearchService {
 		try {
 			searchResult = clientManager.getSearchClient().searchJql(jql, maxResults, startAt, fields).get(timeout, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			throw new IntegrationException("ERROR.0001", e);
+			throw new BizException("ERROR.0001", e);
 		} catch (ExecutionException e) {
-			throw new IntegrationException("ERROR.0001", e);
+			throw new BizException("ERROR.0001", e);
 		} catch (TimeoutException e) {
-			throw new IntegrationException("ERROR.0001", e);
+			throw new BizException("ERROR.0001", e);
 		}
 		return searchResult.getIssues();
 	}

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.util.DateUtil;
 import net.smart.web.analysis.dao.AnalysisDao;
 import net.smart.web.code.service.CodeService;
@@ -61,7 +61,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 			try {
 				bean.copyProperties(result, raw);
 			} catch (Exception e) {
-				throw new IntegrationException("Converting Error");
+				throw new BizException("Converting Error");
 			}
 			results.add(result);
 		}
@@ -141,16 +141,16 @@ public class AnalysisServiceImpl implements AnalysisService {
 				try {
 					fileInputStream.close();
 				} catch (IOException e1) {
-					throw new IntegrationException("FileInputStream Close Error.", e1);
+					throw new BizException("FileInputStream Close Error.", e1);
 				}
 			}
-			throw new IntegrationException("Excel Parasing Close Error.", e);
+			throw new BizException("Excel Parasing Close Error.", e);
 		} finally {
 			if (fileInputStream != null) {
 				try {
 					fileInputStream.close();
 				} catch (IOException e1) {
-					throw new IntegrationException("FileInputStream Close Error.", e1);
+					throw new BizException("FileInputStream Close Error.", e1);
 				}
 			}
 		}

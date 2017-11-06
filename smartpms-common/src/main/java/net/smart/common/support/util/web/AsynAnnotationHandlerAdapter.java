@@ -2,15 +2,12 @@ package net.smart.common.support.util.web;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.smart.common.domain.UploadFile;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.security.StringEncrypter;
 
@@ -135,7 +132,7 @@ public class AsynAnnotationHandlerAdapter extends PartnerAnnotationMethodHandler
             try {
                 request.setAttribute(BizCode.RequestKey.PARAMS.getValue(), stringEncrypter.decrypt(paramValue));
             } catch (Exception e) {
-                throw new IntegrationException(e);
+                throw new BizException(e);
             }
         }
     }

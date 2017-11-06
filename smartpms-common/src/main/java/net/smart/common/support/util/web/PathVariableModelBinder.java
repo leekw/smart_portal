@@ -5,7 +5,7 @@ import java.lang.annotation.Annotation;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.util.web.PartnerAnnotationMethodHandlerAdaptor.ServletHandlerMethodInvoker;
 import net.smart.common.support.util.web.PartnerAnnotationMethodHandlerAdaptor.ServletHandlerMethodResolver;
 
@@ -42,7 +42,7 @@ public class PathVariableModelBinder extends AbstractModelBinder {
             obj = methodInvoker.resolvePathVariable(an.value(),java.lang.String.class,webRequest);
         }
         catch(Exception e) {
-            throw new IntegrationException(e);
+            throw new BizException(e);
         }
         
         return obj;

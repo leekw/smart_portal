@@ -1,7 +1,7 @@
 package net.smart.common.support.dao;
 
 import static org.springframework.util.Assert.notNull;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -20,7 +20,7 @@ public abstract class CoverageSqlSessionDaoSupport extends DaoSupport {
         try {
             this.sqlSession = new SqlSessionTemplate(sqlSessionFactory.getObject(), ExecutorType.REUSE);
         } catch (Exception e) {
-            throw new IntegrationException(e);
+            throw new BizException(e);
         }
     }
     

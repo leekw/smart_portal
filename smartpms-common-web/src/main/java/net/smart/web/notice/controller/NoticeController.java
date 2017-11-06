@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.web.domain.MailGroup;
 import net.smart.web.domain.notice.Notice;
 import net.smart.web.notice.service.NoticeService;
@@ -63,7 +63,7 @@ public class NoticeController {
 			if (result.getNoticePublishType() != null && !"2".equals(result.getNoticePublishType()))
 				template.convertAndSend("/topic/notice", result);
 		} else {
-			throw new IntegrationException("Notice Data Empty!..");
+			throw new BizException("Notice Data Empty!..");
 		}
 	}
 	

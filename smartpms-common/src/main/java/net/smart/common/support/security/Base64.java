@@ -1,6 +1,7 @@
 package net.smart.common.support.security;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
+
 /**
  * 
  * net.smart.common.support.security.Base64.java
@@ -101,7 +102,7 @@ public class Base64 {
 
 			// The length of the string must be a multiple of 4.
 			if ((value.length() % 4) != 0)
-				throw new IntegrationException("The length of a Base64 string must be a multiple of 4.");
+				throw new BizException("The length of a Base64 string must be a multiple of 4.");
 	
 			// Check the Base64 string
 			int valueSize = value.length();
@@ -121,7 +122,7 @@ public class Base64 {
 				if (BASE64_CHARS.indexOf(chr) != -1)
 					continue;
 	
-				throw new IntegrationException("An invalid character is found in the Base64 string.");
+				throw new BizException("An invalid character is found in the Base64 string.");
 			}
 	
 			// Get a required number of bytes.

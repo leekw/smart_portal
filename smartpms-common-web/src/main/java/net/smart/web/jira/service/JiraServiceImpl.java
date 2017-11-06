@@ -16,10 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.PostConstruct;
-
 import net.smart.common.domain.DataSyncInfo;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.constant.ErrorCode;
 import net.smart.common.support.util.DateUtil;
@@ -62,7 +60,6 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
@@ -199,7 +196,7 @@ public class JiraServiceImpl implements JiraService {
 	@Override
 	public void processJiraSyncData(Cutover cutover) {
 		if (!integrationCommonService.isValidInterfaceDate("cutover"))
-			throw new IntegrationException("ERROR.0001", "현재 일자가 지정된 연동 기간에 포함되지 않습니다.");
+			throw new BizException("ERROR.0001", "현재 일자가 지정된 연동 기간에 포함되지 않습니다.");
 		String maxSyncDate = this.getMaxSyncDate();
 		
 		if(maxSyncDate != null && !maxSyncDate.equals("")){
@@ -670,7 +667,7 @@ public class JiraServiceImpl implements JiraService {
 		try {
 			clientManager = new RestClientManager(jiraConfig.getJiraUrl(), jiraConfig.getCommonUser(), jiraConfig.getCommonPassword());
 		} catch (Exception e) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), "Jira Rest Client Connection Fail!!");
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), "Jira Rest Client Connection Fail!!");
 		}
 		return clientManager;
 	}
@@ -682,7 +679,7 @@ public class JiraServiceImpl implements JiraService {
 			try {
 				restClientManager.dispose();
 			} catch (IOException e) {
-				throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), "Jira Rest Client Close Fail!!");
+				throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), "Jira Rest Client Close Fail!!");
 			}
 		}
 	}

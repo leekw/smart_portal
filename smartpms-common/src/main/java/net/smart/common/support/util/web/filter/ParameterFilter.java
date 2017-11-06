@@ -12,7 +12,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class ParameterFilter implements Filter {
         chain.doFilter((HttpServletRequest)request, response);
     }
     
-    private void setRequestParameter(ServletRequest request) throws IntegrationException {
+    private void setRequestParameter(ServletRequest request) throws BizException {
         
         if(request.getParameter(BizCode.RequestKey.PARAMS.getValue()) != null && !request.getParameter(BizCode.RequestKey.PARAMS.getValue()).isEmpty()) {
             request.setAttribute(BizCode.RequestKey.PARAMS.getValue(), request.getParameter(BizCode.RequestKey.PARAMS.getValue()));
@@ -65,7 +65,7 @@ public class ParameterFilter implements Filter {
             	}
             	request.setAttribute(BizCode.RequestKey.PARAMS.getValue(), sb.toString());
             } catch (IOException e) {
-                throw new IntegrationException(e);
+                throw new BizException(e);
             }finally{
                 try {
                     if(isr != null) isr.close();

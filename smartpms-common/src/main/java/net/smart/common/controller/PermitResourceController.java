@@ -23,7 +23,7 @@ import net.smart.common.domain.based.BasedResource;
 import net.smart.common.domain.based.BasedResourceRole;
 import net.smart.common.domain.based.BasedUser;
 import net.smart.common.domain.based.SessionUser;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.comparator.SessionComparator;
 import net.smart.common.support.constant.BizCode;
@@ -120,7 +120,7 @@ public class PermitResourceController extends AbstractPageController {
 	public ModelAndView excelupload(BasedFileInfo fileInfo, HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView) throws IOException {
 		String path = smartCommonService.getSysPropertieValue("UPLOAD_PATH");
 		if (fileInfo.getFileupload().isEmpty()) {
-			throw new IntegrationException("File Upload Error");
+			throw new BizException("File Upload Error");
 		}
 		MultipartFile file = fileInfo.getFileupload().get(0);
 		String filePath =  FileUtil.saveFile(file, path);
@@ -167,7 +167,7 @@ public class PermitResourceController extends AbstractPageController {
 	public void removeFile(@IntegrationRequest BasedFile file) {
 		File delFile = new File(file.getFilePath());
 		if (!delFile.exists()) {
-			throw new IntegrationException("ERROR.0000", "지울 대상 파일이 없습니다.");
+			throw new BizException("ERROR.0000", "지울 대상 파일이 없습니다.");
 		}
 		delFile.delete();
 		if ("R".equals(file.getDataMode())) {
@@ -214,7 +214,7 @@ public class PermitResourceController extends AbstractPageController {
 		}
 		List<BasedResourceRole> temps = smartCommonService.getResourceRoleList(param);
 		if (temps.size() > 0) {
-			throw new IntegrationException("ERROR.0001", "이미 등록된 리소스 입니다.");
+			throw new BizException("ERROR.0001", "이미 등록된 리소스 입니다.");
 		}
 		smartCommonService.addResourceRole(param);
 	}
@@ -244,7 +244,7 @@ public class PermitResourceController extends AbstractPageController {
 		boolean checked = smartCommonService.getVaildModifyMenu(param.getResourceId());
 		String name = smartCommonService.getLockMenuByUserName(param.getResourceId());
 		if (!checked) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), "해당 메뉴는 " + name + "이(가) 수정하고 있습니다.");
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), "해당 메뉴는 " + name + "이(가) 수정하고 있습니다.");
 		}
 	}
 	

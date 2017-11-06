@@ -40,4 +40,9 @@ public class SmartCommonDaoImpl extends SmartSqlSessionDaoSupport  implements Sm
 		return getSqlSession().selectOne("smart.selectInterfaceDateInfo");
 	}
 
+	@Override
+	public Long getNextSeq(String sequenceName) {
+		return getSqlSession().selectOne("smart.selectNextSeq", sequenceName);
+	}
+
 }

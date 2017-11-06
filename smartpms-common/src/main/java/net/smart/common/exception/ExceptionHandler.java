@@ -28,7 +28,7 @@ public class ExceptionHandler {
         private String getValue() { return this.value;}
     }
     
-	private static void writeLog(IIntegrationException pe) {
+	private static void writeLog(IBizException pe) {
 		if (logger.isErrorEnabled()) {
 			StringBuffer strBuff = new StringBuffer();
 			strBuff.append(pe.getCode()).append(Code.COL.getValue()).append(pe.getMessage());
@@ -38,17 +38,17 @@ public class ExceptionHandler {
 	}
 
 	public static Throwable handleException(Throwable t) {
-		IIntegrationException exception = null;
-		if (t instanceof IIntegrationException)
-			exception = (IIntegrationException) t;
+		IBizException exception = null;
+		if (t instanceof IBizException)
+			exception = (IBizException) t;
 		else {
 			SQLException sqlException = extractSQLException(t);
 			if (sqlException != null) {
 				DecimalFormat formatter = new DecimalFormat(Code.ZERO.getValue());
 				String sqlErrorCode = Code.SQL_ERROR_CODE_PREFIX.getValue() + formatter.format(sqlException.getErrorCode());
-				exception = new IntegrationException(sqlErrorCode, sqlException.getMessage(), t);
+				exception = new BizException(sqlErrorCode, sqlException.getMessage(), t);
 			} else {
-				exception = new IntegrationException(t);
+				exception = new BizException(t);
 			}
 		}
 

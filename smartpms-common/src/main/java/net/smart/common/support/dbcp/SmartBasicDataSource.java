@@ -1,6 +1,6 @@
 package net.smart.common.support.dbcp;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.ErrorCode;
 import net.smart.common.support.security.StringEncrypter;
 
@@ -15,7 +15,7 @@ public class SmartBasicDataSource extends BasicDataSource {
 //			super.setPassword(stringEncrypter.decrypt(password));
 			super.setPassword(password);
 		} catch (Exception e) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue());
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue());
 		}
     }
 	
@@ -26,7 +26,7 @@ public class SmartBasicDataSource extends BasicDataSource {
 //			super.setUsername(stringEncrypter.decrypt(username));
 			super.setUsername(username);
 		} catch (Exception e) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue());
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue());
 		}
     }
 

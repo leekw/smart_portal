@@ -12,6 +12,12 @@ import com.google.common.collect.Lists;
 public class AnalysisRequestTargetProvider {
 	
 	public List<AnalysisRequestTarget> getAnalysisRequestTargets() {
-		return Lists.newArrayList();
+		return Lists.newArrayList(AnalysisRequestTarget.builder()
+				.analysisRequestTargetBinaryPath("/Users/ags0688/Documents/temp/bbb/classes.zip")
+				.build());
+	}
+
+	public AnalysisRequestTarget nextAnalysisRequestTarget() {
+		return getAnalysisRequestTargets().stream().findFirst().orElseGet(null);
 	}
 }

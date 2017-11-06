@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
 import net.smart.common.domain.UploadFile;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.util.FileUtil;
 import net.smart.web.domain.FileInfo;
@@ -119,7 +119,7 @@ public class FileController {
 	public void removeFile(@IntegrationRequest UploadFile file) {
 		File delFile = new File(file.getFilePath());
 		if (!delFile.exists()) {
-			throw new IntegrationException("ERROR.0000", "지울 대상 파일이 없습니다.");
+			throw new BizException("ERROR.0000", "지울 대상 파일이 없습니다.");
 		}
 		delFile.delete();
 		if ("R".equals(file.getDataMode())) {

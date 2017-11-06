@@ -3,7 +3,7 @@ package net.smart.common.support.analyzer.converter;
 
 import java.lang.reflect.Field;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -58,9 +58,9 @@ public class NullConverter implements Converter {
 					writer.endNode();
 				}
 			} catch (IllegalArgumentException e) {
-				throw new IntegrationException("");
+				throw new BizException("");
 			} catch (IllegalAccessException e) {
-				throw new IntegrationException("");
+				throw new BizException("");
 			}
 		}
 	}

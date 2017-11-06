@@ -1,6 +1,6 @@
 package net.smart.common.support.dao;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -21,7 +21,7 @@ public abstract class SmartBatchSqlSessionDaoSupport extends DaoSupport {
         try {
             this.sqlSession = new SqlSessionTemplate(sqlSessionFactory.getObject(), ExecutorType.BATCH);
         } catch (Exception e) {
-            throw new IntegrationException(e);
+            throw new BizException(e);
         }
     }
     

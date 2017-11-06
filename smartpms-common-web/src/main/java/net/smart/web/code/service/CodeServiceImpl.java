@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 
-import net.smart.common.exception.IntegrationException;
 import net.smart.web.code.dao.CodeDao;
 import net.smart.web.domain.CommonCode;
 

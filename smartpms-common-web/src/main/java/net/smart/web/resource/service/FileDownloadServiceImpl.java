@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import net.smart.common.domain.UploadFile;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,10 +33,10 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 			}
 		}
 		if (path == null) {
-			throw new IntegrationException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
+			throw new BizException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
 		}
 		File file = new File(path);
-		if (!file.exists()) throw new IntegrationException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
+		if (!file.exists()) throw new BizException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("downloadFile", file);

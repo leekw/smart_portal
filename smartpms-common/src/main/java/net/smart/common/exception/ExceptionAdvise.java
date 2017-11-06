@@ -16,11 +16,11 @@ public class ExceptionAdvise implements ThrowsAdvice {
 	
 	public void afterThrowing(Exception ex) throws Exception {
         if (ex instanceof DataAccessException) {
-            throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
+            throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
         } else if (ex instanceof SQLException) {
-            throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
+            throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
         } else if (ex instanceof UncategorizedSQLException) {
-            throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
+            throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), ex);
         }
 
     }

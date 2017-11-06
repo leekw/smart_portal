@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 
 import org.springframework.util.FileCopyUtils;
@@ -71,7 +71,7 @@ public class FileDownloadView extends AbstractView {
 			FileCopyUtils.copy(bis, out);
 			out.flush();			
 		} catch (Exception e) {
-			throw new IntegrationException("ERROR.0001", "파일다운로드 시 오류가 발생되었습니다.");
+			throw new BizException("ERROR.0001", "파일다운로드 시 오류가 발생되었습니다.");
 		} finally {
 			try {
 				if (bis != null) {
@@ -81,7 +81,7 @@ public class FileDownloadView extends AbstractView {
 					out.close();
 				}
 			} catch (IOException ex) {
-				throw new IntegrationException("ERROR.0001");
+				throw new BizException("ERROR.0001");
 			}
 		}
 	}

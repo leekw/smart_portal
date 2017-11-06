@@ -69,5 +69,9 @@
   	 <if test="maxRowSize != 0">
   	 limit #{maxRowSize}
   	 </if>
-	</select> 
+	</select>
+
+	<select id="selectNextSeq" parameterType="java.lang.String" resultType="java.lang.Long">
+		select nextval(#sequenceName) as nextSeq
+	</select>
 </mapper>

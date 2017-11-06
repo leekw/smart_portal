@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.util.DateUtil;
 import net.smart.web.domain.quality.InterfaceDetail;
 import net.smart.web.domain.quality.InterfaceSummary;
@@ -635,7 +635,7 @@ public class QualityServiceImpl implements QualityService {
 					}
 				} catch (Exception e) {
 					logger.error("############# Error IssueId :" + obj.getIssueId());
-					throw new IntegrationException(e);
+					throw new BizException(e);
 				}
 			}
 			
@@ -1099,7 +1099,7 @@ public class QualityServiceImpl implements QualityService {
 			} else if ("svnNotReg".equals(param.getSearchType())) {
 				invokeMethod.invoke(chart, obj.getSvnNotReg());
 			} else {
-				throw new IntegrationException("ERROR.0001", "지정된 메소드가 없습니다."); 
+				throw new BizException("ERROR.0001", "지정된 메소드가 없습니다.");
 			}
 			if (chart.getData1() != null) chart.setOwnData1(chart.getData1());
 			if (chart.getData2() != null) chart.setOwnData2(chart.getData2());
@@ -1109,15 +1109,15 @@ public class QualityServiceImpl implements QualityService {
 			if (chart.getData6() != null) chart.setOwnData6(chart.getData6());
 			if (chart.getData7() != null) chart.setOwnData7(chart.getData7());
 		} catch (SecurityException e) {
-			throw new IntegrationException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
+			throw new BizException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
 		} catch (NoSuchMethodException e) {
-			throw new IntegrationException("ERROR.0001", "지정된 메소드가 없습니다.");
+			throw new BizException("ERROR.0001", "지정된 메소드가 없습니다.");
 		} catch (IllegalArgumentException e) {
-			throw new IntegrationException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
+			throw new BizException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
 		} catch (IllegalAccessException e) {
-			throw new IntegrationException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
+			throw new BizException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
 		} catch (InvocationTargetException e) {
-			throw new IntegrationException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
+			throw new BizException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
 		}
 	}
 	@Override
@@ -1189,13 +1189,13 @@ public class QualityServiceImpl implements QualityService {
 			URL url = new URL(SVN_BASE_URL + svnFilePath);
 			this.setSvnFileinfo(url, sb, svnFilePath);
 		} catch (MalformedURLException e) {
-			throw new IntegrationException("ERROR.0001", "URL 포맷이 잘못 되었습니다.");
+			throw new BizException("ERROR.0001", "URL 포맷이 잘못 되었습니다.");
 		} catch (IOException e) {
 			try {
 				URL url = new URL(SVN_BASE_URL_ETC + svnFilePath);
 				this.setSvnFileinfo(url, sb, svnFilePath);
 			} catch (MalformedURLException ex) {
-				throw new IntegrationException("ERROR.0001", "URL 포맷이 잘못 되었습니다.");
+				throw new BizException("ERROR.0001", "URL 포맷이 잘못 되었습니다.");
 			} catch (IOException ex) {
 				sb.append("파일이 존재하지 않거나 형식이 잘못되었습니다.");
 			}
@@ -1314,15 +1314,15 @@ public class QualityServiceImpl implements QualityService {
 					invokeMethod = clazz.getMethod("setData9" + index, new BigDecimal(0).getClass());
 					invokeMethod.invoke(result, new BigDecimal(test.getRelCount2()));
 				} catch (SecurityException e) {
-					throw new IntegrationException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
+					throw new BizException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
 				} catch (NoSuchMethodException e) {
-					throw new IntegrationException("ERROR.0001", "지정된 메소드가 없습니다.");
+					throw new BizException("ERROR.0001", "지정된 메소드가 없습니다.");
 				} catch (IllegalArgumentException e) {
-					throw new IntegrationException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
+					throw new BizException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
 				} catch (IllegalAccessException e) {
-					throw new IntegrationException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
+					throw new BizException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
 				} catch (InvocationTargetException e) {
-					throw new IntegrationException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
+					throw new BizException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
 				}
 			}
 		}
@@ -1355,17 +1355,17 @@ public class QualityServiceImpl implements QualityService {
 				ivNow = clazzNow.getMethod("setData9" + i, new BigDecimal(0).getClass());
 				ivNow.invoke(now, nowTemp2.subtract(preTemp2));
 			} catch (SecurityException e) {
-				throw new IntegrationException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
+				throw new BizException("ERROR.0001", "접근할 수 없는 메소스 입니다.");
 			} catch (NoSuchMethodException e) {
-				throw new IntegrationException("ERROR.0001", "지정된 메소드가 없습니다.");
+				throw new BizException("ERROR.0001", "지정된 메소드가 없습니다.");
 			} catch (IllegalArgumentException e) {
-				throw new IntegrationException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
+				throw new BizException("ERROR.0001", "지정된 메소드의 Argument가 올바르지 않습니다.");
 			} catch (IllegalAccessException e) {
-				throw new IntegrationException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
+				throw new BizException("ERROR.0001", "지정된 메소드에 접근이 올바르지 않습니다.");
 			} catch (InvocationTargetException e) {
-				throw new IntegrationException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
+				throw new BizException("ERROR.0001", "호출 대상에 오류가 발생되었습니다.");
 			} catch (NullPointerException e) {
-				throw new IntegrationException("ERROR.0001", "추출데이터에 오류가 발생되었습니다.");
+				throw new BizException("ERROR.0001", "추출데이터에 오류가 발생되었습니다.");
 			}
 		}
 	}

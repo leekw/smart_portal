@@ -17,6 +17,7 @@ public interface SmartCommonDao {
 	public void addDataSyncInfo(DataSyncInfo param);
 	
 	public DataSyncInfo getInterfaceDateInfo();
-	
+
+	public Long getNextSeq(String sequenceName);
 
 }

@@ -1,6 +1,6 @@
 <%@ page contentType="application/json; charset=utf-8" pageEncoding="utf-8" %>
 <%@ page import="net.smart.common.exception.ExceptionHandler" %>
-<%@ page import="net.smart.common.exception.IIntegrationException" %>
+<%@ page import="net.smart.common.exception.IBizException" %>
 <%@ page import="net.smart.common.support.constant.BizCode" %>
 <%@ page import="java.net.URLEncoder" %>
 <%
@@ -11,7 +11,7 @@
     String errorCode = null ;
     String returnMessage = null;
     if(throwable != null) {    	
-    	IIntegrationException pe = (IIntegrationException)ExceptionHandler.handleException(throwable);
+    	IBizException pe = (IBizException)ExceptionHandler.handleException(throwable);
         message = pe.getMessage();
         errorCode = pe.getCode();        
         

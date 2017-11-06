@@ -1,6 +1,6 @@
 package net.smart.web.jira.service.fineder;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -29,7 +29,7 @@ public class MultiUserPickerValueFineder implements JiraValueFineder {
 				}
 			}
 		} catch (Exception ex) {
-			throw new IntegrationException("ERROR.0001", ex);
+			throw new BizException("ERROR.0001", ex);
 		}
 		return sb.toString().equals("") ? "" : sb.toString().substring(0, sb.toString().length()-1);
 	}

@@ -8,7 +8,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -104,7 +104,7 @@ public class StringEncrypter {
 			this.key = new SecretKeySpec(sha256.digest(key.getBytes(Format.UTF8.getValue())), Format.AES.getValue());
 			this.initalVector = new IvParameterSpec(md5.digest(iv.getBytes(Format.UTF8.getValue())));
 		} catch (Exception ex) {
-			throw new IntegrationException(ex);
+			throw new BizException(ex);
 		}
 	}
 	

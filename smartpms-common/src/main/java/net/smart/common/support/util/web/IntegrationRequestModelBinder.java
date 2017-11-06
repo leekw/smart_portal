@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.smart.common.annotation.IntegrationRequest;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.analyzer.DataAnalyzer;
 import net.smart.common.support.analyzer.factory.DataAnalyzerFactory;
 import net.smart.common.support.constant.BizCode;
@@ -65,9 +65,9 @@ public class IntegrationRequestModelBinder extends AbstractModelBinder {
             try {
                 result = parameterType.newInstance();
             } catch (InstantiationException e) {
-                new IntegrationException(Code.DISMATCHED.getValue() + parameterType);
+                new BizException(Code.DISMATCHED.getValue() + parameterType);
             } catch (IllegalAccessException e) {
-                new IntegrationException(Code.DISMATCHED.getValue() + parameterType);
+                new BizException(Code.DISMATCHED.getValue() + parameterType);
             }
         }
         

@@ -1,12 +1,14 @@
 package net.smart.core.domain;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class AnalysisAssetRelation {
-	private String relationType;
-	private long sourceAsset;
-	private long targetAsset;
-	private String sourceFullName;
-	private String targetFullName;
+	private AnalysisAssetRelationType relationType;
+	private String sourceAsset;
+	private String targetAsset;
+	private long sourceRefId;
+	private long targetRefId;
 }

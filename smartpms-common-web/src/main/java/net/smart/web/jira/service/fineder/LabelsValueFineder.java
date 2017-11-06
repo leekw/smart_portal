@@ -2,7 +2,7 @@ package net.smart.web.jira.service.fineder;
 
 import java.util.Iterator;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class LabelsValueFineder implements JiraValueFineder {
 		    		}
 				}
 			} catch (Exception ex) {
-				throw new IntegrationException("ERROR.00001", ex);
+				throw new BizException("ERROR.00001", ex);
 			}
 			
 		}

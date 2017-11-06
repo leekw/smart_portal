@@ -24,7 +24,7 @@ import net.smart.common.domain.based.BasedResourceRole;
 import net.smart.common.domain.based.BasedRole;
 import net.smart.common.domain.based.BasedUser;
 import net.smart.common.domain.sys.SysPropertie;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.security.StringEncrypter;
 import net.smart.common.support.util.DateUtil;
 
@@ -358,7 +358,7 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 		try {
 			checkParamPassword = se.encrypt(param.getUserPassword());
 		} catch (Exception e) {
-			throw new IntegrationException("ERROR.0006", "사용자 패스워드 Encription 도중 오류가 발생되었습니다.");
+			throw new BizException("ERROR.0006", "사용자 패스워드 Encription 도중 오류가 발생되었습니다.");
 		}
 		IntUser result = new IntUser();
 		result.setUserId(param.getUserId());
@@ -369,15 +369,15 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 		boolean isAccess = false;
 		String userName = null;
 		if (users == null || users.isEmpty()) {
-			throw new IntegrationException("ERROR.0007");
+			throw new BizException("ERROR.0007");
 		}
 		if (!checkParamPassword.equals(users.get(0).getUserPassword())) {
-			throw new IntegrationException("ERROR.0008");
+			throw new BizException("ERROR.0008");
 		}
 		isAccess = users.get(0).getStatus().equals("USED");
 		userName = users.get(0).getUserName();
 		if (!isAccess) {
-			throw new IntegrationException("ERROR.0009");
+			throw new BizException("ERROR.0009");
 		}
 		
 		this.setSessionAuth(users.get(0), result);
@@ -408,7 +408,7 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 		}
 		
 		if (roles == null || roles.isEmpty()) {
-			throw new IntegrationException("ERROR.0010");
+			throw new BizException("ERROR.0010");
 		}
 		
 		List<GrantedAuthority> temps = new ArrayList<GrantedAuthority>();
@@ -459,7 +459,7 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 		try {
 			param.setUserPassword(stringEncrypter.encrypt(param.getUserPassword()));
 		} catch (Exception e) {
-			throw new IntegrationException("ERROR.0006", "사용자 패스워드 Encription 도중 오류가 발생되었습니다.");
+			throw new BizException("ERROR.0006", "사용자 패스워드 Encription 도중 오류가 발생되었습니다.");
 		}
 		basedResourceDao.regUser(param);
 	}
@@ -538,10 +538,10 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 			}
 		}
 		if (path == null) {
-			throw new IntegrationException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
+			throw new BizException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
 		}
 		File file = new File(path);
-		if (!file.exists()) throw new IntegrationException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
+		if (!file.exists()) throw new BizException("ERROR.0001", "대상 파일이 존재하지 않습니다.");
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("downloadFile", file);

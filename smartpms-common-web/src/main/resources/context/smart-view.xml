@@ -51,7 +51,7 @@
         <property name="exceptionAttribute" value="exception"/>
         <property name="exceptionMappings">
             <props>
-                <prop key="net.smart.common.exception.IntegrationException">error</prop>
+                <prop key="net.smart.common.exception.BizException">error</prop>
                 <prop key="java.lang.Exception">error</prop>
             </props>
         </property>

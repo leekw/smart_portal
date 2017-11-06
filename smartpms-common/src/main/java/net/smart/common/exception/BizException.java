@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
  * 
- * net.smart.common.exception.IntegrationException.java
+ * net.smart.common.exception.BizException.java
  * <pre>
  *  System에서 사용되는 런타입 예외처리 클래스
  * </pre>
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * @Version : 1.0
  *
  */
-public class IntegrationException extends RuntimeException implements IIntegrationException {
+public class BizException extends RuntimeException implements IBizException {
 	
 	
 
@@ -32,7 +32,7 @@ public class IntegrationException extends RuntimeException implements IIntegrati
 	 */
 	private static final long serialVersionUID = 2190149085456445278L;
 
-	private static  Logger logger = LoggerFactory.getLogger(IntegrationException.class);
+	private static  Logger logger = LoggerFactory.getLogger(BizException.class);
 	
 	private boolean isWriteLog;
 	private String code;
@@ -40,32 +40,32 @@ public class IntegrationException extends RuntimeException implements IIntegrati
 	private Object userObject;
 	private DataAnalyzerFactory analyzerFactor;
 	
-	public IntegrationException(String code) {
+	public BizException(String code) {
 		this(code, (Throwable) null);
 	}
 	
-	public IntegrationException(Throwable cause) {
+	public BizException(Throwable cause) {
 		this(smartMessageSource.getDefaultMessageCode(), cause);
 	}
 	
-	public IntegrationException(String code, Throwable cause) {
+	public BizException(String code, Throwable cause) {
 		super(cause);
 		this.isWriteLog = false;
 		this.setCode(code);
 		this.message = smartMessageSource.getMessage(this.code);
 	}
 
-	public IntegrationException(String code, String message) {
+	public BizException(String code, String message) {
 		this.isWriteLog = false;
 		this.setCode(code);
 		this.message = message != null ? message : smartMessageSource.getMessage(this.code);
 	}
 
-	public IntegrationException(String code, Object messageParam) {
+	public BizException(String code, Object messageParam) {
 		this(code, (Object[])messageParam, null);
 	}
 
-	public IntegrationException(String code, Object messageParams, Throwable cause) {
+	public BizException(String code, Object messageParams, Throwable cause) {
 		super(cause);
 		this.isWriteLog = false;
 		this.setCode(code);
@@ -73,7 +73,7 @@ public class IntegrationException extends RuntimeException implements IIntegrati
 		this.message = smartMessageSource.getMessage(this.code, messageParams);
 	}
 
-	public IntegrationException(String code, String message, Throwable cause) {
+	public BizException(String code, String message, Throwable cause) {
 		super(cause);
 		this.isWriteLog = false;
 		this.code = code != null ? code : smartMessageSource.getDefaultMessageCode();
@@ -145,7 +145,7 @@ public class IntegrationException extends RuntimeException implements IIntegrati
         		result = sb.toString();
         	}
         }catch(Exception e) {
-            throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue());
+            throw new BizException(ErrorCode.SYSTEM_ERROR.getValue());
         }
         
         return result;

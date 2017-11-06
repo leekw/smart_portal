@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.util.DateUtil;
 import net.smart.common.support.util.FileUtil;
@@ -174,7 +174,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 		boolean isVaildAttach = this.addAttchmentToIssue(param.getJiraId(),
 				excelFilePath);
 		if (!isVaildAttach) {
-			throw new IntegrationException("ERROR.0001",
+			throw new BizException("ERROR.0001",
 					"WBS-CR요청 중 오류가 발생되었습니다.(파일첨부 오류)\n관리자에게 문의하시기 바랍니다.");
 		}
 		integrationChangeRequestDao.mergeChangeRequestJira(param);
@@ -453,7 +453,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 			param.setJiraStatus(issue.getStatus().getName());
 			param.setJiraAssignee(issue.getAssignee().getName());
 		} catch (Exception ex) {
-			throw new IntegrationException("ERROR.0001",
+			throw new BizException("ERROR.0001",
 					"WBS-CR요청 중 오류가 발생되었습니다.관리자에게 문의하시기 바랍니다.");
 		}
 	}
@@ -492,7 +492,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 			param.setJiraStatus(issue.getStatus().getName());
 			param.setJiraAssignee(issue.getAssignee().getName());
 		} catch (Exception ex) {
-			throw new IntegrationException("ERROR.0001",
+			throw new BizException("ERROR.0001",
 					"WBS-CR요청 중 오류가 발생되었습니다.관리자에게 문의하시기 바랍니다.");
 		}
 	}
@@ -505,12 +505,12 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 		try {
 			fis = new FileInputStream(param.getTargetFilePath());
 		} catch (FileNotFoundException e) {
-			throw new IntegrationException("ERROR.0001", "파일이 존재하지 않습니다.");
+			throw new BizException("ERROR.0001", "파일이 존재하지 않습니다.");
 		}
 		try {
 			workbook = new XSSFWorkbook(fis);
 		} catch (IOException e) {
-			throw new IntegrationException("ERROR.0001",
+			throw new BizException("ERROR.0001",
 					"엑셀 Parsing 중 오류가 발샐되었습니다.");
 		}
 		List<XSSFSheet> sheets = new ArrayList<XSSFSheet>();

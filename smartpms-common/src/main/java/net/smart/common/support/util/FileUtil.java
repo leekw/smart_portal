@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.ErrorCode;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -42,19 +42,19 @@ public class FileUtil {
 			fileOutput.close();
 			return fileFullPath;
 		} catch (IOException e) {		
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), e);
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), e);
 		} finally {
 			if (fileOutput != null) {
 				try {
 					fileOutput.close();
 				} catch (IOException e) {
-					throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), e);
+					throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), e);
 				}
 			}
 		}
 	}
 	
-	public static String saveFile(MultipartFile multipartFile, String writeFilePath) throws IOException, IntegrationException {
+	public static String saveFile(MultipartFile multipartFile, String writeFilePath) throws IOException, BizException {
 		InputStream inputStream = null;
 		OutputStream outputStream = null;
 		String tempName = UUID.randomUUID().toString();
@@ -66,7 +66,7 @@ public class FileUtil {
 				if (!dir.exists()) {
 					makeDirResult = dir.mkdirs();
 					if (!makeDirResult) {
-						throw new IntegrationException("ERROR.9999");
+						throw new BizException("ERROR.9999");
 					}
 				}
 				

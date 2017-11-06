@@ -2,7 +2,7 @@ package net.smart.common.exception;
 
 /**
  * 
- * net.smart.common.exception.IIntegrationException.java
+ * net.smart.common.exception.IBizException.java
  * <pre>
  *  System에서 사용되는 예외처리 인터페이스
  * </pre>
@@ -12,7 +12,7 @@ package net.smart.common.exception;
  * @Version : 1.0
  *
  */
-public interface IIntegrationException {
+public interface IBizException {
 	
 	public String getCode();
 

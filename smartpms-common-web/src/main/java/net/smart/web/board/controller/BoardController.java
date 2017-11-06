@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.web.board.service.BoardService;
 import net.smart.web.domain.CommonCode;
@@ -73,7 +73,7 @@ public class BoardController {
 		boolean isAdmin = false;
 		isAdmin = integrationCommonService.isAdmin();
 		if (!isAdmin && !ownIp.equals(ip))
-			throw new IntegrationException("ERROR.0001", "수정/삭제 권한이 없습니다!!");
+			throw new BizException("ERROR.0001", "수정/삭제 권한이 없습니다!!");
 	}
 	
 	

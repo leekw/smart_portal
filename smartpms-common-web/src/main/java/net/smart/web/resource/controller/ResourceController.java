@@ -14,7 +14,7 @@ import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
 import net.smart.common.domain.IntUser;
 import net.smart.common.domain.based.SessionUser;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.service.RoleService;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.comparator.SessionComparator;
@@ -162,7 +162,7 @@ public class ResourceController {
 		}
 		List<ResourceRole> temps = resourceService.getResourceRoleList(param);
 		if (temps.size() > 0) {
-			throw new IntegrationException("ERROR.0001", "이미 등록된 리소스 입니다.");
+			throw new BizException("ERROR.0001", "이미 등록된 리소스 입니다.");
 		}
 		resourceService.addResourceRole(param);
 	}
@@ -192,7 +192,7 @@ public class ResourceController {
 		boolean checked = resourceService.getVaildModifyMenu(param.getResourceId());
 		String name = resourceService.getLockMenuByUserName(param.getResourceId());
 		if (!checked) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), "해당 메뉴는 " + name + "이(가) 수정하고 있습니다.");
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), "해당 메뉴는 " + name + "이(가) 수정하고 있습니다.");
 		}
 	}
 	

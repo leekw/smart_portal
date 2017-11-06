@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.util.DateUtil;
 import net.smart.web.domain.jira.Cutover;
@@ -22,7 +22,6 @@ import net.smart.web.domain.jira.GanttInfo;
 import net.smart.web.jira.service.JiraConfig;
 import net.smart.web.jira.service.JiraService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -160,10 +159,10 @@ public class CutoverController {
 		String filePath = jiraService.getSaveExcelFile(param);
 		String fileName = "cutover_task_" + DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDDHHMISS.getValue()) + ".xls";
 		if (filePath == null) {
-			throw new IntegrationException("ERROR.0001", "엑셀 파일 생성중 오류가 발생되었습니다.");
+			throw new BizException("ERROR.0001", "엑셀 파일 생성중 오류가 발생되었습니다.");
 		}
 		File file = new File(filePath);
-		if (!file.exists()) throw new IntegrationException("ERROR.0001", "엑셀 파일 생성중 오류가 발생되었습니다.");
+		if (!file.exists()) throw new BizException("ERROR.0001", "엑셀 파일 생성중 오류가 발생되었습니다.");
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("downloadFile", file);

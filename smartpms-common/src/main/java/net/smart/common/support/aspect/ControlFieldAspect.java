@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import net.smart.common.domain.Common;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.ErrorCode;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -43,7 +43,7 @@ public class ControlFieldAspect {
 		try {
 			result = proceedingJoinPoint.proceed();
 		} catch (Throwable e) {
-			throw new IntegrationException(ErrorCode.SYSTEM_ERROR.getValue(), e);
+			throw new BizException(ErrorCode.SYSTEM_ERROR.getValue(), e);
 		}
 		return result;
 	}

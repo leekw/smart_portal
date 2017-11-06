@@ -3,7 +3,7 @@ package net.smart.common.support.sender;
 import javax.mail.MessagingException;
 
 import net.smart.common.domain.sys.SendQueue;
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.mail.SmartSendMail;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class SmartMailSender extends AbstractSmartSender {
 			smartMail.sendMail(param.getSendSource(), param.getSendTarget(), null, param.getSendSubject(), param.getSendDescription());
 			param.setSendStatus("COMPLETE");
 		} catch (MessagingException e) {
-			throw new IntegrationException("ERROR.0001", "Mail Send Error", e);
+			throw new BizException("ERROR.0001", "Mail Send Error", e);
 		}
 	}
 

@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.smart.common.exception.IntegrationException;
+import net.smart.common.exception.BizException;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.security.StringEncrypter;
 
@@ -70,13 +70,13 @@ public class RequestParamInitInteterceptor extends HandlerInterceptorAdapter {
             Assert.notNull(buffer, Code.ERROR_MESSAGE.getValue());
             
         } catch (IOException e) {
-            throw new IntegrationException(e);
+            throw new BizException(e);
         }finally{
             try {
                 if(isr != null) isr.close();
                 if(buffer != null) buffer.close();
             } catch (IOException e) {
-                throw new IntegrationException(e);
+                throw new BizException(e);
             }
         }
     }
@@ -89,7 +89,7 @@ public class RequestParamInitInteterceptor extends HandlerInterceptorAdapter {
             try {
             	result = encrypter.decrypt(dataString);
             } catch (Exception e) {
-                throw new IntegrationException(e);
+                throw new BizException(e);
             }
         }
         return result;
