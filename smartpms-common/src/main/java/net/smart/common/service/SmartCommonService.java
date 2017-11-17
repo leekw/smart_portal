@@ -118,5 +118,7 @@ public interface SmartCommonService {
 	public void addOrgUser(BasedUser param);
 	
 	public void removeOrgUser(BasedUser param);
+
+	public String getAnalysisFileDir();
 	
 }

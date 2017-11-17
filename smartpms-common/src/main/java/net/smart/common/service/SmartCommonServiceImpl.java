@@ -69,7 +69,11 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 	
 	@Value("${integration.developers}")
 	private String developers;
-	
+
+	@Value("${analysis.file.dir}")
+	private String analysisFilePath;
+
+
 	
 	public String getDevelopers() {
 		return developers;
@@ -89,9 +93,16 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 	public int getLimitCount() {
 		return this.limitCount;
 	}
-	
-	
-	
+
+
+	public String getAnalysisFilePath() {
+		return analysisFilePath;
+	}
+
+	public void setAnalysisFilePath(String analysisFilePath) {
+		this.analysisFilePath = analysisFilePath;
+	}
+
 	@PostConstruct
 	public void init() {
 		this.setDeveloperData();
@@ -666,4 +677,8 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 		basedResourceDao.removeOrgUser(param);
 	}
 
+	@Override
+	public String getAnalysisFileDir() {
+		return getAnalysisFilePath();
+	}
 }
