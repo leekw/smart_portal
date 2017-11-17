@@ -163,6 +163,38 @@ public class PermitResourceController extends AbstractPageController {
 		return modelAndView;
 	}
 
+
+    @RequestMapping(value = "/source/file/upload.file", method = RequestMethod.POST)
+    public ModelAndView sourceFileupload(BasedFileInfo fileInfo, HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView) throws IOException {
+
+        //TO_DO S3
+        String path = smartCommonService.getAnalysisFileDir();
+        List<BasedFile> files = new ArrayList<BasedFile>();
+        if (fileInfo.getFileupload() != null && !fileInfo.getFileupload().isEmpty()) {
+            for (MultipartFile file : fileInfo.getFileupload()) {
+                String filePath = FileUtil.saveFile(file, path);
+				String[] splitFilePath = filePath.split("/");
+                String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
+			    if (filePath != null) {
+                    BasedFile uploadFile = new BasedFile();
+                    uploadFile.setFileNo(0);
+                    uploadFile.setFileName(file.getOriginalFilename());
+                    uploadFile.setFilePysName(splitFilePath[splitFilePath.length -1]);
+                    uploadFile.setFilePath(path+ "/"  + days.substring(0,4) + "/" + days.substring(4, 6) + "/" + days.substring(6, 8));
+                    uploadFile.setFileSize((file.getSize() /1024) + "KB");
+                    uploadFile.setDataMode("I");
+                    files.add(uploadFile);
+                }
+
+            }
+        }
+        Map<String,Object> userDataMap = new HashMap<String,Object>();
+        userDataMap.put("success", files);
+        modelAndView.addObject(BizCode.RequestKey.PARAM_KEY.getValue(),userDataMap);
+        return modelAndView;
+    }
+
+
 	@RequestMapping(value = "/file/remove.{metadataType}", method = RequestMethod.POST)
 	public void removeFile(@IntegrationRequest BasedFile file) {
 		File delFile = new File(file.getFilePath());
