@@ -9,7 +9,7 @@ import net.smart.web.domain.analysis.AnalysisRaw;
 import net.smart.web.domain.analysis.AnalysisResult;
 import net.smart.web.domain.analysis.AnalysisSummary;
 import net.smart.web.domain.analysis.AnalysisTop;
-
+import net.smart.web.domain.analysis.AnalysisSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,5 +59,18 @@ public class AnalysisController {
 	@RequestMapping(value = "/analysis/summary/save.{metadataType}", method = RequestMethod.POST)
 	public void saveAnalysisSummaryStatus(@IntegrationRequest AnalysisSummary param) {
 		analysisService.saveAnalysisSummary(param);
+	}
+
+
+
+	@RequestMapping(value = "/analysis/source/save.{metadataType}", method = RequestMethod.POST)
+	public void saveAnalysisSourceFile(@IntegrationRequest AnalysisSource param) {
+		analysisService.saveAnalysisSource(param);
+	}
+
+	@RequestMapping(value = "/analysis/source/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analaysissource")
+	public List<AnalysisSource> getAnalysisSourceList(@IntegrationRequest AnalysisSource param) {
+		return  analysisService.getAnalysisSourceList(param);
 	}
 }

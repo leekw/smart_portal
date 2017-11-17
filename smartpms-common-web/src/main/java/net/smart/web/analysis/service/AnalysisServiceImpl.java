@@ -19,6 +19,8 @@ import net.smart.web.domain.analysis.AnalysisRaw;
 import net.smart.web.domain.analysis.AnalysisResult;
 import net.smart.web.domain.analysis.AnalysisSummary;
 import net.smart.web.domain.analysis.AnalysisTop;
+import net.smart.web.domain.analysis.AnalysisSource;
+
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
@@ -188,7 +190,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 	}
 
 	@Override
-	@Scheduled(cron="0 0/1 * * * ? ")
+	//@Scheduled(cron="0 0/1 * * * ? ")
 	@Transactional
 	public void addAnalysisSummary() {
 		List<AnalysisSummary> targets = analysisDao.getAnalysisSummaryByWorkTarget(new AnalysisSummary());
@@ -203,6 +205,17 @@ public class AnalysisServiceImpl implements AnalysisService {
 	@Override
 	public void saveAnalysisSummary(AnalysisSummary param) {
 		analysisDao.saveAnalysisSummary(param);
+	}
+
+
+	@Override
+	public void saveAnalysisSource(AnalysisSource param) {
+		analysisDao.saveAnalysisSource(param);
+	}
+
+	@Override
+	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param) {
+		return analysisDao.getAnalysisSourceList(param);
 	}
 
 }

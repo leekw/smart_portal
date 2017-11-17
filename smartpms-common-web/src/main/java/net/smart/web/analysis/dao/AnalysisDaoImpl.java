@@ -3,10 +3,7 @@ package net.smart.web.analysis.dao;
 import java.util.List;
 
 import net.smart.common.support.dao.BasedSqlSessionDaoSupport;
-import net.smart.web.domain.analysis.AnalysisRaw;
-import net.smart.web.domain.analysis.AnalysisResult;
-import net.smart.web.domain.analysis.AnalysisSummary;
-import net.smart.web.domain.analysis.AnalysisTop;
+import net.smart.web.domain.analysis.*;
 
 import org.springframework.stereotype.Repository;
 
@@ -85,4 +82,13 @@ public class AnalysisDaoImpl extends BasedSqlSessionDaoSupport implements Analys
 		getSqlSession().update("analysis.updateAnalysisSummary", param);
 	}
 
+	@Override
+	public void saveAnalysisSource(AnalysisSource param) {
+		getSqlSession().insert("analysis.insertAnalysisSource", param);
+	}
+
+	@Override
+	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param) {
+		return getSqlSession().selectList("analysis.selectAnalysisSourceList");
+	}
 }

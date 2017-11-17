@@ -6,6 +6,7 @@ import net.smart.web.domain.analysis.AnalysisRaw;
 import net.smart.web.domain.analysis.AnalysisResult;
 import net.smart.web.domain.analysis.AnalysisSummary;
 import net.smart.web.domain.analysis.AnalysisTop;
+import net.smart.web.domain.analysis.AnalysisSource;
 
 public interface AnalysisDao {
 	public List<AnalysisRaw> getAnalysisRawList(AnalysisRaw param);
@@ -22,4 +23,7 @@ public interface AnalysisDao {
 	public void removeAnalysisTop(AnalysisSummary param);
 	public void addAnalysisTop(AnalysisSummary param);
 	public void saveAnalysisSummary(AnalysisSummary param);
+	public void saveAnalysisSource(AnalysisSource param);
+	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param);
+
 }
