@@ -4,8 +4,8 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceViewport', {
     layout: 'fit',
     
     requires: [
-        'Ui.analysis.source.view.AnalysisSourceGrid',
-        'Ui.analysis.source.view.AnalysisSourcePanel'
+        'Ui.analysis.source.view.AnalysisSourcePanel',
+        'Ui.analysis.source.view.AnalysisSourceGrid'
     ],
     
     initComponent: function() {
