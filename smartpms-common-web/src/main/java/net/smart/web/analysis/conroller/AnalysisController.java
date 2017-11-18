@@ -69,7 +69,7 @@ public class AnalysisController {
 	}
 
 	@RequestMapping(value = "/analysis/source/list/get.{metadataType}", method = RequestMethod.POST)
-	@IntegrationResponse(key="analaysissource")
+	@IntegrationResponse(key="analysissources")
 	public List<AnalysisSource> getAnalysisSourceList(@IntegrationRequest AnalysisSource param) {
 		return  analysisService.getAnalysisSourceList(param);
 	}

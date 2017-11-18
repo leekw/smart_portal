@@ -8,7 +8,7 @@
 		   vulnerability as vulnerability, 
 		   cwe as cwe, 
 		   security_rule as securityRule, 
-		   severity as severity, 
+		   severity as severity,
 		   full_location as fullLocation, 
 		   file as file, 
 		   source as source, 
@@ -280,5 +280,62 @@
 	AND analysis_date = to_date(#{analysisDateByString}, 'YYYY-MM-DD')
 	AND order_no = #{orderNo}
 	</update>
+
+	<insert id="insertAnalysisSource" parameterType="AnalysisSource">
+		INSERT INTO smrt_analysis_file
+		(
+			analysis_file_no,
+			analysis_java_ori_name,
+			analysis_java_file_name,
+			analysis_java_file_path,
+			analysis_class_ori_name,
+			analysis_class_file_name,
+			analysis_class_file_path,
+			etc,
+			analysis_yn,
+			upload_date
+		)
+		VALUES
+		(
+			nextVal('analysis_file_seq'),
+			#{analysisJavaOriName},
+			#{analysisJavaFileName},
+			#{analysisJavaFilePath},
+			#{analysisClassOriName},
+			#{analysisClassFileName},
+			#{analysisClassFilePath},
+			#{etc},
+			'N',
+			NOW()
+		)
+	</insert>
+
+
+	<select id="selectAnalysisSourceList" parameterType="AnalysisSource" resultType="AnalysisSource">
+		select
+			analysis_file_no 			as analysisFileNo,
+			analysis_java_file_name 	as analysisJavaFileName,
+			analysis_java_file_path 	as analysisJavaFilePath,
+			analysis_class_file_name 	as analysisClassFileName,
+			analysis_class_file_path 	as analysisClassFilePath,
+			analysis_yn 				as analysisYn,
+			analysis_count 				as analysisCount,
+		    to_char(upload_date,'yyyy/mm/dd hh24:mi:ss') 				as uploadDate,
+		    to_char(analysis_date,'yyyy/mm/dd hh24:mi:ss') 			as analysisDate,
+			etc ,
+			analysis_java_ori_name 		as analysisJavaOriName,
+		    analysis_class_ori_name 	as analysisClassOriName
+		from smrt_analysis_file
+		where 1=1
+		<if test="analysisJavaOriName != null">
+			AND analysis_java_ori_name like  '%'|| #{analysisJavaOriName}||'%'
+		</if>
+		<if test="analysisClassOriName != null">
+			AND analysis_class_ori_name like '%'||#{analysisClassOriName}||'%'
+		</if>
+		<if test="etc != null">
+			AND etc like '%'||#{etc}||'%'
+		</if>
+ 	</select>
 	
 </mapper>
