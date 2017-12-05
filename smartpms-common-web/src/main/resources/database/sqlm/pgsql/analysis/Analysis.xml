@@ -337,5 +337,33 @@
 			AND etc like '%'||#{etc}||'%'
 		</if>
  	</select>
+
+	<insert id="insertAnalysisAsset" parameterType="AnalysisAsset">
+		INSERT INTO smrt_analysis_asset
+		(analysis_asset_id, asset_name, asset_full_path, asset_size,
+		asset_source_full_path, asset_source_code, asset_loc)
+		VALUES (#{analysisAssetId}, #{assetName}, #{assetFullPath}, #{assetSize},
+		#{assetSourceFullPath}, #{assetSourceCode}, #{assetLoc})
+	</insert>
+
+	<insert id="insertAnalysisAssetOperation" parameterType="AnalysisAssetOperation">
+		INSERT INTO smrt_analysis_asset_op
+		(analysis_asset_op_id, analysis_asset_id, asset_op_name,
+		asset_op_type, asset_op_code)
+		VALUES (#{analysisAssetOperationId}, #{analysisAssetId}, #{assetOperationName},
+		#{assetOperationType}, #{assetOperationCode})
+	</insert>
+
+	<insert id="insertAnalysisAssetOperationItem" parameterType="AnalysisAssetOperationItem">
+		INSERT INTO smrt_analysis_asset_op_item
+		(asset_op_item_id, analysis_asset_op_id, item_type, item_name, item_order)
+		VALUES (nextval('analysis_asset_op_item_seq'), #{analysisAssetOperationId}, #{itemType}, #{itemName}, #{itemOrder})
+	</insert>
+
+	<insert id="insertAnalysisAssetRelation" parameterType="AnalysisAssetRelation">
+		INSERT INTO smrt_analysis_asset_rel
+		(relation_type, source_asset, target_asset)
+		VALUES (#{relationType}, #{sourceAsset}, #{targetAsset})
+	</insert>
 	
 </mapper>

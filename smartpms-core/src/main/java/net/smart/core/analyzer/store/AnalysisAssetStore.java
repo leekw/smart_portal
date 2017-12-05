@@ -1,7 +1,7 @@
 package net.smart.core.analyzer.store;
 
-import net.smart.core.domain.AnalysisAsset;
-import net.smart.core.domain.AnalysisAssetRelation;
+import net.smart.common.domain.AnalysisAsset;
+import net.smart.common.domain.AnalysisAssetRelation;
 
 import java.util.List;
 

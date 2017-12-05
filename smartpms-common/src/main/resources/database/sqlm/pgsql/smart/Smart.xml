@@ -72,6 +72,6 @@
 	</select>
 
 	<select id="selectNextSeq" parameterType="java.lang.String" resultType="java.lang.Long">
-		select nextval(#sequenceName) as nextSeq
+		select nextval(#{sequenceName}) as nextSeq
 	</select>
 </mapper>

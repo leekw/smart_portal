@@ -71,7 +71,7 @@
     
     <!-- ################################## MyBatis setting ################################################## -->
     <bean id="smartSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
+		<property name="dataSource" ref="basedDataSource" />
    		<property name="configLocation" value="classpath:database/conf/mybatis-config.xml"/>
    		<property name="mapperLocations" value="classpath*:database/sqlm/${local.databse.type}/**/*.xml" />
 	</bean>

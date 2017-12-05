@@ -1,11 +1,8 @@
 package net.smart.core.analyzer.visitor;
 
 import com.google.common.collect.Lists;
+import net.smart.common.domain.*;
 import net.smart.core.analyzer.store.AnalysisAssetStore;
-import net.smart.core.domain.AnalysisAsset;
-import net.smart.core.domain.AnalysisAssetOperation;
-import net.smart.core.domain.AnalysisAssetOperationItem;
-import net.smart.core.domain.AnalysisAssetOperationItemType;
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.EmptyVisitor;
@@ -23,10 +20,13 @@ public class ClassVisitor extends EmptyVisitor {
     private String classReferenceFormat;
     private AnalysisAssetStore store;
     private AnalysisAsset asset;
+    private List<AnalysisAssetRelation> relations;
 
     public ClassVisitor(JavaClass jc, AnalysisAssetStore store) {
         clazz = jc;
         this.store = store;
+        asset = AnalysisAsset.builder().build();
+        relations = Lists.newArrayList();
         constants = new ConstantPoolGen(clazz.getConstantPool());
         initAnalysisAsset();
         classReferenceFormat = "C:" + clazz.getClassName() + " %s";
@@ -43,7 +43,7 @@ public class ClassVisitor extends EmptyVisitor {
         for (Method method : clazz.getMethods()) {
             AnalysisAssetOperation operation = AnalysisAssetOperation.builder()
                     .assetOperationName(method.getName())
-                    .assetOperationCode(method.getCode().toString())
+                    .assetOperationCode(method.getCode() == null ? null : method.getCode().toString())
                     .analysisAssetOperationItems(Lists.newArrayList())
                     .build();
             operation.getAnalysisAssetOperationItems().add(
@@ -81,10 +81,15 @@ public class ClassVisitor extends EmptyVisitor {
                 continue;
             if (constant.getTag() == 7) {
                 String referencedClass = constantPool.constantToString(constant);
-
+                AnalysisAssetRelation relation = AnalysisAssetRelation.builder().build();
+                relation.setRelationType(AnalysisAssetRelationType.CLASS_TO_CLASS);
+                relation.setSourceAsset(clazz.getSourceFileName());
+                relation.setTargetAsset(referencedClass);
                 System.out.println(String.format(classReferenceFormat, referencedClass));
+                relations.add(relation);
             }
         }
+        store.addAnalysisAssetRelation(relations);
     }
 
     public void visitMethod(Method method) {

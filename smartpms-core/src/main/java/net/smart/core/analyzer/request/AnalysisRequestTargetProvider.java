@@ -2,7 +2,7 @@ package net.smart.core.analyzer.request;
 
 import java.util.List;
 
-import net.smart.core.domain.AnalysisRequestTarget;
+import net.smart.common.domain.AnalysisRequestTarget;
 
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package net.smart.core.domain;
+package net.smart.common.domain;
 
 import java.util.Date;
 

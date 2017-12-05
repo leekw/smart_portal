@@ -12,6 +12,7 @@
 	
 	<typeAliases>
 		<package name="net.smart.common.domain"/>
+		<!--<package name="net.smart.core.domain"/>-->
 		<package name="net.smart.web.domain"/>
 	</typeAliases>
 	

@@ -4,14 +4,15 @@ import net.smart.common.exception.BizException;
 import net.smart.core.analyzer.request.AnalysisRequestTargetProvider;
 import net.smart.core.analyzer.store.AnalysisAssetStore;
 import net.smart.core.analyzer.visitor.ClassVisitor;
-import net.smart.core.domain.AnalysisAsset;
-import net.smart.core.domain.AnalysisRequestTarget;
+import net.smart.common.domain.AnalysisRequestTarget;
+import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -28,8 +29,7 @@ public class StaticAnalyzer implements Analyzer {
 	private AnalysisAssetStore store;
 
 	@Override
-	@Transactional
-//	@Scheduled(cron="0 0/10 * * * ? ")
+	@Scheduled(cron="0 56 * * * ? ")
 	public void analyze() {
 		AnalysisRequestTarget target = analysisRequestTargetProvider.nextAnalysisRequestTarget();
 		if (target != null) {
@@ -56,6 +56,8 @@ public class StaticAnalyzer implements Analyzer {
 
 						ClassVisitor visitor = new ClassVisitor(cp.parse(), store);
 						visitor.start();
+					} catch (ClassFormatException ex) {
+						System.out.println("is not a Java .class file");
 					} catch (Exception ex) {
 						throw new BizException(ex);
 					}
