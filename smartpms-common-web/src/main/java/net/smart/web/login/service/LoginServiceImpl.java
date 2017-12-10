@@ -16,86 +16,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import com.atlassian.crowd.embedded.api.PasswordCredential;
-import com.atlassian.crowd.exception.ApplicationAccessDeniedException;
-import com.atlassian.crowd.exception.ApplicationPermissionException;
-import com.atlassian.crowd.exception.ExpiredCredentialException;
-import com.atlassian.crowd.exception.InactiveAccountException;
-import com.atlassian.crowd.exception.InvalidAuthenticationException;
-import com.atlassian.crowd.exception.InvalidTokenException;
-import com.atlassian.crowd.exception.OperationFailedException;
-import com.atlassian.crowd.integration.rest.service.factory.RestCrowdClientFactory;
-import com.atlassian.crowd.model.authentication.UserAuthenticationContext;
-import com.atlassian.crowd.model.authentication.ValidationFactor;
-import com.atlassian.crowd.model.user.User;
-import com.atlassian.crowd.service.client.CrowdClient;
-
 @Service("loginService")
 public class LoginServiceImpl implements LoginService {
 	
 	@Autowired
 	private ResourceDao resourceDao;
 
-	@Override
-	public IntUser login(UserInfo param) {
-		RestCrowdClientFactory factory = new RestCrowdClientFactory();
-		CrowdClient client = factory.newInstance("http://10.217.230.250:8088/crowd", "kt_bit_jira_system", "admin!23");
-		
-		UserAuthenticationContext userAuthCtx = new UserAuthenticationContext();
-		userAuthCtx.setName(param.getUserId());
-		userAuthCtx.setCredential(new PasswordCredential(param.getUserPassword()));
-		userAuthCtx.setApplication("kt_bit_jira_system");
-		userAuthCtx.setValidationFactors(new ValidationFactor[0]);
-		String token = null;
-		IntUser result = new IntUser();
-		 try {
-			 token = client.authenticateSSOUser(userAuthCtx);
-			 User user = client.findUserFromSSOToken(token);
-			 result.setUserId(param.getUserId());
-			 result.setUserName(user.getDisplayName());
-			 result.setLoginDate(DateUtil.getNowByFormat(DateUtil.Format.YYYY_MM_DD_HH_MI_SS.getValue()));
-			 result.setIp(param.getIp());
-			 
-			 param.setMaxRowSize(1);
-			 List<UserInfo> users = resourceDao.getUserInfoList(param);
-			 boolean isAccess = false; 
-			 if (users != null && users.get(0) != null) {
-				 isAccess = users.get(0).isAccess(); 
-			 }
-			 result.setAccess(isAccess);
-			 
-			 UserRole roleParam = new UserRole();
-			 roleParam.setUserId(result.getUserId());
-			 List<UserRole> userRoles = resourceDao.getUserRoleList(roleParam);
-			 
-			 List<GrantedAuthority> temps = new ArrayList<GrantedAuthority>();
-			 GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
-			 temps.add(authority);
-			 for (UserRole role : userRoles) {
-				 authority = new SimpleGrantedAuthority(role.getRoleId());
-				 temps.add(authority);
-			 }
-			 result.setAuthorityList(temps);
-			 
-		} catch (InactiveAccountException e) {
-			throw new BizException("ERROR.0005", param.getUserId() + "아이디가 활성화 되지 않았습니다.");
-		} catch (ExpiredCredentialException e) {
-			throw new BizException("ERROR.0003", param.getUserId() + "아이디의 세션정보가 만료되었습니다.");
-		} catch (ApplicationPermissionException e) {
-			throw new BizException("ERROR.0004", param.getUserId() + "아이디의 접속 권한이 없습니다.");
-		} catch (InvalidAuthenticationException e) {
-			throw new BizException("ERROR.0002", param.getUserId() + "아이디의 접속정보가 올바르지 않습니다.(아이디, 패스워드 확인)");
-		} catch (OperationFailedException e) {
-			throw new BizException("ERROR.0006", "로그인 실패되었습니다.");
-		} catch (ApplicationAccessDeniedException e) {
-			throw new BizException("ERROR.0006", "로그인 실패되었습니다.");
-		} catch (InvalidTokenException e) {
-			throw new BizException("ERROR.0001", "Token 정보가 올바르지 않습니다.");
-		}
-		
-		 
-		return result;
-	}
 
 	@Override
 	public IntUser loginLocal(UserInfo param) {

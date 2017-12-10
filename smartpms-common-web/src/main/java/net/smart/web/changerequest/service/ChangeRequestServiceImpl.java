@@ -1,55 +1,16 @@
 package net.smart.web.changerequest.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.util.DateUtil;
-import net.smart.common.support.util.FileUtil;
 import net.smart.web.changerequest.dao.ChangeRequestDao;
 import net.smart.web.changerequest.dao.IntegrationChangeRequestDao;
 import net.smart.web.changerequest.dao.SourceChangeRequestDao;
 import net.smart.web.changerequest.validator.ProgramValidator;
 import net.smart.web.code.service.CodeService;
-import net.smart.web.domain.changerequest.ChangeRequestComboInfo;
-import net.smart.web.domain.changerequest.ChangeRequestItem;
-import net.smart.web.domain.changerequest.ChangeRequestJira;
-import net.smart.web.domain.changerequest.ChangeRequestLimit;
-import net.smart.web.domain.changerequest.ChangeRequestLog;
-import net.smart.web.domain.changerequest.ChangeRequestTarget;
-import net.smart.web.domain.changerequest.ChangeRequestVolume;
-import net.smart.web.jira.service.JiraConfig;
-import net.smart.web.jira.service.JiraService;
-import net.smart.web.plugin.jira.rest.client.RestClientManager;
+import net.smart.web.domain.changerequest.*;
 import net.smart.web.resource.service.OrgService;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -59,10 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.atlassian.jira.rest.client.api.domain.BasicIssue;
-import com.atlassian.jira.rest.client.api.domain.BasicUser;
-import com.atlassian.jira.rest.client.api.domain.Issue;
-import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service("changeRequestService")
 public class ChangeRequestServiceImpl implements ChangeRequestService {
@@ -73,8 +35,6 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 	@Autowired
 	private IntegrationChangeRequestDao integrationChangeRequestDao;
 
-	// @Autowired
-	private JiraService jiraService;
 
 	@Autowired
 	private SmartCommonService integrationCommonService;
@@ -85,8 +45,6 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 	@Autowired
 	private OrgService orgService;
 
-	// @Autowired
-	private JiraConfig jiraConfig;
 
 	private List<ProgramValidator> validators;
 
@@ -116,7 +74,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 	@Override
 	public List<ChangeRequestComboInfo> getJiraComboList(
 			ChangeRequestComboInfo param) {
-		return jiraService.getChangeRequestJiraComboList(param);
+		return null;
 	}
 
 	@Override
@@ -138,7 +96,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 	@Override
 	public List<ChangeRequestJira> getChangeRequestJiraList(
 			ChangeRequestJira param) {
-		return jiraService.getChangeRequestJiraList(param);
+		return null;
 	}
 
 	@Override
@@ -219,9 +177,7 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 			this.setExcelContent(obj, sheet, row, cell, contentStyle, ++no);
 		}
 
-		String filePath = FileUtil.saveExcel(workbook,
-				jiraConfig.getUploadTargeDir(), "ProgramList_CR_Target_"
-						+ param.getJiraReporter() + ".xls");
+		String filePath = null;
 		return filePath;
 	}
 
@@ -393,108 +349,15 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
 	}
 
 	private boolean addAttchmentToIssue(String issueKey, String filePath) {
-		String auth = new String(
-				org.apache.commons.codec.binary.Base64.encodeBase64((jiraConfig
-						.getCommonUser() + ":" + jiraConfig.getCommonPassword())
-						.getBytes()));
-		HttpClient httpClient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(jiraConfig.getJiraUrl()
-				+ jiraConfig.getBaseUrl() + issueKey + "/attachments");
-		httppost.setHeader("X-Atlassian-Token", "nocheck");
-		httppost.setHeader("Authorization", "Basic " + auth);
-		MultipartEntity entity = new MultipartEntity(
-				HttpMultipartMode.BROWSER_COMPATIBLE);
-
-		File uploadFile = new File(filePath);
-		FileBody filebody = new FileBody(uploadFile, "application/octet-stream");
-		entity.addPart("file", filebody);
-
-		httppost.setEntity(entity);
-		HttpResponse response = null;
-		try {
-			response = httpClient.execute(httppost);
-		} catch (ClientProtocolException e) {
-			return false;
-		} catch (IOException e) {
-			return false;
-		}
-
-		HttpEntity result = response.getEntity();
-
-		if (response.getStatusLine().getStatusCode() == 200) {
-			return true;
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	private void updateChangeRequestJira(ChangeRequestJira param) {
-		RestClientManager restClientManager = jiraService
-				.getRestClientManager();
-		String author = integrationCommonService.getSessionUserId();
-		Issue issue = null;
-		try {
-			issue = restClientManager.getExtendedIssueClient()
-					.getIssue(param.getJiraId()).claim();
 
-			IssueInputBuilder issueInputBuilder = new IssueInputBuilder(
-					issue.getProject(), issue.getIssueType());
-			issueInputBuilder.setSummary(param.getJiraSummary());
-			issueInputBuilder.setDescription(param.getJiraDescription());
-			BasicUser reporter = new BasicUser(new URI(jiraConfig.getJiraUrl()
-					+ jiraConfig.getUserUri() + author), author, author);
-			issueInputBuilder.setReporter(reporter);
-			restClientManager.getExtendedIssueClient()
-					.update(issue, issueInputBuilder.build()).claim();
-			param.setJiraCreateDate(DateUtil.getDateByFormat(issue
-					.getCreationDate().toDate(),
-					DateUtil.Format.YYYY_MM_DD_HH_MI_SS.getValue()));
-			param.setJiraReporter(author);
-			param.setJiraStatus(issue.getStatus().getName());
-			param.setJiraAssignee(issue.getAssignee().getName());
-		} catch (Exception ex) {
-			throw new BizException("ERROR.0001",
-					"WBS-CR요청 중 오류가 발생되었습니다.관리자에게 문의하시기 바랍니다.");
-		}
 	}
 
 	private void createChangeRequestJira(ChangeRequestJira param) {
-		RestClientManager restClientManager = jiraService
-				.getRestClientManager();
-		BasicIssue basicIssue = null;
-		String author = integrationCommonService.getSessionUserId();
-		Issue issue = null;
-		try {
-			IssueInputBuilder issueInputBuilder = new IssueInputBuilder(
-					jiraConfig.getCrProject(), Long.parseLong(jiraConfig
-							.getCrIssueType()), param.getJiraSummary());
-			issueInputBuilder.setSummary(param.getJiraSummary());
-			issueInputBuilder.setDescription(param.getJiraDescription());
-			BasicUser reporter = new BasicUser(new URI(jiraConfig.getJiraUrl()
-					+ jiraConfig.getUserUri() + author), author, author);
-			issueInputBuilder.setReporter(reporter);
 
-			List<String> names = new ArrayList<String>();
-			for (String obj : param.getComponets()) {
-				names.add(codeService.getCodeName("12612", obj));
-			}
-
-			issueInputBuilder.setComponentsNames(names);
-			basicIssue = restClientManager.getExtendedIssueClient()
-					.createIssue(issueInputBuilder.build()).claim();
-			issue = restClientManager.getExtendedIssueClient()
-					.getIssue(basicIssue.getKey()).claim();
-			param.setJiraId(issue.getKey());
-			param.setJiraCreateDate(DateUtil
-					.getNowByFormat(DateUtil.Format.YYYY_MM_DD_HH_MI_SS
-							.getValue()));
-			param.setJiraReporter(author);
-			param.setJiraStatus(issue.getStatus().getName());
-			param.setJiraAssignee(issue.getAssignee().getName());
-		} catch (Exception ex) {
-			throw new BizException("ERROR.0001",
-					"WBS-CR요청 중 오류가 발생되었습니다.관리자에게 문의하시기 바랍니다.");
-		}
 	}
 
 	@Override

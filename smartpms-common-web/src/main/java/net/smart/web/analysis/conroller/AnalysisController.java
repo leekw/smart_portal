@@ -1,19 +1,15 @@
 package net.smart.web.analysis.conroller;
 
-import java.util.List;
-
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
 import net.smart.web.analysis.service.AnalysisService;
-import net.smart.web.domain.analysis.AnalysisRaw;
-import net.smart.web.domain.analysis.AnalysisResult;
-import net.smart.web.domain.analysis.AnalysisSummary;
-import net.smart.web.domain.analysis.AnalysisTop;
-import net.smart.web.domain.analysis.AnalysisSource;
+import net.smart.web.domain.analysis.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
 
 @Controller
 public class AnalysisController {
@@ -73,4 +69,5 @@ public class AnalysisController {
 	public List<AnalysisSource> getAnalysisSourceList(@IntegrationRequest AnalysisSource param) {
 		return  analysisService.getAnalysisSourceList(param);
 	}
+
 }

@@ -65,5 +65,5 @@
 	<bean id="smartMail" class="net.smart.common.support.mail.SmartSendMail">
 		<property name="mailSender" ref="mailSender"/>
 	</bean>
-	  
+
 </beans>

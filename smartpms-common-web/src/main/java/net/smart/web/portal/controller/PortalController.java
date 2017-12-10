@@ -1,12 +1,5 @@
 package net.smart.web.portal.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
 import net.smart.common.service.SmartCommonService;
@@ -14,9 +7,7 @@ import net.smart.common.support.util.DateUtil;
 import net.smart.common.support.util.IntegrationHttpSessionCollector;
 import net.smart.web.domain.portal.PortalData;
 import net.smart.web.domain.portal.PortalInfo;
-import net.smart.web.jira.service.JiraService;
 import net.smart.web.portal.service.PortalService;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,14 +15,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 public class PortalController {
 	
 	@Autowired
 	private PortalService portalService;
-	
-//	@Autowired
-	private JiraService jiraService;
 	
 	@Autowired
 	private SimpMessagingTemplate template;
@@ -54,7 +48,7 @@ public class PortalController {
 		if (ip == null || ip.length() == 0) {
 			ip = request.getRemoteAddr();
 		}
-		isAdmin = jiraService.isJiraAdmin(ip) ? "Y" : "N";
+		isAdmin = "N";
 		result.setIsAdmin(isAdmin);
 
 		return result;

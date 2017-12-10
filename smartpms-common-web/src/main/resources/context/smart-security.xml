@@ -36,6 +36,7 @@
     <security:http pattern="/logout/process.json" security="none"/>
     <security:http pattern="/redirect.html" security="none"/>
     <security:http pattern="/resource/user/vaild.json" security="none"/>
+	<security:http pattern="/s3/**" security="none"/>
     
     
     

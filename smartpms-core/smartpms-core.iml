@@ -57,7 +57,7 @@
     <orderEntry type="library" name="Maven: net.sf.json-lib:json-lib:jdk15:2.4" level="project" />
     <orderEntry type="library" name="Maven: net.sf.json-lib:json-lib-ext-spring:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: javax.servlet:servlet-api:2.4" level="project" />
-    <orderEntry type="library" name="Maven: log4j:log4j:1.2.14" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: log4j:log4j:1.2.14" level="project" />
     <orderEntry type="library" name="Maven: net.sf.ezmorph:ezmorph:1.0.6" level="project" />
     <orderEntry type="library" name="Maven: xom:xom:1.2.5" level="project" />
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.3.03" level="project" />
@@ -98,51 +98,148 @@
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml-schemas:3.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlbeans:xmlbeans:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-api:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.spring:atlassian-spring:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.event:atlassian-event:2.1.1" level="project" />
-    <orderEntry type="library" name="Maven: com.google.collections:google-collections:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-core:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.security:atlassian-secure-random:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.core:atlassian-core:4.5.5" level="project" />
-    <orderEntry type="library" name="Maven: opensymphony:oscore:2.2.7" level="project" />
-    <orderEntry type="library" name="Maven: mockobjects:alt-jdk1.3:0.07" level="project" />
-    <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache:1.2.3" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-events:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-integration-api:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.ip:atlassian-ip:2.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-integration-client-common:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.security:atlassian-cookie-tools:2.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-integration-client-rest:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-integration-seraph25:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-ldap:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.profiling:atlassian-profiling:1.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.util.concurrent:atlassian-util-concurrent:0.0.12" level="project" />
-    <orderEntry type="library" name="Maven: net.jcip:jcip-annotations:1.0" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.ldap:spring-ldap-core:1.3.0.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: quartz:quartz:1.5.1" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-password-encoders:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.security:atlassian-password-encoder:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.plugins:atlassian-plugins-core:2.8.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.multitenant:multitenant-core:1.0-m14" level="project" />
-    <orderEntry type="library" name="Maven: cglib:cglib-nodep:2.1_3" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-persistence:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-remote:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:crowd-server-common:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.1.3" level="project" />
-    <orderEntry type="library" name="Maven: org.antlr:stringtemplate:3.2" level="project" />
-    <orderEntry type="library" name="Maven: antlr:antlr:2.7.7" level="project" />
-    <orderEntry type="library" name="Maven: joda-time:joda-time:1.4" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:embedded-crowd-api:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:embedded-crowd-core:2.3.8" level="project" />
-    <orderEntry type="library" name="Maven: opensymphony:propertyset:1.3-21Nov03" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.crowd:embedded-crowd-spi:2.3.8" level="project" />
     <orderEntry type="library" name="Maven: postgresql:postgresql:9.1-901-1.jdbc4" level="project" />
     <orderEntry type="library" name="Maven: mysql:mysql-connector-java:5.1.3" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.jira:jira-rest-all:1.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.bcel:bcel:5.2" level="project" />
     <orderEntry type="library" name="Maven: jakarta-regexp:jakarta-regexp:1.4" level="project" />
     <orderEntry type="library" name="Maven: javassist:javassist:3.12.1.GA" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.projectlombok:lombok:1.16.16" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-servicediscovery:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:jmespath-java:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloud9:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-serverlessapplicationrepository:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-alexaforbusiness:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-resourcegroups:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-comprehend:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-translate:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sagemaker:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-iotjobsdataplane:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sagemakerruntime:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-kinesisvideo:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-codec-http:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-codec:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-handler:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-transport:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-resolver:4.1.17.Final" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-appsync:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-guardduty:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mq:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mediaconvert:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mediastore:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mediastoredata:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-medialive:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mediapackage:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-costexplorer:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-pricing:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mobile:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudhsmv2:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-glue:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-migrationhub:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dax:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-greengrass:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-athena:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-marketplaceentitlement:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-codestar:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-lexmodelbuilding:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-resourcegroupstaggingapi:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-pinpoint:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-xray:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-opsworkscm:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-support:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-simpledb:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-servicecatalog:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-servermigration:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-simpleworkflow:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-storagegateway:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-route53:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-s3:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-importexport:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sts:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sqs:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-rds:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-redshift:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticbeanstalk:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-glacier:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-iam:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-datapipeline:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticloadbalancing:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticloadbalancingv2:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-emr:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticache:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elastictranscoder:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ec2:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dynamodb:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sns:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-budgets:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudtrail:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudwatch:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-logs:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-events:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cognitoidentity:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cognitosync:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-directconnect:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudformation:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudfront:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-clouddirectory:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-kinesis:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-opsworks:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ses:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-autoscaling:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudsearch:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudwatchmetrics:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-codedeploy:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-codepipeline:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-kms:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-config:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-lambda:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ecs:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ecr:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudhsm:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ssm:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-workspaces:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-machinelearning:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-directory:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-efs:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-codecommit:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-devicefarm:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticsearch:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-waf:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-marketplacecommerceanalytics:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-inspector:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-iot:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-api-gateway:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-acm:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-gamelift:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dms:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-marketplacemeteringservice:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cognitoidp:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-discovery:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-applicationautoscaling:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-snowball:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-rekognition:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-polly:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-lightsail:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-stepfunctions:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-health:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-costandusagereport:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-codebuild:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-appstream:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-shield:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-batch:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-lex:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-mechanicalturkrequester:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-organizations:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-workdocs:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-core:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.4" level="project" />
+    <orderEntry type="library" name="Maven: software.amazon.ion:ion-java:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-models:1.11.246" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-swf-libraries:1.11.22" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.8" level="project" />
   </component>
 </module>
