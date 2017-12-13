@@ -28,7 +28,8 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
 		{
 			header: '등록일자',
             width: 150,
-			dataIndex: 'uploadDate'
+			dataIndex: 'uploadDate',
+            allowBlank: false
 		},
         { 
             header: '진단파일 Java',
@@ -73,7 +74,7 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
             },
             {
                 xtype: 'textfield',
-				weight : 300,
+                width: '15%',
                 id : 'javaFileName'
 
             },
@@ -87,11 +88,13 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
             },
 			{
                 xtype: 'textfield',
+                width: '15%',
                 id : 'classFileName'
 
             },
             {
                 xtype: 'textfield',
+                width: '20%',
                 id : 'etc',
                 fieldLabel: '비고'
             },
