@@ -9,7 +9,7 @@ Ext.define('Ui.analysis.source.store.AnalysisSource', {
         },
         reader: {
             type: 'json',
-            rootProperty: 'analaysissource'
+            rootProperty: 'analysissources'
         },
         actionMethods: {
             create : 'POST',
