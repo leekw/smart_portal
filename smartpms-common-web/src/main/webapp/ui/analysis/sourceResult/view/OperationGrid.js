@@ -1,30 +1,16 @@
-Ext.define('Ui.analysis.sourceResult.view.MethodGrid' ,{
+Ext.define('Ui.analysis.sourceResult.view.OperationGrid' ,{
     extend: 'Ext.grid.Panel',
-    alias : 'widget.methodgrid',
+    alias : 'widget.operationgrid',
     title: '메소드',
     background: 'none',
     layout: 'fit',
-    id:'method-grid',
+    id:'operation-grid',
     minHeight : 600,
     maxHeight : 700,
     columnLines : true,
     initComponent: function() {
 
-         this.store = {
-             // data:[{
-             //     "methodName":"setTest",
-             //     "parameter":"methodDTO",
-             //     "returnType":"void",
-             // },{
-             //     "methodName":"getTest",
-             //     "parameter":"String,Int",
-             //     "returnType":"List<hashMap>",
-             // },{
-             //     "methodName":"getTarget",
-             //     "parameter":"String,String",
-             //     "returnType":"Boolean",
-             // }]
-         };
+         this.store = 'OperationGrid';
         
         this.selModel = {
         };
@@ -37,12 +23,12 @@ Ext.define('Ui.analysis.sourceResult.view.MethodGrid' ,{
 		}),
         { 
             header: '메소드 명',
-            dataIndex: 'methodName'
+            dataIndex: 'assetOpName'
         },
 		{
 			header: '파라미터',
             width: 150,
-			dataIndex: 'parameter',
+			dataIndex: 'argumentType',
             allowBlank: false
 		},
         { 
@@ -61,7 +47,19 @@ Ext.define('Ui.analysis.sourceResult.view.MethodGrid' ,{
     	},
     	beforerender : function(panel) {
     		
-    	}
+    	},
+        cellselecion : function(grid, selection,eOpts){
+    	    console.log("cellselecion");
+        },
+        select : function (grid,selected,eOpts){
+            console.log("select:"+selected.data.assetOpCode);
+            var panel = Ext.getCmp('operation-panel');
+
+            panel.html = selected.data.assetOpCode;
+            var tabPanel = Ext.getCmp('analysis-source-result-tab-panel');
+
+            tabPanel.setActiveTab(1);
+         }
     }
 });
 

@@ -4,8 +4,10 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultViewport', {
     
     requires: [
         'Ui.analysis.sourceResult.view.AnalysisSourceResultPanel',
+        'Ui.analysis.sourceResult.view.AnalysisSourceResultGrid',
         'Ui.analysis.sourceResult.view.AnalysisSourceResultTree',
-        'Ui.analysis.sourceResult.view.MethodGrid'
+        'Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree',
+        'Ui.analysis.sourceResult.view.OperationGrid'
 
     ],
     
