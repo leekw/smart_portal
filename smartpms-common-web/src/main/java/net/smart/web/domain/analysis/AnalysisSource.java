@@ -4,7 +4,6 @@ import java.util.Date;
 
 public class AnalysisSource {
 
-    private long analysisFileNo;
     private String analysisJavaFileName;
     private String analysisJavaOriName;
     private String analysisJavaFilePath;
@@ -14,16 +13,15 @@ public class AnalysisSource {
     private String analysisDate;
     private String uploadDate;
     private String analysisYn;
+    private String service;
+    private String module;
+    private String pmd;
+    private String fortify;
     private String etc;
+    private String reqUser;
+    private long analysisFileNo;
     private int analysisCount;
-
-    public long getAnalysisFileNo() {
-        return analysisFileNo;
-    }
-
-    public void setAnalysisFileNo(long analysisFileNo) {
-        this.analysisFileNo = analysisFileNo;
-    }
+    private Date reqDate;
 
     public String getAnalysisJavaFileName() {
         return analysisJavaFileName;
@@ -97,6 +95,38 @@ public class AnalysisSource {
         this.analysisYn = analysisYn;
     }
 
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public String getPmd() {
+        return pmd;
+    }
+
+    public void setPmd(String pmd) {
+        this.pmd = pmd;
+    }
+
+    public String getFortify() {
+        return fortify;
+    }
+
+    public void setFortify(String fortify) {
+        this.fortify = fortify;
+    }
+
     public String getEtc() {
         return etc;
     }
@@ -105,11 +135,35 @@ public class AnalysisSource {
         this.etc = etc;
     }
 
+    public String getReqUser() {
+        return reqUser;
+    }
+
+    public void setReqUser(String reqUser) {
+        this.reqUser = reqUser;
+    }
+
+    public long getAnalysisFileNo() {
+        return analysisFileNo;
+    }
+
+    public void setAnalysisFileNo(long analysisFileNo) {
+        this.analysisFileNo = analysisFileNo;
+    }
+
     public int getAnalysisCount() {
         return analysisCount;
     }
 
     public void setAnalysisCount(int analysisCount) {
         this.analysisCount = analysisCount;
+    }
+
+    public Date getReqDate() {
+        return reqDate;
+    }
+
+    public void setReqDate(Date reqDate) {
+        this.reqDate = reqDate;
     }
 }
