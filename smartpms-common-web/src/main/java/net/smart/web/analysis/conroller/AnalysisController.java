@@ -70,4 +70,29 @@ public class AnalysisController {
 		return  analysisService.getAnalysisSourceList(param);
 	}
 
+	@RequestMapping(value = "/analysis/source/result/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresult")
+	public List<AnalysisSourceResult> getAnalysisSourceResultList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceResultList(param);
+	}
+
+	@RequestMapping(value = "/analysis/source/result/operation/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceoperations")
+	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(@IntegrationRequest AnalysisSourceOperation param) {
+		return  analysisService.getAnalysisSourceOperationList(param);
+	}
+
+
+	@RequestMapping(value = "/analysis/source/low/lank/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresults")
+	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceRowRankList(param);
+	}
+
+	@RequestMapping(value = "/analysis/source/high/lank/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresults")
+	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceHighRankList(param);
+	}
+
 }

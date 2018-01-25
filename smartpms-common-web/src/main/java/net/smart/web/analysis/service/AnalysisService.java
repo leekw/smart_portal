@@ -2,11 +2,7 @@ package net.smart.web.analysis.service;
 
 import java.util.List;
 
-import net.smart.web.domain.analysis.AnalysisRaw;
-import net.smart.web.domain.analysis.AnalysisResult;
-import net.smart.web.domain.analysis.AnalysisSummary;
-import net.smart.web.domain.analysis.AnalysisTop;
-import net.smart.web.domain.analysis.AnalysisSource;
+import net.smart.web.domain.analysis.*;
 
 
 public interface AnalysisService {
@@ -20,5 +16,11 @@ public interface AnalysisService {
 	public void saveAnalysisSummary(AnalysisSummary param);
 	public void saveAnalysisSource(AnalysisSource param);
 	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param) ;
+	public List<AnalysisSourceResult> getAnalysisSourceResultList(AnalysisSourceResult param) ;
+	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(AnalysisSourceOperation param) ;
+	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(AnalysisSourceResult param) ;
+	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) ;
+
+
 
 }
