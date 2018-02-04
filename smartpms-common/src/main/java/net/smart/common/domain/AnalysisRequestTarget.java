@@ -16,6 +16,8 @@ public class AnalysisRequestTarget {
 	private String analysisRequestTargetSourcePath;
 	private String analysisRequestTargetBinaryPath;
 	private String analysisRequestTargetSourceName;
+	private String analysisRequestTargetResultPath;
+	private String analysisStatus;
 	private AnalysisRequestType analysisRequestType;
 	private long analysisFileNo;
 	private List<AnalysisRequestTool> analysisRequestToolList;

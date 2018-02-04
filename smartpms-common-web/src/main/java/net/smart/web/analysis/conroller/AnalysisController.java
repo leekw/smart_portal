@@ -113,15 +113,9 @@ public class AnalysisController {
 		return  analysisService.getAnalysisSourceHighRankList(param);
 	}
 
-	@RequestMapping(value = "/analysis/result/parsing", method = RequestMethod.GET)
-	public ResponseEntity parseAnalysisResult(@RequestParam String targetKey) {
-		analysisResultParser.parse(targetKey);
-
-		String result = "Analysis Result Parsing completed!";
-		HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.setContentType(MediaType.TEXT_PLAIN);
-		httpHeaders.setContentLength(result.length());
-		return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
+	@RequestMapping(value = "/analysis/result/parse", method = RequestMethod.GET)
+	public void parseResult() {
+		analysisResultParser.parse();
 	}
 
 }

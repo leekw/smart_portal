@@ -6,6 +6,7 @@ import net.smart.common.exception.BizException;
 import net.smart.common.support.s3.S3Client;
 import net.smart.common.support.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +27,9 @@ public class S3Controller {
     @Autowired
     private S3Client s3Client;
 
+    @Value("${smart.aws.s3.result.dir}")
+    private String targetDir;
+
     @RequestMapping(value = "/s3/upload.{metadataType}", method = RequestMethod.GET)
     public void defaultUpload(@RequestParam String targetFilePath) {
         File file = new File(targetFilePath);
@@ -41,7 +45,7 @@ public class S3Controller {
     }
 
     @RequestMapping(value = "/s3/upload", method = RequestMethod.GET)
-    public ResponseEntity upload(@RequestParam String targetFilePath, @RequestParam String targetDir) {
+    public ResponseEntity upload(@RequestParam String targetFilePath) {
         File file = new File(targetFilePath);
         if (!file.exists()) {
             throw new BizException("File Not Found Error:" + file.getAbsolutePath());

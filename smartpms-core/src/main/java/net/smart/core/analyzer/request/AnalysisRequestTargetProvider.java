@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import net.smart.common.domain.AnalysisRequestTarget;
 import net.smart.common.domain.AnalysisRequestTool;
+import net.smart.common.domain.AnalysisStatus;
+import net.smart.common.support.util.DateUtil;
 import net.smart.core.analyzer.store.AnalysisAssetDao;
 import net.smart.core.analyzer.support.S3FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,17 @@ public class AnalysisRequestTargetProvider {
     @Value("${analysis.target.path}")
     private String analysisTargetPath;
 
+	@Value("${analysis.result.path}")
+	private String analysisResultPath;
+
+	@Value("${smart.aws.s3.result.dir}")
+	private String targetDir;
+
     @Transactional
-	public AnalysisRequestTarget getNextAnalysisTargetFile() {
-		AnalysisRequestTarget requestTarget = analysisAssetDao.getNextAnalysisTargetFile();
+	public AnalysisRequestTarget getNextAnalysisTargetFile(String analysisStatus) {
+		AnalysisRequestTarget requestTarget = analysisAssetDao.getNextAnalysisTargetFile(analysisStatus);
 		if (requestTarget != null) {
+			requestTarget.setAnalysisStatus(AnalysisStatus.P.name());
 			analysisAssetDao.modifyAnalysisTargetFile(requestTarget);
 		}
 		return requestTarget;
@@ -35,7 +44,7 @@ public class AnalysisRequestTargetProvider {
 
     @Transactional
 	public AnalysisRequestTarget nextAnalysisRequestTarget() {
-		AnalysisRequestTarget requestTarget = getNextAnalysisTargetFile();
+		AnalysisRequestTarget requestTarget = getNextAnalysisTargetFile(AnalysisStatus.N.name());
 		if (requestTarget == null) {
 			return null;
 		}
@@ -47,6 +56,19 @@ public class AnalysisRequestTargetProvider {
 
         String sourceKey = requestTarget.getAnalysisRequestTargetSourcePath();
         requestTarget.setAnalysisRequestTargetSourcePath(s3FileUtils.getFile(analysisTargetPath, sourceKey));
+		return requestTarget;
+	}
+
+	@Transactional
+	public AnalysisRequestTarget nextAnalysisResult() {
+		AnalysisRequestTarget requestTarget = getNextAnalysisTargetFile(AnalysisStatus.P.name());
+		if (requestTarget == null) {
+			return null;
+		}
+
+		String key = targetDir + "/" + DateUtil.getCurrentYyyymmdd() + "/" + requestTarget.getAnalysisRequestTargetSourceName() + ".csv";
+		requestTarget.setAnalysisRequestTargetResultPath(s3FileUtils.getFile(analysisResultPath, key));
+
 		return requestTarget;
 	}
 }

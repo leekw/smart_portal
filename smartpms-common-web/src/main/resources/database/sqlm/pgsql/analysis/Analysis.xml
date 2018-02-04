@@ -327,14 +327,14 @@
 			analysis_java_file_path||'/'||analysis_java_file_name 	    as analysisRequestTargetSourcePath,
 			analysis_java_file_name                                     as analysisRequestTargetSourceName
 		from smrt_analysis_file
-		where analysis_yn = 'N'
+		where analysis_yn = #{targetStatus}
 		order by upload_date asc
 		LIMIT 1 FOR UPDATE
 	</select>
 
 	<update id="updateAnalysisTargetFile" parameterType="AnalysisRequestTarget">
 		update smrt_analysis_file
-		set analysis_yn = 'Y'
+		set analysis_yn = #{analysisStatus}
 		where analysis_file_no = #{analysisFileNo}
 	</update>
 

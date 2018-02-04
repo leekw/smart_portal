@@ -69,9 +69,10 @@ public class AnalysisAssetDaoImpl extends BasedSqlSessionDaoSupport implements A
     }
 
     @Override
-    public AnalysisRequestTarget getNextAnalysisTargetFile() {
-        return getSqlSession().selectOne("analysis.selectNextAnalysisTargetFile");
+    public AnalysisRequestTarget getNextAnalysisTargetFile(String targetStatus) {
+        return getSqlSession().selectOne("analysis.selectNextAnalysisTargetFile", targetStatus);
     }
+
 
     @Override
     public void modifyAnalysisTargetFile(AnalysisRequestTarget param) {

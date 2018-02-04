@@ -12,6 +12,6 @@ public interface AnalysisAssetDao {
     public void addAnalysisAssetOperation(List<AnalysisAssetOperation> analysisAssetOperations);
     public void addAnalysisAssetRelation(List<AnalysisAssetRelation> analysisAssetRelations);
 
-    public AnalysisRequestTarget getNextAnalysisTargetFile();
+    public AnalysisRequestTarget getNextAnalysisTargetFile(String targetStatus);
     public void modifyAnalysisTargetFile(AnalysisRequestTarget param);
 }
