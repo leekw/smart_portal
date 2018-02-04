@@ -2,12 +2,7 @@ package net.smart.common.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +23,7 @@ import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.comparator.SessionComparator;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.constant.ErrorCode;
+import net.smart.common.support.s3.S3Client;
 import net.smart.common.support.util.DateUtil;
 import net.smart.common.support.util.FileUtil;
 import net.smart.common.support.util.IntegrationHttpSessionCollector;
@@ -46,8 +42,10 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/permit/res/**")
 public class PermitResourceController extends AbstractPageController {
-	
-	
+
+	@Autowired
+	private S3Client s3Client;
+
 	@Autowired
 	private SmartCommonService smartCommonService;
 	
@@ -171,23 +169,47 @@ public class PermitResourceController extends AbstractPageController {
         String path = smartCommonService.getAnalysisFileDir();
         List<BasedFile> files = new ArrayList<BasedFile>();
         if (fileInfo.getFileupload() != null && !fileInfo.getFileupload().isEmpty()) {
-            for (MultipartFile file : fileInfo.getFileupload()) {
-                String filePath = FileUtil.saveFile(file, path);
-				if (filePath != null) {
-					String[] splitFilePath = filePath.split("/");
-					String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
-                    BasedFile uploadFile = new BasedFile();
-                    uploadFile.setFileNo(0);
-                    uploadFile.setFileName(file.getOriginalFilename());
-                    uploadFile.setFilePysName(splitFilePath[splitFilePath.length -1]);
-                    uploadFile.setFilePath(path+ "/"  + days.substring(0,4) + "/" + days.substring(4, 6) + "/" + days.substring(6, 8));
-                    uploadFile.setFileSize((file.getSize() /1024) + "KB");
-                    uploadFile.setDataMode("I");
-                    files.add(uploadFile);
-                }
+
+             for (MultipartFile file : fileInfo.getFileupload()) {
+
+
+
+                //String filePath = FileUtil.saveFile(file, path);
+                String tempName = UUID.randomUUID().toString();
+
+                File s3File = new File(file.getOriginalFilename());
+			 	file.transferTo(s3File);
+
+			 	try {
+					 String url = s3Client.uploadFile(s3File, "analysis");
+					 System.out.println("URL : " + url);
+				 } catch (InterruptedException e) {
+					 e.printStackTrace();
+				 }
+
+				//String[] splitFilePath = filePath.split("/");
+               // String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
+
+				BasedFile uploadFile = new BasedFile();
+				uploadFile.setFileNo(0);
+				uploadFile.setFileName(file.getOriginalFilename());
+				uploadFile.setFilePysName(file.getOriginalFilename());
+				uploadFile.setFilePath("analysis/");
+				uploadFile.setFileSize((file.getSize() /1024) + "KB");
+				uploadFile.setDataMode("I");
+				files.add(uploadFile);
+
+
+
+
+
 
             }
+
         }
+
+
+
         Map<String,Object> userDataMap = new HashMap<String,Object>();
         userDataMap.put("success", files);
         modelAndView.addObject(BizCode.RequestKey.PARAM_KEY.getValue(),userDataMap);

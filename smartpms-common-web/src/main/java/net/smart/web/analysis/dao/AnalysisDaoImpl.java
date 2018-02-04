@@ -91,5 +91,22 @@ public class AnalysisDaoImpl extends BasedSqlSessionDaoSupport implements Analys
 	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param) {
 		return getSqlSession().selectList("analysis.selectAnalysisSourceList",param);
 	}
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceResultList(AnalysisSourceResult param) {
+		return getSqlSession().selectList("analysis.selectAnalysisSourceResultList",param);
+	}
+
+	@Override
+	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(AnalysisSourceOperation param) {
+		return getSqlSession().selectList("analysis.selectAnalysisSourceOperationList",param);
+	}
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(AnalysisSourceResult param) {
+		return getSqlSession().selectList("analysis.selectAnalysisSourceRowRankList",param);
+	}
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) {
+		return getSqlSession().selectList("analysis.selectAnalysisSourceHighRankList",param);
+	}
 
 }

@@ -10,18 +10,18 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultPanel', {
 	border : false
 	,
 	items : [
-	    {
+        {
 
             xtype : 'panel',
             border : false,
-            title : '클래스 관계',
+            title : '진단결과 클래스',
             style : {
                 'background-color' : '#fff',
                 'box-shadow': '0 5px 5px 0 rgba(0,0,0,.25)'
             },
             items : [
                 {
-                    xtype: 'analysissourceresulttree'
+                    xtype: 'analysissourceresultgrid'
                 }
             ],
             tools : [
@@ -39,42 +39,8 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultPanel', {
                         store.load();
                     }
                 }
-            ],
-            responsiveCls: 'big-50 small-50'
-		},{
-            xtype: 'tabpanel',
-
-                    border: false,
-                    style : {
-                        'background-color' : '#fff',
-                            'box-shadow': '0 5px 5px 0 rgba(0,0,0,.25)'
-                    },
-                    items : [
-                        {
-                            xtype : 'panel',
-                            title : '메소드',
-                            border: false,
-                            width : '100%',
-                            items : [
-                                {
-                                    xtype: 'methodgrid'
-
-                                }
-                            ]
-                        },{
-                            xtype : 'panel',
-                            title : '메소드 상세',
-                            border: false,
-                            width : '100%',
-                            items : [
-                                {}
-                            ]
-                        }
-
-                    ],
-
-            responsiveCls: 'big-50 small-50'
-            },
+            ]
+ 		}
         ]
 
 });

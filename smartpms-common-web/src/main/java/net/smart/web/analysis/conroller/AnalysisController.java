@@ -20,7 +20,7 @@ public class AnalysisController {
 
 	@Autowired
 	private StaticAnalyzer analyzer;
-	
+
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
 	public List<AnalysisRaw> getAnalysisRawList(@IntegrationRequest AnalysisRaw param) {
@@ -77,6 +77,31 @@ public class AnalysisController {
 	@RequestMapping(value = "/analysis/run.{metadataType}", method = RequestMethod.GET)
 	public void runAnalysis() {
 		analyzer.analyze();
+	}
+
+	@RequestMapping(value = "/analysis/source/result/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresult")
+	public List<AnalysisSourceResult> getAnalysisSourceResultList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceResultList(param);
+	}
+
+	@RequestMapping(value = "/analysis/source/result/operation/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceoperations")
+	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(@IntegrationRequest AnalysisSourceOperation param) {
+		return  analysisService.getAnalysisSourceOperationList(param);
+	}
+
+
+	@RequestMapping(value = "/analysis/source/low/lank/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresults")
+	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceRowRankList(param);
+	}
+
+	@RequestMapping(value = "/analysis/source/high/lank/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysissourceresults")
+	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(@IntegrationRequest AnalysisSourceResult param) {
+		return  analysisService.getAnalysisSourceHighRankList(param);
 	}
 
 }

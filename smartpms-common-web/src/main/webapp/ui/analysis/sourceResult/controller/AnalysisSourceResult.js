@@ -1,22 +1,26 @@
 Ext.define('Ui.analysis.sourceResult.controller.AnalysisSourceResult', {
     extend: 'Ext.app.Controller',
-    stores: ['AnalysisSourceResult'],
-    models: ['AnalysisSourceResultTree'],
+    stores: ['AnalysisSourceResult','OperationGrid','AnalysisSourceResultTree','AnalysisSourceResultHighRankTree'],
+    models: ['AnalysisSourceResultTree'
+    //    ,'OperationGrid'
+    ],
 
     views: ['AnalysisSourceResultPanel'
+            ,'AnalysisSourceResultGrid'
             ,'AnalysisSourceResultTree'
-            ,'MethodGrid'
+            ,'OperationGrid'
+            ,'AnalysisSourceResultHighRankTree'
     ],
 
     refs: [{
-        ref: 'analysissourceresulttree',
-        selector: 'analysissourceresulttree'
+        ref: 'analysissourceresultgrid',
+        selector: 'analysissourceresultgrid'
     }],
     
     init: function() {
 
         this.control({
-            'analysissourceresulttree': {
+            'analysissourceresultgrid': {
             }
         });
         

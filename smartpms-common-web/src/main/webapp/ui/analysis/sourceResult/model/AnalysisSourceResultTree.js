@@ -1,32 +1,16 @@
 Ext.define('Ui.analysis.sourceResult.model.AnalysisSourceResultTree', {
 	extend : 'Ext.data.Model',
 	fields : [{
-        name : 'id',
-        type : 'string',
-        mapping : 'resourceId'
-    },{
-		name : 'leaf',
+        name : 'leaf',
         type : 'boolean',
-		mapping : 'leaf'
-	},{
-        name : 'text',
-        type : 'string',
-        mapping : 'className'
+        mapping : 'leaf'
     }, {
-		name : 'refClass',
+		name : 'assetName',
 		type : 'string',
-		mapping : 'refClass'
+		mapping : 'assetName'
 	}, {
-		name : 'classInterface',
-		type : 'string',
-		mapping : 'classInterface'
-	}, {
-		name : 'analysisList',
-		type : 'string',
-		mapping : 'analysisList'
-	}, {
-        name : 'analysisModul',
+        name : 'relationType',
         type : 'string',
-        mapping : 'analysisModul'
+        mapping : 'relationType'
     } ]
 });

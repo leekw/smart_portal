@@ -293,7 +293,12 @@
 			analysis_class_file_path,
 			etc,
 			analysis_yn,
-			upload_date
+			upload_date,
+			service,
+			module,
+			pmd,
+			fortify,
+			req_user
 		)
 		VALUES
 		(
@@ -306,7 +311,12 @@
 			#{analysisClassFilePath},
 			#{etc},
 			'N',
-			NOW()
+			#{reqDate},
+			#{service},
+			#{module},
+			#{pmd},
+			#{fortify},
+			#{reqUser}
 		)
 	</insert>
 
@@ -341,6 +351,11 @@
 		    to_char(upload_date,'yyyy/mm/dd hh24:mi:ss') 				as uploadDate,
 		    to_char(analysis_date,'yyyy/mm/dd hh24:mi:ss') 			as analysisDate,
 			etc ,
+			pmd,
+			fortify,
+			service,
+			module,
+			req_user as reqUser,
 			analysis_java_ori_name 		as analysisJavaOriName,
 		    analysis_class_ori_name 	as analysisClassOriName
 		from smrt_analysis_file
@@ -383,5 +398,73 @@
 		(relation_type, source_asset, target_asset)
 		VALUES (#{relationType}, #{sourceAsset}, #{targetAsset})
 	</insert>
-	
+
+
+	<select id="selectAnalysisSourceResultList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
+	   SELECT analysis_asset_id as analysisAssetId
+			  ,asset_name        	    as assetName
+			  ,asset_source_full_path as assetSourceFullPath
+              ,'Google'  as service
+		      ,'AI-FT' as module
+			  ,'이경욱'  as reqUser
+		      ,'Y' as pmd
+		      ,'N' as fortify
+		      ,'N' as etc
+		from smrt_analysis_asset
+		   where 1=1
+			<if test="assetSourceFullPath != null">
+			AND asset_source_full_path like '%'||#{assetSourceFullPath}||'%'
+			</if>
+	      <!--select-->
+			<!--analysis_asset_id 	    as analysisAssetId-->
+			<!--,asset_name        	    as assetName-->
+			<!--,asset_source_full_path as assetSourceFullPath-->
+			<!--,b.target_asset         as targetAsset-->
+		<!--<if test="sourceAsset != null">-->
+			  <!--,'true' as leaf-->
+		<!--</if>-->
+			<!--from smrt_analysis_asset A left join smrt_analysis_asset_rel B-->
+			<!--on a.asset_source_full_path = b.source_asset-->
+		<!--<if test="sourceAsset == null">-->
+			<!--AND source_asset = '1'-->
+		<!--</if>-->
+
+		<!--<if test="sourceAsset != null">-->
+			<!--where source_asset = #{sourceAsset}-->
+		<!--</if>-->
+
+	</select>
+
+	<select id="selectAnalysisSourceOperationList" parameterType="AnalysisSourceOperation" resultType="AnalysisSourceOperation">
+
+		select a.asset_op_name as assetOpName
+		, a.asset_op_code as assetOpCode
+		,(select  item_name from smrt_analysis_asset_op_item where analysis_asset_op_id = a.analysis_asset_op_id and item_type ='ARGUMENT_TYPE' and item_order=0 ) as argumentType
+		,(select  item_name from smrt_analysis_asset_op_item where analysis_asset_op_id = a.analysis_asset_op_id and item_type ='RETURN_TYPE') as returnType
+		from smrt_analysis_asset_op a
+		where a.analysis_asset_id =#{analysisAssetId}
+
+	</select>
+
+
+
+	<select id="selectAnalysisSourceRowRankList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
+
+		select target_asset as assetName,
+		       relation_type as relationType,
+		case when (select count(1) from smrt_analysis_asset_rel where source_asset = a.target_asset) &lt;= 1 then 'false' else 'true' end as leaf
+		from smrt_analysis_asset_rel a
+		where source_asset like  '%'||#{assetName}||'%'
+	</select>
+
+	<select id="selectAnalysisSourceHighRankList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
+
+		select  target_asset as assetName,
+				relation_type as relationType,
+				case when (select count(1) from smrt_analysis_asset_rel where target_asset = a.source_asset) &lt;= 1 then 'false' else 'true' end as leaf
+		from smrt_analysis_asset_rel a
+		where target_asset like  '%'||#{assetName}||'%'
+	</select>
+
+
 </mapper>

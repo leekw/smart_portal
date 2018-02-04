@@ -15,11 +15,7 @@ import net.smart.web.analysis.dao.AnalysisDao;
 import net.smart.web.code.service.CodeService;
 import net.smart.web.domain.CommonCode;
 import net.smart.web.domain.CommonCodeType;
-import net.smart.web.domain.analysis.AnalysisRaw;
-import net.smart.web.domain.analysis.AnalysisResult;
-import net.smart.web.domain.analysis.AnalysisSummary;
-import net.smart.web.domain.analysis.AnalysisTop;
-import net.smart.web.domain.analysis.AnalysisSource;
+import net.smart.web.domain.analysis.*;
 
 
 import org.apache.commons.beanutils.BeanUtilsBean;
@@ -218,4 +214,22 @@ public class AnalysisServiceImpl implements AnalysisService {
 		return analysisDao.getAnalysisSourceList(param);
 	}
 
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceResultList(AnalysisSourceResult param) {
+		return analysisDao.getAnalysisSourceResultList(param);
+	}
+
+	@Override
+	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(AnalysisSourceOperation param) {
+		return analysisDao.getAnalysisSourceOperationList(param);
+	}
+
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(AnalysisSourceResult param) {
+		return analysisDao.getAnalysisSourceRowRankList(param);
+	}
+	@Override
+	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) {
+		return analysisDao.getAnalysisSourceHighRankList(param);
+	}
 }
