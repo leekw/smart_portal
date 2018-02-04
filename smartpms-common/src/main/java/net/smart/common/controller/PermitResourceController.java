@@ -173,9 +173,9 @@ public class PermitResourceController extends AbstractPageController {
         if (fileInfo.getFileupload() != null && !fileInfo.getFileupload().isEmpty()) {
             for (MultipartFile file : fileInfo.getFileupload()) {
                 String filePath = FileUtil.saveFile(file, path);
-				String[] splitFilePath = filePath.split("/");
-                String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
-			    if (filePath != null) {
+				if (filePath != null) {
+					String[] splitFilePath = filePath.split("/");
+					String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
                     BasedFile uploadFile = new BasedFile();
                     uploadFile.setFileNo(0);
                     uploadFile.setFileName(file.getOriginalFilename());

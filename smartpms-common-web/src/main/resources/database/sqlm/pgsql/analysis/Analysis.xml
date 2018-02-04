@@ -310,6 +310,24 @@
 		)
 	</insert>
 
+	<select id="selectNextAnalysisTargetFile" resultType="AnalysisRequestTarget">
+		select
+			analysis_file_no 											as analysisFileNo,
+			analysis_class_file_path||'/'||analysis_class_file_name 	as analysisRequestTargetBinaryPath,
+			analysis_java_file_path||'/'||analysis_java_file_name 	    as analysisRequestTargetSourcePath,
+			analysis_java_file_name                                     as analysisRequestTargetSourceName
+		from smrt_analysis_file
+		where analysis_yn = 'N'
+		order by upload_date asc
+		LIMIT 1 FOR UPDATE
+	</select>
+
+	<update id="updateAnalysisTargetFile" parameterType="AnalysisRequestTarget">
+		update smrt_analysis_file
+		set analysis_yn = 'Y'
+		where analysis_file_no = #{analysisFileNo}
+	</update>
+
 
 	<select id="selectAnalysisSourceList" parameterType="AnalysisSource" resultType="AnalysisSource">
 		select

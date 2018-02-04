@@ -2,6 +2,7 @@ package net.smart.web.analysis.conroller;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
+import net.smart.core.analyzer.stat.StaticAnalyzer;
 import net.smart.web.analysis.service.AnalysisService;
 import net.smart.web.domain.analysis.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ public class AnalysisController {
 	
 	@Autowired
 	private AnalysisService analysisService;
+
+	@Autowired
+	private StaticAnalyzer analyzer;
 	
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
@@ -68,6 +72,11 @@ public class AnalysisController {
 	@IntegrationResponse(key="analysissources")
 	public List<AnalysisSource> getAnalysisSourceList(@IntegrationRequest AnalysisSource param) {
 		return  analysisService.getAnalysisSourceList(param);
+	}
+
+	@RequestMapping(value = "/analysis/run.{metadataType}", method = RequestMethod.GET)
+	public void runAnalysis() {
+		analyzer.analyze();
 	}
 
 }

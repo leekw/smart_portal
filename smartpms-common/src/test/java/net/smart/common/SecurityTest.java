@@ -10,7 +10,7 @@ public class SecurityTest {
 	public void testSecurity() throws Exception {
 		StringEncrypter ss = new StringEncrypter(false);
 		try {
-			String eValue = ss.encrypt("new1234!");
+			String eValue = ss.encrypt("intheforest");
 			System.out.print(" encription :" +  eValue + "\n");
 			String dValue = ss.decrypt(eValue);
 			System.out.println(" decription :" + dValue);

@@ -1,6 +1,7 @@
 package net.smart.core.analyzer.visitor;
 
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import net.smart.common.domain.*;
 import net.smart.core.analyzer.store.AnalysisAssetStore;
 import org.apache.bcel.classfile.Constant;
@@ -12,8 +13,10 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+@Slf4j
 public class ClassVisitor extends EmptyVisitor {
     private JavaClass clazz;
     private ConstantPoolGen constants;
@@ -38,7 +41,7 @@ public class ClassVisitor extends EmptyVisitor {
         asset.setAssetSize("0");
         asset.setAssetLoc("0");
         asset.setAssetSourceFullPath(clazz.getSourceFileName());
-        asset.setAssetSourceCode(String.valueOf(clazz.getSource()));
+        asset.setAssetSourceCode("");
         asset.setAnalysisAssetOperationList(Lists.newArrayList());
         for (Method method : clazz.getMethods()) {
             AnalysisAssetOperation operation = AnalysisAssetOperation.builder()
@@ -83,7 +86,7 @@ public class ClassVisitor extends EmptyVisitor {
                 String referencedClass = constantPool.constantToString(constant);
                 AnalysisAssetRelation relation = AnalysisAssetRelation.builder().build();
                 relation.setRelationType(AnalysisAssetRelationType.CLASS_TO_CLASS);
-                relation.setSourceAsset(clazz.getSourceFileName());
+                relation.setSourceAsset(clazz.getClassName());
                 relation.setTargetAsset(referencedClass);
                 System.out.println(String.format(classReferenceFormat, referencedClass));
                 relations.add(relation);

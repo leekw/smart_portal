@@ -91,4 +91,5 @@ public class AnalysisDaoImpl extends BasedSqlSessionDaoSupport implements Analys
 	public List<AnalysisSource> getAnalysisSourceList(AnalysisSource param) {
 		return getSqlSession().selectList("analysis.selectAnalysisSourceList",param);
 	}
+
 }
