@@ -2,13 +2,19 @@ package net.smart.web.analysis.conroller;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
+import net.smart.core.analyzer.parser.AnalysisResultParser;
 import net.smart.core.analyzer.stat.StaticAnalyzer;
 import net.smart.web.analysis.service.AnalysisService;
 import net.smart.web.domain.analysis.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -20,6 +26,9 @@ public class AnalysisController {
 
 	@Autowired
 	private StaticAnalyzer analyzer;
+
+	@Autowired
+	private AnalysisResultParser analysisResultParser;
 
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
@@ -102,6 +111,17 @@ public class AnalysisController {
 	@IntegrationResponse(key="analysissourceresults")
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(@IntegrationRequest AnalysisSourceResult param) {
 		return  analysisService.getAnalysisSourceHighRankList(param);
+	}
+
+	@RequestMapping(value = "/analysis/result/parsing", method = RequestMethod.GET)
+	public ResponseEntity parseAnalysisResult(@RequestParam String targetKey) {
+		analysisResultParser.parse(targetKey);
+
+		String result = "Analysis Result Parsing completed!";
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.TEXT_PLAIN);
+		httpHeaders.setContentLength(result.length());
+		return new ResponseEntity<>(result, httpHeaders, HttpStatus.OK);
 	}
 
 }
