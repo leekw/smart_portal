@@ -21,10 +21,17 @@ public class S3Client {
     @Value("${smart.aws.s3.bucket.name}")
     private String bucketName;
 
+    @Value("${smart.aws.s3.result.dir}")
+    private String targetDir;
+
     public static final String S3_URL_FORMAT = "https://s3.ap-northeast-2.amazonaws.com/%s/%s";
 
     @Autowired
     private TransferManager transferManager;
+
+    public String getTargetDir() {
+        return targetDir;
+    }
 
     public String uploadFile(File file, String dirName) throws InterruptedException {
         String key = createKey(dirName, file.getName().trim());

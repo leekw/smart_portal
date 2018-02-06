@@ -2,13 +2,20 @@ package net.smart.web.analysis.conroller;
 
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
+import net.smart.core.analyzer.parser.AnalysisResultParser;
+import net.smart.core.analyzer.stat.StaticAnalyzer;
 import net.smart.web.analysis.service.AnalysisService;
 import net.smart.web.domain.analysis.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,8 +32,12 @@ public class AnalysisController {
 	@Autowired
 	private AnalysisService analysisService;
 
+	@Autowired
+	private StaticAnalyzer analyzer;
 
-	
+	@Autowired
+	private AnalysisResultParser analysisResultParser;
+
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
 	public List<AnalysisRaw> getAnalysisRawList(@IntegrationRequest AnalysisRaw param) {
@@ -80,6 +91,11 @@ public class AnalysisController {
 		return  analysisService.getAnalysisSourceList(param);
 	}
 
+	@RequestMapping(value = "/analysis/run.{metadataType}", method = RequestMethod.GET)
+	public void runAnalysis() {
+		analyzer.analyze();
+	}
+
 	@RequestMapping(value = "/analysis/source/result/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analysissourceresult")
 	public List<AnalysisSourceResult> getAnalysisSourceResultList(@IntegrationRequest AnalysisSourceResult param) {
@@ -103,6 +119,11 @@ public class AnalysisController {
 	@IntegrationResponse(key="analysissourceresults")
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(@IntegrationRequest AnalysisSourceResult param) {
 		return  analysisService.getAnalysisSourceHighRankList(param);
+	}
+
+	@RequestMapping(value = "/analysis/result/parse", method = RequestMethod.GET)
+	public void parseResult() {
+		analysisResultParser.parse();
 	}
 
 	@RequestMapping(value = "/analysis/source/code/view.do", method = RequestMethod.GET)

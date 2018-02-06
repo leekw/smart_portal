@@ -1,17 +1,16 @@
 package net.smart.core.analyzer.store;
 
+import lombok.extern.slf4j.Slf4j;
 import net.smart.common.dao.SmartCommonDao;
+import net.smart.common.domain.*;
 import net.smart.common.support.dao.BasedSqlSessionDaoSupport;
-import net.smart.common.domain.AnalysisAsset;
-import net.smart.common.domain.AnalysisAssetOperation;
-import net.smart.common.domain.AnalysisAssetOperationItem;
-import net.smart.common.domain.AnalysisAssetRelation;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Slf4j
 @Repository
 public class AnalysisAssetDaoImpl extends BasedSqlSessionDaoSupport implements AnalysisAssetDao {
 
@@ -63,9 +62,21 @@ public class AnalysisAssetDaoImpl extends BasedSqlSessionDaoSupport implements A
             try {
                 getSqlSession().insert("analysis.insertAnalysisAssetRelation", param);
             } catch (Exception ex) {
-                System.out.println("duplicate key value violates skip");
+                log.warn("duplicate key value violates skip");
             }
 
         }
     }
+
+    @Override
+    public AnalysisRequestTarget getNextAnalysisTargetFile(String targetStatus) {
+        return getSqlSession().selectOne("analysis.selectNextAnalysisTargetFile", targetStatus);
+    }
+
+
+    @Override
+    public void modifyAnalysisTargetFile(AnalysisRequestTarget param) {
+        getSqlSession().update("analysis.updateAnalysisTargetFile", param);
+    }
+
 }
