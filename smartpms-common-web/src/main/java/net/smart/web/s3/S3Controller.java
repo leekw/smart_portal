@@ -24,7 +24,7 @@ public class S3Controller {
 
     @RequestMapping(value = "/s3/upload.{metadataType}", method = RequestMethod.GET)
     public void upload() {
-        File file = new File("/Users/ags0688/Downloads/18_tech08_skcnc.pdf");
+        File file = new File("/Users/kyungholee/Downloads/clock.svg");
         try {
             String url = s3Client.uploadFile(file, "smart");
             System.out.println("URL : " + url);
@@ -51,4 +51,5 @@ public class S3Controller {
         }
         return null;
     }
+
 }

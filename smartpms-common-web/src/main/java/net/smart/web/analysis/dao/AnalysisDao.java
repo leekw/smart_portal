@@ -25,4 +25,7 @@ public interface AnalysisDao {
 	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(AnalysisSourceOperation param);
 	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(AnalysisSourceResult param);
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param);
+	public AnalysisSourceResult getAnalysisSourceCode(AnalysisSourceResult param);
+
+
 }

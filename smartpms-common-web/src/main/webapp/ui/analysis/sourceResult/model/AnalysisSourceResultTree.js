@@ -12,5 +12,17 @@ Ext.define('Ui.analysis.sourceResult.model.AnalysisSourceResultTree', {
         name : 'relationType',
         type : 'string',
         mapping : 'relationType'
-    } ]
+    }, {
+        name : 'analysisAssetId',
+        type : 'string',
+        mapping : 'analysisAssetId'
+    }, {
+        name : 'sourceRefId',
+        type : 'string',
+        mapping : 'sourceRefId'
+    }, {
+        name : 'targetRefId',
+        type : 'string',
+        mapping : 'targetRefId'
+    }   ]
 });

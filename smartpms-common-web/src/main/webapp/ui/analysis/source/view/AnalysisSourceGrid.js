@@ -121,6 +121,25 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
                 handler : function() {
                      FileUpload.openUploadFile();
                 }
+            },{
+                text: 'parser',
+                ui : 'soft-blue',
+                handler : function() {
+
+                    Ext.Ajax.request({
+                        url: G_PATH + '/analysis/result/pmd/parse.json',
+                        method : 'POST',
+                        headers : {'Content-Type' : 'application/json'},
+                        params : (Ext.JSON.encode({analysisFileNo : 26})),
+                        success: function(res, eOtps) {
+
+                        },
+                        failure: function(res, eOtps) {
+                         }
+
+                    });
+
+                }
             },
         ];
         

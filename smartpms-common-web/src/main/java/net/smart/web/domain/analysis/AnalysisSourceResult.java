@@ -1,10 +1,13 @@
 package net.smart.web.domain.analysis;
 
 import net.smart.common.domain.Tree;
+import org.apache.ibatis.session.ResultHandler;
 
-public class AnalysisSourceResult extends Tree {
+public class AnalysisSourceResult extends Tree  {
 
     private long analysisAssetId;
+    private long analysisFileNo;
+
     private String assetName;
     private String assetSourceFullPath;
     private String sourceAsset;
@@ -14,24 +17,60 @@ public class AnalysisSourceResult extends Tree {
     private String fortify;
     private String etc;
     private String reqUser;
-    private long analysisFileNo;
     private String service;
     private String relationType;
+    private String code;
+    private String assetSourceCode;
+    private String sourceRefId;
+    private String targetRefId;
 
-    public String getRelationType() {
-        return relationType;
+
+    public long getAnalysisAssetId() {
+        return analysisAssetId;
     }
 
-    public void setRelationType(String relationType) {
-        this.relationType = relationType;
+    public void setAnalysisAssetId(long analysisAssetId) {
+        this.analysisAssetId = analysisAssetId;
     }
 
-    public String getService() {
-        return service;
+    public long getAnalysisFileNo() {
+        return analysisFileNo;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setAnalysisFileNo(long analysisFileNo) {
+        this.analysisFileNo = analysisFileNo;
+    }
+
+    public String getAssetName() {
+        return assetName;
+    }
+
+    public void setAssetName(String assetName) {
+        this.assetName = assetName;
+    }
+
+    public String getAssetSourceFullPath() {
+        return assetSourceFullPath;
+    }
+
+    public void setAssetSourceFullPath(String assetSourceFullPath) {
+        this.assetSourceFullPath = assetSourceFullPath;
+    }
+
+    public String getSourceAsset() {
+        return sourceAsset;
+    }
+
+    public void setSourceAsset(String sourceAsset) {
+        this.sourceAsset = sourceAsset;
+    }
+
+    public String getTargetAsset() {
+        return targetAsset;
+    }
+
+    public void setTargetAsset(String targetAsset) {
+        this.targetAsset = targetAsset;
     }
 
     public String getModule() {
@@ -74,51 +113,51 @@ public class AnalysisSourceResult extends Tree {
         this.reqUser = reqUser;
     }
 
-    public long getAnalysisFileNo() {
-        return analysisFileNo;
+    public String getService() {
+        return service;
     }
 
-    public void setAnalysisFileNo(long analysisFileNo) {
-        this.analysisFileNo = analysisFileNo;
+    public void setService(String service) {
+        this.service = service;
     }
 
-    public String getAssetName() {
-        return assetName;
+    public String getRelationType() {
+        return relationType;
     }
 
-    public void setAssetName(String assetName) {
-        this.assetName = assetName;
+    public void setRelationType(String relationType) {
+        this.relationType = relationType;
     }
 
-    public String getAssetSourceFullPath() {
-        return assetSourceFullPath;
+    public String getCode() {
+        return code;
     }
 
-    public void setAssetSourceFullPath(String assetSourceFullPath) {
-        this.assetSourceFullPath = assetSourceFullPath;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public long getAnalysisAssetId() {
-        return analysisAssetId;
+    public String getAssetSourceCode() {
+        return assetSourceCode;
     }
 
-    public void setAnalysisAssetId(long analysisAssetId) {
-        this.analysisAssetId = analysisAssetId;
+    public void setAssetSourceCode(String assetSourceCode) {
+        this.assetSourceCode = assetSourceCode;
     }
 
-    public String getSourceAsset() {
-        return sourceAsset;
+    public String getSourceRefId() {
+        return sourceRefId;
     }
 
-    public void setSourceAsset(String sourceAsset) {
-        this.sourceAsset = sourceAsset;
+    public void setSourceRefId(String sourceRefId) {
+        this.sourceRefId = sourceRefId;
     }
 
-    public String getTargetAsset() {
-        return targetAsset;
+    public String getTargetRefId() {
+        return targetRefId;
     }
 
-    public void setTargetAsset(String targetAsset) {
-        this.targetAsset = targetAsset;
+    public void setTargetRefId(String targetRefId) {
+        this.targetRefId = targetRefId;
     }
 }

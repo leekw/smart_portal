@@ -109,4 +109,9 @@ public class AnalysisDaoImpl extends BasedSqlSessionDaoSupport implements Analys
 		return getSqlSession().selectList("analysis.selectAnalysisSourceHighRankList",param);
 	}
 
+	@Override
+	public AnalysisSourceResult getAnalysisSourceCode(AnalysisSourceResult param) {
+		return getSqlSession().selectOne("analysis.selectAnalysisSourceCode",param);
+	}
+
 }

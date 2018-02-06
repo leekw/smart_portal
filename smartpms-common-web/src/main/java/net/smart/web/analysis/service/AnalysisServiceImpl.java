@@ -1,7 +1,6 @@
 package net.smart.web.analysis.service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.smart.common.exception.BizException;
+import net.smart.common.support.s3.S3Client;
 import net.smart.common.support.util.DateUtil;
 import net.smart.web.analysis.dao.AnalysisDao;
 import net.smart.web.code.service.CodeService;
@@ -39,6 +39,9 @@ public class AnalysisServiceImpl implements AnalysisService {
 	
 	@Autowired
 	private CodeService codeService;
+
+	@Autowired
+	private S3Client s3Client;
 
 	@Override
 	public List<AnalysisRaw> getAnalysisRawList(AnalysisRaw param) {
@@ -232,4 +235,73 @@ public class AnalysisServiceImpl implements AnalysisService {
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) {
 		return analysisDao.getAnalysisSourceHighRankList(param);
 	}
+
+	@Override
+	public AnalysisSourceResult getAnalysisSourceCode(AnalysisSourceResult param) {
+		return analysisDao.getAnalysisSourceCode(param);
+	}
+
+	@Override
+	public List<AnalysisRaw> getAnalysisPmdDataList(AnalysisSourceResult param) throws IOException{
+
+		//TO_DO 진단대상 등록 파일의 파일순번을 키로 분석된 파일의 정보를 읽어옴
+		InputStream is = s3Client.getS3ObjectInputStream("analysis/pmd_report.csv");
+
+		InputStreamReader isr = new InputStreamReader(is);
+
+		BufferedReader reader = new BufferedReader(isr);
+
+		List<AnalysisRaw> insDataList = new ArrayList<AnalysisRaw>();
+
+		int lineNum = 0;
+		while(true){
+
+			String line = reader.readLine();
+
+			if(line == null) break;
+			String[] colmns = line.split(",",-1);
+
+			if(lineNum !=0) {
+
+				AnalysisRaw insData = new AnalysisRaw();
+				int colNum = 0;
+				for (String data : colmns) {
+					colNum++;
+					if (colNum == 3) {
+						insData.setFullLocation(data);
+					}
+					if (colNum == 4) {
+						insData.setSeverity(data);
+					}
+					if (colNum == 5) {
+						insData.setSource(data);
+					}
+					if (colNum == 6) {
+						insData.setResultMessage(data);
+					}
+					if (colNum == 7) {
+						insData.setVulnerability(data);
+					}
+					if (colNum == 8) {
+						insData.setSecurityRule(data);
+					}
+				}
+
+				insData.setServiceName("Google");
+				insData.setRepoName("AI-TF");
+				insData.setTool("PMD");
+				insData.setAnalysisDate(DateUtil.getNow());
+				insDataList.add(insData);
+			}
+			lineNum++;
+		}
+
+		return insDataList;
+	};
+
+	@Override
+	public void addAnalysisResultList(List<AnalysisRaw> param){
+		analysisDao.addAnalysisRaw(param);
+	}
+
 }

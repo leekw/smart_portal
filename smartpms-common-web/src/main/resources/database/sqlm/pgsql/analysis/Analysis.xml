@@ -39,8 +39,9 @@
 	AND a.analysis_date = to_date(#{analysisDateByString} , 'YYYY-MM-DD')
 	</if>
 	<if test="analysisDateByString == null">
-	AND a.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
+	--AND a.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
 	</if>
+
 	<if test="severity != null">
 	AND severity = #{severity}
 	</if>
@@ -80,7 +81,7 @@
 	AND b.analysis_date = to_date(#{analysisDateByString} , 'YYYY-MM-DD')
 	</if>
 	<if test="analysisResultId == 0 and analysisDateByString == null">
-	AND b.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
+	--AND b.analysis_date = to_date((SELECT MAX(comn_code_id) FROM smrt_comn_code where comn_code_type_id = 'DAY'), 'YYYY-MM-DD')
 	</if>
 	<if test="analysisResultId != 0">
 	AND a.analysis_result_id = #{analysisResultId}
@@ -441,11 +442,21 @@
 
 	<select id="selectAnalysisSourceHighRankList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
 
-		select  target_asset as assetName,
+		select  source_ref_id as sourceRefId,
+				target_ref_id as targetRefId,
+				source_asset as assetName,
 				relation_type as relationType,
 				case when (select count(1) from smrt_analysis_asset_rel where target_asset = a.source_asset) &lt;= 1 then 'false' else 'true' end as leaf
 		from smrt_analysis_asset_rel a
 		where target_asset like  '%'||#{assetName}||'%'
+	</select>
+
+	<select id="selectAnalysisSourceCode" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
+
+		select
+				asset_source_code as assetSourceCode
+		from smrt_analysis_asset
+		where analysis_asset_id =   #{analysisAssetId}
 	</select>
 
 
