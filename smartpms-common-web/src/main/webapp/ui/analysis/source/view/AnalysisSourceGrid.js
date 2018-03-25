@@ -188,11 +188,13 @@ var FileUpload = {
             win = Ext.create('Ext.window.Window', {
                 id : 'file-upload-info',
                 title: '진단대상 업로드',
-                autoScroll: true,
+                autoShow : true,
                 maximizable : true,
-                 width: 400,
+                 width: 600,
+                floating : true,
                 layout: 'fit',
                 animateTarget:this,
+                modal :true,
                 items : [{
                     xtype : 'form',
                     maxHeight : 600,

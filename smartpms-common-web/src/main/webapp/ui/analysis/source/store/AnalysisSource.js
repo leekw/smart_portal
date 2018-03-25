@@ -17,7 +17,7 @@ Ext.define('Ui.analysis.source.store.AnalysisSource', {
             update : 'POST',
             destroy: 'POST'
         },
-        extraParams : { maxRowSize : 0 }
+        extraParams : { maxRowSize : 0 ,mobile:'N'}
     },
     autoLoad : true
 });
