@@ -24,6 +24,7 @@
     <security:http pattern="/*.jsp" security="none"/> 
     <security:http pattern="/permit/res/file/upload.file" security="none"/>
 	<security:http pattern="/permit/res/source/file/upload.file" security="none"/>
+	<security:http pattern="/permit/res/mobile/file/upload.file" security="none"/>
 	<security:http pattern="/permit/res/file/download.do" security="none"/>
     <security:http pattern="/permit/res/file/list/get.json" security="none"/>
     <security:http pattern="/permit/res/file/remove.json" security="none"/>

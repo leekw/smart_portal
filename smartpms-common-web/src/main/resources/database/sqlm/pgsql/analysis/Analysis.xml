@@ -107,13 +107,24 @@
 	</select>
 	
 	<insert id="insertAnalysisRaw" parameterType="AnalysisRaw">
-	INSERT INTO smrt_analysis_result(
-	analysis_result_id, service_name, repo_name, analysis_date, 
+	INSERT INTO /*insertAnalysisRaw*/
+		smrt_analysis_result(
+	analysis_result_id, service_name, repo_name, analysis_date,
 	vulnerability, cwe, security_rule, severity, full_location,
-	 file, source, result_message, area, tool, order_no, manager, team)
+	file, source, result_message, area, tool, order_no, manager, team)
 	VALUES (nextval('analysis_result_seq'), #{serviceName}, #{repoName}, #{analysisDate},
-	        #{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
-	        #{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
+	#{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
+	#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
+</insert>
+
+	<insert id="insertAnalysisRawCore" parameterType="AnalysisRawCore">
+		INSERT INTO /*insertAnalysisRawCore*/smrt_analysis_result(
+		analysis_result_id, service_name, repo_name, analysis_date,
+		vulnerability, cwe, security_rule, severity, full_location,
+		file, source, result_message, area, tool, order_no, manager, team)
+		VALUES (nextval('analysis_result_seq'), #{serviceName}, #{repoName}, #{analysisDate},
+		#{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
+		#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
 	</insert>
 	
 	<select id="selectAnalysisTopList" parameterType="AnalysisTop" resultType="AnalysisTop">
@@ -326,7 +337,10 @@
 			analysis_file_no 											as analysisFileNo,
 			analysis_class_file_path||'/'||analysis_class_file_name 	as analysisRequestTargetBinaryPath,
 			analysis_java_file_path||'/'||analysis_java_file_name 	    as analysisRequestTargetSourcePath,
-			analysis_java_file_name                                     as analysisRequestTargetSourceName
+			analysis_java_file_name                                     as analysisRequestTargetSourceName,
+		    service 													as serviceName,
+		    module 														as repoName,
+		    'PMD'                 										as toolName
 		from smrt_analysis_file
 		where analysis_yn = #{targetStatus}
 		order by upload_date asc
@@ -341,7 +355,7 @@
 
 
 	<select id="selectAnalysisSourceList" parameterType="AnalysisSource" resultType="AnalysisSource">
-		select
+		select /*selectAnalysisSourceList*/
 			analysis_file_no 			as analysisFileNo,
 			analysis_java_file_name 	as analysisJavaFileName,
 			analysis_java_file_path 	as analysisJavaFilePath,
@@ -369,6 +383,9 @@
 		</if>
 		<if test="etc != null">
 			AND etc like '%'||#{etc}||'%'
+		</if>
+		<if test="mobile != null">
+			AND mobile =#{mobile}
 		</if>
  	</select>
 
@@ -477,5 +494,48 @@
 		where analysis_asset_id =   #{analysisAssetId}
 	</select>
 
+	<select id="selectAnalysisMobileSeq"  resultType="java.lang.Integer">
+
+		select nextVal('analysis_mobile_seq') as nextSeq
+	</select>
+
+
+	<insert id="insertAnalysisMobile" parameterType="AnalysisMobile">
+		INSERT INTO smrt_analysis_mobile
+		(
+			analysis_file_no,
+			analysis_summary,
+			analysis_contents,
+			analysis_parent_id,
+			analysis_id,
+			analysis_exported
+		)
+		VALUES (
+			#{analysisFileNo},
+			#{analysisSummary},
+			#{analysisContents},
+			#{analysisParentId},
+			#{analysisId},
+			#{analysisExported}
+		)
+	</insert>
+
+	<select id="selectAnalysisMobileList" parameterType="AnalysisMobile" resultType="AnalysisMobile">
+		select
+			analysis_file_no   as analysisFileNo,
+			analysis_summary   as analysisSummary,
+			analysis_contents  as analysisContents,
+			analysis_parent_id as analysisParentId,
+			analysis_id        as analysisId,
+			analysis_exported  as analysisExported,
+		    case
+		     when analysis_parent_id =0
+		     then 'false'
+		     else 'true'
+		    end as leaf
+		from smrt_analysis_mobile
+		where analysis_file_no   = #{analysisFileNo}
+		and analysis_parent_id = #{analysisParentId}
+	</select>
 
 </mapper>

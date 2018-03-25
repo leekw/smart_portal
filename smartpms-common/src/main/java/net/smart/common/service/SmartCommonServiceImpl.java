@@ -681,4 +681,11 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 	public String getAnalysisFileDir() {
 		return getAnalysisFilePath();
 	}
+
+
+	@Override
+	public void addAnalysisMobileFile(BasedFile basedFile){
+		basedResourceDao.addAnalysisMobileFile(basedFile);
+	};
+
 }

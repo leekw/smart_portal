@@ -21,4 +21,7 @@ public class AnalysisRequestTarget {
 	private AnalysisRequestType analysisRequestType;
 	private long analysisFileNo;
 	private List<AnalysisRequestTool> analysisRequestToolList;
+	private String serviceName;
+	private String repoName;
+	private String toolName;
 }

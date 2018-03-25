@@ -23,5 +23,8 @@ public interface AnalysisService {
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) ;
 	public AnalysisSourceResult getAnalysisSourceCode(AnalysisSourceResult param) ;
 	public void addAnalysisResultList(List<AnalysisRaw> param) ;
-	List<AnalysisRaw> getAnalysisPmdDataList(AnalysisSourceResult param) throws IOException;
+	public List<AnalysisRaw> getAnalysisPmdDataList(AnalysisSourceResult param) throws IOException;
+	public List<AnalysisMobile> getAnalysisMobileDataList(AnalysisMobile param)  throws IOException;
+	public void addAnalysisResultMobileList(List<AnalysisMobile> mobileDataList);
+	public List<AnalysisMobile> getAnalysisMobileList(AnalysisMobile param);
 }

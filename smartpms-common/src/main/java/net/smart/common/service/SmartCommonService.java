@@ -120,5 +120,6 @@ public interface SmartCommonService {
 	public void removeOrgUser(BasedUser param);
 
 	public String getAnalysisFileDir();
-	
+
+	public void addAnalysisMobileFile(BasedFile basedFile);
 }

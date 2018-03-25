@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.smart.common.domain.AnalysisPriority;
 import net.smart.common.exception.BizException;
 import net.smart.common.support.s3.S3Client;
 import net.smart.common.support.util.DateUtil;
@@ -266,11 +267,24 @@ public class AnalysisServiceImpl implements AnalysisService {
 				AnalysisRaw insData = new AnalysisRaw();
 				int colNum = 0;
 				for (String data : colmns) {
+					data = data.replaceAll("\"","");
 					colNum++;
 					if (colNum == 3) {
 						insData.setFullLocation(data);
+
+						String fileName[] = data.split("/");
+						insData.setFile(fileName[fileName.length-1]);
+
 					}
 					if (colNum == 4) {
+						if("1".equals(data)){
+							data = AnalysisPriority.Critical.name();
+						}else if("2".equals(data)){
+							data = AnalysisPriority.High.name();
+						}else if("3".equals(data)){
+							data = AnalysisPriority.Nomal.name();
+						}
+
 						insData.setSeverity(data);
 					}
 					if (colNum == 5) {
@@ -283,6 +297,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 						insData.setVulnerability(data);
 					}
 					if (colNum == 8) {
+
 						insData.setSecurityRule(data);
 					}
 				}
@@ -297,11 +312,79 @@ public class AnalysisServiceImpl implements AnalysisService {
 		}
 
 		return insDataList;
-	};
+	}
 
 	@Override
 	public void addAnalysisResultList(List<AnalysisRaw> param){
 		analysisDao.addAnalysisRaw(param);
 	}
 
+	@Override
+	public List<AnalysisMobile> getAnalysisMobileDataList(AnalysisMobile param)  throws IOException {
+		InputStream is = s3Client.getS3ObjectInputStream("mobile/4_result_all.txt");
+
+		InputStreamReader isr = new InputStreamReader(is);
+
+		BufferedReader reader = new BufferedReader(isr);
+
+		List<AnalysisMobile> parseDataList = new ArrayList<AnalysisMobile>();
+
+		long fileNo    = param.getAnalysisFileNo();
+		int parentId   = 0;
+		String summary = null;
+		while(true){
+			AnalysisMobile paseData = new AnalysisMobile();
+			String line = reader.readLine();
+
+			if(line == null) break;
+
+			if(line.startsWith(":ST")){
+				summary = line.substring(4);
+				paseData.setAnalysisFileNo(fileNo);
+				paseData.setAnalysisSummary(summary);
+				paseData.setAnalysisContents(summary);
+				paseData.setAnalysisParentId(0);
+				parentId = analysisDao.getAnalysisMobileSeq();
+				paseData.setAnalysisId(parentId);
+				parseDataList.add(paseData);
+				continue;
+ 			}else if(line.startsWith(":EN")){
+				continue;
+			}
+
+			String[] colmns = line.split(",",-1);
+
+			int colNum = 0;
+			for (String data : colmns) {
+				if(colNum == 0){
+					paseData.setAnalysisContents(data.trim());
+
+				}
+
+				if(colNum == 1){
+					paseData.setAnalysisExported(data.trim());
+				}
+
+				paseData.setAnalysisFileNo(fileNo);
+				paseData.setAnalysisSummary(summary);
+				paseData.setAnalysisParentId(parentId);
+				parseDataList.add(paseData);
+				colNum++;
+			}
+
+		}
+
+
+		return parseDataList;
+	}
+
+	@Override
+	public void addAnalysisResultMobileList(List<AnalysisMobile> mobileDataList) {
+		analysisDao.addAnalysisMoblie(mobileDataList);
+	}
+
+	@Override
+	public List<AnalysisMobile> getAnalysisMobileList(AnalysisMobile param) {
+		return analysisDao.getAnalysisMobileList(param);
+	}
 }

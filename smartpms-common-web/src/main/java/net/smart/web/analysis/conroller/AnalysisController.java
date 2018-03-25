@@ -38,6 +38,7 @@ public class AnalysisController {
 	@Autowired
 	private AnalysisResultParser analysisResultParser;
 
+
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
 	public List<AnalysisRaw> getAnalysisRawList(@IntegrationRequest AnalysisRaw param) {
@@ -122,7 +123,7 @@ public class AnalysisController {
 	}
 
 	@RequestMapping(value = "/analysis/result/parse", method = RequestMethod.GET)
-	public void parseResult() {
+	public void parseResult()  throws IOException{
 		analysisResultParser.parse();
 	}
 
@@ -153,5 +154,23 @@ public class AnalysisController {
 		analysisService.addAnalysisResultList(pmdDataList);
 
  	}
+
+
+	@RequestMapping(value = "/analysis/mobile/apk/parse.{metadataType}", method = RequestMethod.POST)
+	public void getAnalysisMobileParser(@IntegrationRequest AnalysisMobile param) throws IOException {
+
+		List<AnalysisMobile> mobileDataList = analysisService.getAnalysisMobileDataList(param);
+
+		analysisService.addAnalysisResultMobileList(mobileDataList);
+
+	}
+
+
+	@RequestMapping(value = "/analysis/mobile/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysismobiles")
+	public List<AnalysisMobile> getAnalysisMobileList(@IntegrationRequest AnalysisMobile param)  {
+		return analysisService.getAnalysisMobileList(param);
+
+	}
 
 }

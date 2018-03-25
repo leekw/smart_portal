@@ -114,4 +114,21 @@ public class AnalysisDaoImpl extends BasedSqlSessionDaoSupport implements Analys
 		return getSqlSession().selectOne("analysis.selectAnalysisSourceCode",param);
 	}
 
+	@Override
+	public int getAnalysisMobileSeq() {
+		return getSqlSession().selectOne("analysis.selectAnalysisMobileSeq");
+	}
+
+	@Override
+	public void addAnalysisMoblie(List<AnalysisMobile> mobileDataList) {
+		for (AnalysisMobile param : mobileDataList) {
+			getSqlSession().insert("analysis.insertAnalysisMobile", param);
+		}
+	}
+
+	@Override
+	public List<AnalysisMobile> getAnalysisMobileList(AnalysisMobile param) {
+		return getSqlSession().selectList("analysis.selectAnalysisMobileList",param);
+	}
+
 }
