@@ -51,8 +51,7 @@ public class PermitResourceController extends AbstractPageController {
 	
 	@Autowired
 	private SessionRegistry sessionRegistry;
-	
-	
+
 	
 	@RequestMapping(value = "/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="resources")
@@ -172,11 +171,6 @@ public class PermitResourceController extends AbstractPageController {
 
              for (MultipartFile file : fileInfo.getFileupload()) {
 
-
-
-                //String filePath = FileUtil.saveFile(file, path);
-                String tempName = UUID.randomUUID().toString();
-
                 File s3File = new File(file.getOriginalFilename());
 			 	file.transferTo(s3File);
 
@@ -187,9 +181,6 @@ public class PermitResourceController extends AbstractPageController {
 					 e.printStackTrace();
 				 }
 
-				//String[] splitFilePath = filePath.split("/");
-               // String days = DateUtil.getNowByFormat(DateUtil.Format.YYYYMMDD.getValue());
-
 				BasedFile uploadFile = new BasedFile();
 				uploadFile.setFileNo(0);
 				uploadFile.setFileName(file.getOriginalFilename());
@@ -199,22 +190,54 @@ public class PermitResourceController extends AbstractPageController {
 				uploadFile.setDataMode("I");
 				files.add(uploadFile);
 
-
-
-
-
-
             }
 
         }
-
-
-
         Map<String,Object> userDataMap = new HashMap<String,Object>();
         userDataMap.put("success", files);
         modelAndView.addObject(BizCode.RequestKey.PARAM_KEY.getValue(),userDataMap);
         return modelAndView;
     }
+
+
+
+	@RequestMapping(value = "/mobile/file/upload.file", method = RequestMethod.POST)
+	public ModelAndView mobileFileupload(BasedFileInfo fileInfo, HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView) throws IOException,InterruptedException {
+
+
+		List<BasedFile> files = new ArrayList<BasedFile>();
+		if (fileInfo.getFileupload() != null && !fileInfo.getFileupload().isEmpty()) {
+
+			for (MultipartFile file : fileInfo.getFileupload()) {
+
+				File s3File = new File(file.getOriginalFilename());
+				file.transferTo(s3File);
+
+				try {
+					String url = s3Client.uploadFile(s3File, "mobile");
+ 				} catch (InterruptedException e) {
+					throw e;
+				}
+
+				BasedFile uploadFile = new BasedFile();
+				uploadFile.setFileNo(0);
+				uploadFile.setFileName(file.getOriginalFilename());
+ 				uploadFile.setFilePath("mobile/");
+				uploadFile.setFileSize((file.getSize() /1024) + "KB");
+				uploadFile.setDataMode("I");
+				files.add(uploadFile);
+
+			}
+
+		}
+
+		smartCommonService.addAnalysisMobileFile(files.get(0));
+
+		Map<String,Object> userDataMap = new HashMap<String,Object>();
+		userDataMap.put("success", files.get(0));
+		modelAndView.addObject(BizCode.RequestKey.PARAM_KEY.getValue(),userDataMap);
+		return modelAndView;
+	}
 
 
 	@RequestMapping(value = "/file/remove.{metadataType}", method = RequestMethod.POST)
