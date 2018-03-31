@@ -374,9 +374,9 @@
 	<insert id="insertAnalysisAsset" parameterType="AnalysisAsset">
 		INSERT INTO smrt_analysis_asset
 		(analysis_asset_id, asset_name, asset_full_path, asset_size,
-		asset_source_full_path, asset_source_code, asset_loc)
+		asset_source_full_path, asset_source_code, asset_loc, analysis_req_target_no)
 		VALUES (#{analysisAssetId}, #{assetName}, #{assetFullPath}, #{assetSize},
-		#{assetSourceFullPath}, #{assetSourceCode}, #{assetLoc})
+		#{assetSourceFullPath}, #{assetSourceCode}, #{assetLoc}, #{analysisRequestTargetNo})
 	</insert>
 
 	<insert id="insertAnalysisAssetOperation" parameterType="AnalysisAssetOperation">
@@ -395,8 +395,8 @@
 
 	<insert id="insertAnalysisAssetRelation" parameterType="AnalysisAssetRelation">
 		INSERT INTO smrt_analysis_asset_rel
-		(relation_type, source_asset, target_asset)
-		VALUES (#{relationType}, #{sourceAsset}, #{targetAsset})
+		(relation_type, source_asset, target_asset, analysis_req_target_no)
+		VALUES (#{relationType}, #{sourceAsset}, #{targetAsset}, #{analysisRequestTargetNo})
 	</insert>
 
 
