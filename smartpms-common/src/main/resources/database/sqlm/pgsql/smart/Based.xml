@@ -556,4 +556,32 @@
 	INSERT INTO smrt_rel_user_org (user_id, org_id)
 	VALUES (#{userId}, #{defaultOrgId})
 	</insert>
+
+
+
+	<insert id="insertAnalysisMobileFile" parameterType="BasedFile">
+		INSERT INTO smrt_analysis_file
+		(
+		analysis_file_no,
+ 		analysis_java_file_name,
+		analysis_java_file_path,
+ 		analysis_class_file_name,
+		analysis_class_file_path,
+ 		analysis_yn,
+		upload_date,
+		mobile
+		)
+		VALUES
+		(
+		nextVal('analysis_file_seq'),
+ 		#{fileName},
+		#{filePath},
+ 		#{fileName},
+		#{filePath},
+ 		'N',
+		now(),
+		'Y'
+		)
+	</insert>
+
 </mapper>

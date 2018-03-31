@@ -11,16 +11,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @Controller
 public class AnalysisController {
-	
+
+	@Autowired
+	private SimpMessagingTemplate template;
+
 	@Autowired
 	private AnalysisService analysisService;
 
@@ -29,6 +37,7 @@ public class AnalysisController {
 
 	@Autowired
 	private AnalysisResultParser analysisResultParser;
+
 
 	@RequestMapping(value = "/analysis/raw/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="analaysisraws")
@@ -114,8 +123,54 @@ public class AnalysisController {
 	}
 
 	@RequestMapping(value = "/analysis/result/parse", method = RequestMethod.GET)
-	public void parseResult() {
+	public void parseResult()  throws IOException{
 		analysisResultParser.parse();
+	}
+
+	@RequestMapping(value = "/analysis/source/code/view.do", method = RequestMethod.GET)
+	public ModelAndView loginFailPage(ModelAndView modelAndView, @RequestParam int analysisAssetId ,HttpServletRequest request) {
+
+		AnalysisSourceResult param = new AnalysisSourceResult();
+		param.setAnalysisAssetId(analysisAssetId);
+		AnalysisSourceResult result = analysisService.getAnalysisSourceCode(param);
+
+		String code  = result.getAssetSourceCode().replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+		request.setAttribute("hlType", "java");
+		request.setAttribute("svnFileInfo", code);
+
+
+		modelAndView.setViewName("svnFileView");
+		return modelAndView;
+	}
+
+
+
+	@RequestMapping(value = "/analysis/result/pmd/parse.{metadataType}", method = RequestMethod.POST)
+ 	public void getAnalysisPmdParser(@IntegrationRequest AnalysisSourceResult param) throws IOException {
+
+		List<AnalysisRaw> pmdDataList = analysisService.getAnalysisPmdDataList(param);
+
+		analysisService.addAnalysisResultList(pmdDataList);
+
+ 	}
+
+
+	@RequestMapping(value = "/analysis/mobile/apk/parse.{metadataType}", method = RequestMethod.POST)
+	public void getAnalysisMobileParser(@IntegrationRequest AnalysisMobile param) throws IOException {
+
+		List<AnalysisMobile> mobileDataList = analysisService.getAnalysisMobileDataList(param);
+
+		analysisService.addAnalysisResultMobileList(mobileDataList);
+
+	}
+
+
+	@RequestMapping(value = "/analysis/mobile/list/get.{metadataType}", method = RequestMethod.POST)
+	@IntegrationResponse(key="analysismobiles")
+	public List<AnalysisMobile> getAnalysisMobileList(@IntegrationRequest AnalysisMobile param)  {
+		return analysisService.getAnalysisMobileList(param);
+
 	}
 
 }

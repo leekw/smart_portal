@@ -4,11 +4,12 @@
 <html>
     <head>
        <title> Integration Dashboard System</title>
-       <link rel="stylesheet" type="text/css" href="/int/resources/css/styles/github.css">
+       <link rel="stylesheet" type="text/css" href="/smart/resources/css/styles/github.css">
        <style type="text/css">
 		
 	   </style>
-       <script type="text/javascript" src="/int/resources/js/highlight.pack.js"></script>
+        <script type="text/javascript" src="/smart/resources/js/highlight.pack.js"></script>
+
     </head>
     <body>
     	<script type="text/javascript">hljs.initHighlightingOnLoad();</script>

@@ -1,15 +1,15 @@
-Ext.define('Ui.analysis.source.store.AnalysisSource', {
+Ext.define('Ui.android.analysis.store.Analysis', {
     extend: 'Ext.data.Store',
     autoDestroy: true,
     proxy: {
         type: 'ajax',
-        url: G_PATH + '/analysis/source/list/get.json',
+       // url: G_PATH + '/analysis/source/list/get.json',
         headers: {
             'Content-Type': 'application/json'
         },
         reader: {
             type: 'json',
-            rootProperty: 'analysissources'
+            rootProperty: 'collection'
         },
         actionMethods: {
             create : 'POST',
@@ -17,7 +17,7 @@ Ext.define('Ui.analysis.source.store.AnalysisSource', {
             update : 'POST',
             destroy: 'POST'
         },
-        extraParams : { maxRowSize : 0 ,mobile:'N'}
+        extraParams : { maxRowSize : 0 }
     },
-    autoLoad : true
+    autoLoad : false
 });

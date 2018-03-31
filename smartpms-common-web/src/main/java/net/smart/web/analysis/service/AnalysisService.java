@@ -1,5 +1,6 @@
 package net.smart.web.analysis.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import net.smart.web.domain.analysis.*;
@@ -20,7 +21,10 @@ public interface AnalysisService {
 	public List<AnalysisSourceOperation> getAnalysisSourceOperationList(AnalysisSourceOperation param) ;
 	public List<AnalysisSourceResult> getAnalysisSourceRowRankList(AnalysisSourceResult param) ;
 	public List<AnalysisSourceResult> getAnalysisSourceHighRankList(AnalysisSourceResult param) ;
-
-
-
+	public AnalysisSourceResult getAnalysisSourceCode(AnalysisSourceResult param) ;
+	public void addAnalysisResultList(List<AnalysisRaw> param) ;
+	public List<AnalysisRaw> getAnalysisPmdDataList(AnalysisSourceResult param) throws IOException;
+	public List<AnalysisMobile> getAnalysisMobileDataList(AnalysisMobile param)  throws IOException;
+	public void addAnalysisResultMobileList(List<AnalysisMobile> mobileDataList);
+	public List<AnalysisMobile> getAnalysisMobileList(AnalysisMobile param);
 }

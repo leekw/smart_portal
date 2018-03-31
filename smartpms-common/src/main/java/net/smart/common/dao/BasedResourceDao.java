@@ -74,4 +74,6 @@ public interface BasedResourceDao {
 	public void addOrgUser(BasedUser param);
 	
 	public void removeOrgUser(BasedUser param);
+
+	public void addAnalysisMobileFile(BasedFile basedFile);
 }

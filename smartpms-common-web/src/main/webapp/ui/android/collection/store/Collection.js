@@ -1,4 +1,4 @@
-Ext.define('Ui.analysis.source.store.AnalysisSource', {
+Ext.define('Ui.android.collection.store.Collection', {
     extend: 'Ext.data.Store',
     autoDestroy: true,
     proxy: {
@@ -17,7 +17,7 @@ Ext.define('Ui.analysis.source.store.AnalysisSource', {
             update : 'POST',
             destroy: 'POST'
         },
-        extraParams : { maxRowSize : 0 ,mobile:'N'}
+        extraParams : { maxRowSize : 0 ,mobile :'Y'}
     },
     autoLoad : true
 });

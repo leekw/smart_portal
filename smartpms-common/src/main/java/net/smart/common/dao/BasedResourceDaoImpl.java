@@ -180,4 +180,10 @@ public class BasedResourceDaoImpl extends BasedSqlSessionDaoSupport implements B
 		getSqlSession().delete("based.deleteOrgUser", param);
 	}
 
+	@Override
+	public void addAnalysisMobileFile(BasedFile basedFile){
+		getSqlSession().insert("based.insertAnalysisMobileFile", basedFile);
+	};
+
+
 }

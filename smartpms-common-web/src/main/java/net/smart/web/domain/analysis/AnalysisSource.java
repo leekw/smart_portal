@@ -19,9 +19,18 @@ public class AnalysisSource {
     private String fortify;
     private String etc;
     private String reqUser;
+    private String mobile;
     private long analysisFileNo;
     private int analysisCount;
     private Date reqDate;
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
 
     public String getAnalysisJavaFileName() {
         return analysisJavaFileName;

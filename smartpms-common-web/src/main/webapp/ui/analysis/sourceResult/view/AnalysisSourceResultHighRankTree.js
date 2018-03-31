@@ -14,7 +14,7 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
         xtype: 'treecolumn',
         text: '클래스',
         width: 300,
-        locked: true,
+        locked: false,
         dataIndex: 'assetName',
         editor: {
             allowBlank: false
@@ -22,9 +22,7 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
     } ]
   ,
     listeners: {
-        beforeexpand : function(p,animate,eOpts){
-            console.log("beforeexpand");
-        },
+
 
         expand : function(p,eOpts){
             console.log("expand");
@@ -49,6 +47,12 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
 
         cellclick: function (talbe, td, cellIndex, record, tr, rowindex, e, eOpts) {
             console.log("cellclick");
+            console.log(record.data.analysisAssetId);
+
+            var url = G_PATH + '/analysis/source/code/view.do?analysisAssetId=' + encodeURIComponent(770);
+            var option = "left=100,top=100,width='100%',height='100%',fullscreen=yes,location=no,titlebar=no,scrollbars=yes";
+            var popup = window.open(url, 'CutOver_Task_' + record.data.analysisAssetId, option);
+            popup.focus();
 
 
 

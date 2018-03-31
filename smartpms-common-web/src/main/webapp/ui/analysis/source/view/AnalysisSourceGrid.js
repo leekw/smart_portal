@@ -121,6 +121,25 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
                 handler : function() {
                      FileUpload.openUploadFile();
                 }
+            },{
+                text: 'parser',
+                ui : 'soft-blue',
+                handler : function() {
+
+                    Ext.Ajax.request({
+                        url: G_PATH + '/analysis/result/pmd/parse.json',
+                        method : 'POST',
+                        headers : {'Content-Type' : 'application/json'},
+                        params : (Ext.JSON.encode({analysisFileNo : 26})),
+                        success: function(res, eOtps) {
+
+                        },
+                        failure: function(res, eOtps) {
+                         }
+
+                    });
+
+                }
             },
         ];
         
@@ -169,11 +188,13 @@ var FileUpload = {
             win = Ext.create('Ext.window.Window', {
                 id : 'file-upload-info',
                 title: '진단대상 업로드',
-                autoScroll: true,
+                autoShow : true,
                 maximizable : true,
-                 width: 400,
+                 width: 600,
+                floating : true,
                 layout: 'fit',
                 animateTarget:this,
+                modal :true,
                 items : [{
                     xtype : 'form',
                     maxHeight : 600,
