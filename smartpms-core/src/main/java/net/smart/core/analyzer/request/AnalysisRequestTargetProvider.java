@@ -59,7 +59,7 @@ public class AnalysisRequestTargetProvider {
 			return null;
 		}
 
-		requestTarget.setAnalysisRequestToolList(Lists.newArrayList(AnalysisRequestTool.PMD));
+		requestTarget.setAnalysisRequestToolList(Lists.newArrayList(AnalysisRequestTool.PMD, AnalysisRequestTool.CALL_TREE));
 
 		String binaryKey = requestTarget.getAnalysisRequestTargetBinaryPath();
 		requestTarget.setAnalysisRequestTargetBinaryPath(s3FileUtils.getFile(analysisTargetPath, binaryKey));

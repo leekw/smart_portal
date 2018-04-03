@@ -15,4 +15,5 @@ public class AnalysisAssetRelation {
 	private String targetAsset;
 	private long sourceRefId;
 	private long targetRefId;
+	private long analysisRequestTargetNo;
 }

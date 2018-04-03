@@ -20,4 +20,5 @@ public class AnalysisAsset {
 	private String assetSourceCode;
 	private String assetLoc;
     private List<AnalysisAssetOperation> analysisAssetOperationList;
+    private long analysisRequestTargetNo;
 }

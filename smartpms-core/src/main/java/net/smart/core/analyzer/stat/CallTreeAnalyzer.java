@@ -1,6 +1,8 @@
 package net.smart.core.analyzer.stat;
 
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.smart.common.domain.AnalysisRequestTarget;
 import net.smart.common.domain.AnalysisRequestTool;
 import net.smart.common.exception.BizException;
@@ -9,6 +11,7 @@ import net.smart.core.analyzer.visitor.ClassVisitor;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +32,23 @@ public class CallTreeAnalyzer implements Analyzer {
         return target.getAnalysisRequestToolList().contains(AnalysisRequestTool.CALL_TREE);
     }
 
+    private String unzip(String source){
+        try {
+            ZipFile zipFile = new ZipFile(source);
+            zipFile.extractAll(source + "-unzip");
+            return source + "-unzip";
+        } catch (ZipException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Async
     @Override
     public void analyze(AnalysisRequestTarget target) {
         ClassParser cp;
         String targetPath = target.getAnalysisRequestTargetBinaryPath();
+        String sourceDir = unzip(target.getAnalysisRequestTargetSourcePath());
         try {
             File f = new File(targetPath);
 
@@ -53,7 +68,7 @@ public class CallTreeAnalyzer implements Analyzer {
                 try {
                     cp = new ClassParser(targetPath, entry.getName());
 
-                    ClassVisitor visitor = new ClassVisitor(cp.parse(), store);
+                    ClassVisitor visitor = new ClassVisitor(cp.parse(), store, sourceDir, target.getAnalysisFileNo());
                     visitor.start();
                 } catch (ClassFormatException ex) {
                     log.warn("is not a Java .class file");
