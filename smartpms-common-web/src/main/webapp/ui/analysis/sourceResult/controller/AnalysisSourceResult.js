@@ -2,8 +2,7 @@ Ext.define('Ui.analysis.sourceResult.controller.AnalysisSourceResult', {
     extend: 'Ext.app.Controller',
     stores: ['AnalysisSourceResult','OperationGrid','AnalysisSourceResultTree','AnalysisSourceResultHighRankTree'],
     models: ['AnalysisSourceResultTree'
-    //    ,'OperationGrid'
-    ],
+     ],
 
     views: ['AnalysisSourceResultPanel'
             ,'AnalysisSourceResultGrid'
