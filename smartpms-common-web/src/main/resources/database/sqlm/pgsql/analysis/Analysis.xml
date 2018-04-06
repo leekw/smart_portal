@@ -343,6 +343,7 @@
 		    'PMD'                 										as toolName
 		from smrt_analysis_file
 		where analysis_yn = #{targetStatus}
+		and mobile='N'
 		order by upload_date asc
 		LIMIT 1 FOR UPDATE
 	</select>
