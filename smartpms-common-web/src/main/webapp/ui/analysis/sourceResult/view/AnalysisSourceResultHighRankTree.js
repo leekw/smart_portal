@@ -3,8 +3,8 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.analysissourceresulthighranktree',
     id: 'high-rank-tree',
-    minHeight: 610,
-    maxHeight: 610,
+    minHeight: 300,
+    maxHeight: 300,
     margin: '0 0 0 2',
     bodyPadding: 10,
     border: false,
@@ -13,7 +13,7 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
     columns: [{
         xtype: 'treecolumn',
         text: '클래스',
-        width: 300,
+        width: 500,
         locked: false,
         dataIndex: 'assetName',
         editor: {
@@ -46,13 +46,11 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
 
 
         cellclick: function (talbe, td, cellIndex, record, tr, rowindex, e, eOpts) {
-            console.log("cellclick");
-            console.log(record.data.analysisAssetId);
 
             var url = G_PATH + '/analysis/source/code/view.do?analysisAssetId=' + encodeURIComponent(770);
             var option = "left=100,top=100,width='100%',height='100%',fullscreen=yes,location=no,titlebar=no,scrollbars=yes";
-            var popup = window.open(url, 'CutOver_Task_' + record.data.analysisAssetId, option);
-            popup.focus();
+           // var popup = window.open(url, 'CutOver_Task_' + record.data.analysisAssetId, option);
+           //popup.focus();
 
 
 

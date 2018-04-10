@@ -3,8 +3,8 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultTree', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.analysissourceresulttree',
     id: 'result-tree',
-    minHeight: 610,
-    maxHeight: 610,
+    minHeight: 300,
+    maxHeight: 300,
     margin: '0 0 0 2',
     bodyPadding: 10,
     border: false,
@@ -14,7 +14,7 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultTree', {
     columns: [{
         xtype: 'treecolumn',
         text: '클래스',
-        width: 300,
+        width: 500,
         locked: false,
         dataIndex: 'assetName',
         editor: {

@@ -9,6 +9,7 @@ public class AnalysisSourceResult extends Tree  {
     private long analysisFileNo;
 
     private String assetName;
+    private String assetFullPath;
     private String assetSourceFullPath;
     private String sourceAsset;
     private String targetAsset;
@@ -24,6 +25,13 @@ public class AnalysisSourceResult extends Tree  {
     private String sourceRefId;
     private String targetRefId;
 
+    public String getAssetFullPath() {
+        return assetFullPath;
+    }
+
+    public void setAssetFullPath(String assetFullPath) {
+        this.assetFullPath = assetFullPath;
+    }
 
     public long getAnalysisAssetId() {
         return analysisAssetId;

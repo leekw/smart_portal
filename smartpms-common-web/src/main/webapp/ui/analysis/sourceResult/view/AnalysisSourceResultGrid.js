@@ -1,95 +1,124 @@
+var params = Ext.urlDecode(window.location.search);
+var fileNo =  params.fileNo;
 
 Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultGrid', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.analysissourceresultgrid',
     id: 'result-grid',
-    minHeight: 610,
-    maxHeight: 610,
-    margin: '0 0 0 2',
+    layout: 'fit',
+    minHeight : 400,
+    maxHeight : 600,
+     margin: '0 0 0 2',
     bodyPadding: 10,
-    border: false,
-    rootVisible: false,
-    scroll: 'vertical',
-    store: 'AnalysisSourceResult',
-    columns: [{
+    background: 'none',
+    //border: false,
+    //rootVisible: false,
+    //scroll: 'vertical',
+    columnLines : true,
+    initComponent: function() {
 
-        header: '서비스',
-        align: 'center',
-        width: 200,
-        dataIndex: 'service'
+        this.store = 'AnalysisSourceResult';
 
-    },{
+        this.selModel = {
+        };
 
-        header: '모듈',
-        align: 'center',
-        width: 200,
-        dataIndex: 'module'
+        this. columns= [{
 
-    },{
+            header: '서비스',
+            align: 'center',
+            width: 200,
+            dataIndex: 'service'
 
-        header: '클래스',
-        align: 'center',
-        width: 200,
-         dataIndex: 'assetSourceFullPath'
+        },{
 
-    }, {
-        header: 'Full Path',
-        align: 'center',
-        width: 300,
-        dataIndex: 'assetName',
+            header: '모듈',
+            align: 'center',
+            width: 200,
+            dataIndex: 'module'
 
-    }, {
-        header: 'PMD',
-        align: 'center',
-        width: 100,
-        dataIndex: 'pmd',
+        },{
 
-    }, {
-        header: 'FORTIFY',
-        align: 'center',
-        width: 100,
-        dataIndex: 'fortify',
-
-    }, {
-        header: 'ETC',
-        align: 'center',
-        width: 100,
-        dataIndex: 'etc',
-
-    }]
-    , tbar: [
-        {
-            xtype: 'textfield',
-            width: '35%',
-            id: 'className',
-            fieldLabel: '클래스명'
-
+            header: '클래스',
+            align: 'center',
+            width: 200,
+            dataIndex: 'assetName'
 
         }, {
-            xtype: 'textfield',
-            width: '35%',
-            id: 'methodName',
-            fieldLabel: '메소드명'
+            header: 'Full Path',
+            align: 'center',
+            width: 300,
+            dataIndex: 'assetFullPath',
+
+        }, {
+            header: 'PMD',
+            align: 'center',
+            width: 100,
+            dataIndex: 'pmd',
+
+        }, {
+            header: 'FORTIFY',
+            align: 'center',
+            width: 100,
+            dataIndex: 'fortify',
+
+        }, {
+            header: 'ETC',
+            align: 'center',
+            width: 100,
+            dataIndex: 'etc',
+
+        }],
+
+        this.bbar = this.paging= Ext.create('Ext.toolbar.Paging',
+            {
+                store : this.store,
+                displayInfo: true
+            });
+
+        this.tbar = [
+            {
+                xtype: 'textfield',
+                width: '35%',
+                id: 'className',
+                fieldLabel: '클래스명'
+
+
+            }, {
+                xtype: 'textfield',
+                width: '35%',
+                id: 'methodName',
+                fieldLabel: '메소드명'
+
+
+            },
+            {
+                text: '검색',
+                width: '15%',
+                ui: 'soft-blue',
+                handler: function () {
+                    var grid = Ext.getCmp('result-grid');
+                    var store = grid.getStore();
+                    var proxy = store.getProxy();
+                    var className = Ext.getCmp('className').getValue();
+
+
+                    proxy.extraParams.assetSourceFullPath = className;
+                    proxy.extraParams.analysisFileNo = fileNo;
+
+                    store.load();
+                }
+            }
+
+        ];
+
+        this.callParent(arguments);
+    },
+
+    listeners: {
+        beforerender : function(panel) {
 
 
         },
-        {
-            text: '검색',
-            width: '15%',
-            ui: 'soft-blue',
-            handler: function () {
-                var grid = Ext.getCmp('result-grid');
-                var store = grid.getStore();
-                var proxy = store.getProxy();
-                var className = Ext.getCmp('className').getValue();
-
-
-                proxy.extraParams.assetSourceFullPath = className;
-                 store.load();
-            }
-        }]
-    ,
-    listeners: {
         cellclick :function(grid,td,cellIndex,record,tr,rowIndex,e,eOpts){
             console.log("cellclick");
             record.data.analysisAssetId;
@@ -102,8 +131,6 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultGrid', {
     },
 })
 
-
-
 var ClassRelation = {
     callTarget :'',
     openClassRelation : function() {
@@ -114,7 +141,7 @@ var ClassRelation = {
                 title: '클래스 관계',
                 autoScroll: true,
                 maximizable : true,
-                width: 800,
+                width: 1000,
                 height:600,
                 layout: 'fit',
                 animateTarget:this,
@@ -138,10 +165,6 @@ var ClassRelation = {
                             xtype:'panel',
                             border: false,
                             responsiveCls: 'big-50 small-100',
-                            style : {
-                                'background-color' : '#fff',
-                                'box-shadow': '0 5px 5px 0 rgba(0,0,0,.25)'
-                            },
                             items : [
                                 { xtype :'analysissourceresulttree'}
                             ]
@@ -162,6 +185,7 @@ var ClassRelation = {
         store2.load();
 
         win.show();
+        win.toggleMaximize();
     },
 
 }

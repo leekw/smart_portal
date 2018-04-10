@@ -185,7 +185,7 @@ public class PermitResourceController extends AbstractPageController {
 				uploadFile.setFileNo(0);
 				uploadFile.setFileName(file.getOriginalFilename());
 				uploadFile.setFilePysName(file.getOriginalFilename());
-				uploadFile.setFilePath("analysis/");
+				uploadFile.setFilePath("analysis");
 				uploadFile.setFileSize((file.getSize() /1024) + "KB");
 				uploadFile.setDataMode("I");
 				files.add(uploadFile);
@@ -222,7 +222,7 @@ public class PermitResourceController extends AbstractPageController {
 				BasedFile uploadFile = new BasedFile();
 				uploadFile.setFileNo(0);
 				uploadFile.setFileName(file.getOriginalFilename());
- 				uploadFile.setFilePath("mobile/");
+ 				uploadFile.setFilePath("mobile");
 				uploadFile.setFileSize((file.getSize() /1024) + "KB");
 				uploadFile.setDataMode("I");
 				files.add(uploadFile);

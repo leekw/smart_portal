@@ -32,10 +32,10 @@ public class ClassVisitor extends EmptyVisitor {
         asset = AnalysisAsset.builder().build();
         relations = Lists.newArrayList();
         constants = new ConstantPoolGen(clazz.getConstantPool());
-        initAnalysisAsset();
         classReferenceFormat = "C:" + clazz.getClassName() + " %s";
         this.sourceDir = sourceDir;
         this.analysisRequestTargetNo = analysisRequestTargetNo;
+        initAnalysisAsset();
     }
 
     private String getSourceFileFullPath(String path) {

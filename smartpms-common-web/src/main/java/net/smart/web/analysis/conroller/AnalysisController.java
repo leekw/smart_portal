@@ -146,7 +146,7 @@ public class AnalysisController {
 
 
 
-	@RequestMapping(value = "/analysis/result/pmd/parse.{metadataType}", method = RequestMethod.POST)
+	@RequestMapping(value = ".{metadataType}", method = RequestMethod.POST)
  	public void getAnalysisPmdParser(@IntegrationRequest AnalysisSourceResult param) throws IOException {
 
 		List<AnalysisRaw> pmdDataList = analysisService.getAnalysisPmdDataList(param);

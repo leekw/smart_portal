@@ -140,6 +140,25 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
                     });
 
                 }
+            },{
+                text: 'run',
+                ui : 'soft-blue',
+                handler : function() {
+
+                    Ext.Ajax.request({
+                        url: G_PATH + '/analysis/run.json',
+                        method : 'GET',
+                        headers : {'Content-Type' : 'application/json'},
+                       // params : (Ext.JSON.encode({analysisFileNo : 26})),
+                        success: function(res, eOtps) {
+
+                        },
+                        failure: function(res, eOtps) {
+                        }
+
+                    });
+
+                }
             },
         ];
         
@@ -170,8 +189,15 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
     	afterrender : function(panel) {
     	},
     	beforerender : function(panel) {
-    		
-    	}
+
+    	},
+
+        cellclick :function(grid,td,cellIndex,record,tr,rowIndex,e,eOpts){
+
+    	    var fileNo = record.data.analysisFileNo;
+            document.location.href = G_PATH + '/analysis/sourceResultApp/view.do?fileNo='+fileNo;
+        }
+
     }
 });
 

@@ -17,7 +17,7 @@ Ext.define('Ui.analysis.sourceResult.store.AnalysisSourceResult', {
             destroy: 'POST'
         },
         defaultRootProperty: 'analysissourceresult',
-        extraParams : { maxRowSize : 0}
+        extraParams : { maxRowSize : 0,analysisFileNo : fileNo}
 
     },
 	autoLoad: true

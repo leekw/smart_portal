@@ -420,17 +420,20 @@
 
 
 	<select id="selectAnalysisSourceResultList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
-	   SELECT analysis_asset_id as analysisAssetId
-			  ,asset_name        	    as assetName
-			  ,asset_source_full_path as assetSourceFullPath
-              ,'Google'  as service
-		      ,'AI-FT' as module
-			  ,'이경욱'  as reqUser
-		      ,'Y' as pmd
-		      ,'N' as fortify
-		      ,'N' as etc
-		from smrt_analysis_asset
-		   where 1=1
+		SELECT analysis_asset_id as analysisAssetId
+				,asset_name        	    as assetName
+				,asset_full_path        as assetFullPath
+				,asset_source_full_path as assetSourceFullPath
+				,B.service  as service
+				,B.module as module
+				,B.req_user  as reqUser
+				,B.pmd as pmd
+				,B.fortify as fortify
+				,B.etc as etc
+				from smrt_analysis_asset A,
+				smrt_analysis_file B
+		where A.analysis_req_target_no = B.analysis_file_no
+		     and analysis_req_target_no = #{analysisFileNo}
 			<if test="assetSourceFullPath != null">
 			AND asset_source_full_path like '%'||#{assetSourceFullPath}||'%'
 			</if>

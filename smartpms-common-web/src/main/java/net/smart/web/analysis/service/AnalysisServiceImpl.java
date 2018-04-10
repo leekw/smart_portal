@@ -220,7 +220,14 @@ public class AnalysisServiceImpl implements AnalysisService {
 
 	@Override
 	public List<AnalysisSourceResult> getAnalysisSourceResultList(AnalysisSourceResult param) {
-		return analysisDao.getAnalysisSourceResultList(param);
+		List<AnalysisSourceResult> resultList = analysisDao.getAnalysisSourceResultList(param);
+
+		for(AnalysisSourceResult result : resultList){
+			int lastIndex = result.getAssetName().lastIndexOf(".");
+			result.setAssetName(result.getAssetName().substring(lastIndex+1));
+		}
+
+		return resultList;
 	}
 
 	@Override
