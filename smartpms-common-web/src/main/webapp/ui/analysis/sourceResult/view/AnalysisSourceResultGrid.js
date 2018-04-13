@@ -26,45 +26,50 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultGrid', {
 
             header: '서비스',
             align: 'center',
-            width: 200,
+            width: 100,
             dataIndex: 'service'
 
         },{
 
             header: '모듈',
             align: 'center',
-            width: 200,
+            width: 100,
             dataIndex: 'module'
 
         },{
 
             header: '클래스',
             align: 'center',
-            width: 200,
-            dataIndex: 'assetName'
+            width: 300,
+            dataIndex: 'assetNameView'
+        },{
 
+            header: '소스 풀패스1',
+            width: 200,
+            hidden : true,
+            dataIndex: 'assetName'
         }, {
             header: 'Full Path',
             align: 'center',
-            width: 300,
+            width: 550,
             dataIndex: 'assetFullPath',
 
         }, {
             header: 'PMD',
             align: 'center',
-            width: 100,
+            width: 60,
             dataIndex: 'pmd',
 
         }, {
             header: 'FORTIFY',
             align: 'center',
-            width: 100,
+            width: 70,
             dataIndex: 'fortify',
 
         }, {
             header: 'ETC',
             align: 'center',
-            width: 100,
+            width: 60,
             dataIndex: 'etc',
 
         }],

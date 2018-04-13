@@ -224,7 +224,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
 		for(AnalysisSourceResult result : resultList){
 			int lastIndex = result.getAssetName().lastIndexOf(".");
-			result.setAssetName(result.getAssetName().substring(lastIndex+1));
+			result.setAssetNameView(result.getAssetName().substring(lastIndex+1));
 		}
 
 		return resultList;

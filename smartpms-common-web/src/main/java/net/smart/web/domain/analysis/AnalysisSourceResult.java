@@ -8,6 +8,7 @@ public class AnalysisSourceResult extends Tree  {
     private long analysisAssetId;
     private long analysisFileNo;
 
+    private String assetNameView;
     private String assetName;
     private String assetFullPath;
     private String assetSourceFullPath;
@@ -24,6 +25,14 @@ public class AnalysisSourceResult extends Tree  {
     private String assetSourceCode;
     private String sourceRefId;
     private String targetRefId;
+
+    public String getAssetNameView() {
+        return assetNameView;
+    }
+
+    public void setAssetNameView(String assetNameView) {
+        this.assetNameView = assetNameView;
+    }
 
     public String getAssetFullPath() {
         return assetFullPath;

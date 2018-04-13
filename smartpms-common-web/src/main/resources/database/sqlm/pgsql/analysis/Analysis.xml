@@ -473,22 +473,33 @@
 
 	<select id="selectAnalysisSourceRowRankList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
 
-		select target_asset as assetName,
+		select source_asset as assetName,
 		       relation_type as relationType,
-		case when (select count(1) from smrt_analysis_asset_rel where source_asset = a.target_asset) &lt;= 1 then 'false' else 'true' end as leaf
+		case when (select count(1)
+					from smrt_analysis_asset_rel
+					where target_asset = a.source_asset
+					and source_asset != target_asset  ) &gt;= 1 then 'false' else 'true' end as leaf
 		from smrt_analysis_asset_rel a
-		where source_asset like  '%'||#{assetName}||'%'
+		where target_asset = #{assetName}
+		and source_asset != target_asset
+
 	</select>
 
 	<select id="selectAnalysisSourceHighRankList" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
 
 		select  source_ref_id as sourceRefId,
 				target_ref_id as targetRefId,
-				source_asset as assetName,
+				target_asset as assetName,
 				relation_type as relationType,
-				case when (select count(1) from smrt_analysis_asset_rel where target_asset = a.source_asset) &lt;= 1 then 'false' else 'true' end as leaf
-		from smrt_analysis_asset_rel a
-		where target_asset like  '%'||#{assetName}||'%'
+				case when (select count(1)
+					from smrt_analysis_asset_rel
+					where source_asset = a.target_asset
+					and source_asset != target_asset
+					and target_asset !='java.lang.Object' ) &gt;= 1 then 'false' else 'true' end as leaf
+		 from smrt_analysis_asset_rel a
+		where source_asset = #{assetName}
+		  and source_asset != target_asset
+		  and target_asset !='java.lang.Object'
 	</select>
 
 	<select id="selectAnalysisSourceCode" parameterType="AnalysisSourceResult" resultType="AnalysisSourceResult">
