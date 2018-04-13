@@ -127,11 +127,10 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
                 handler : function() {
 
                     Ext.Ajax.request({
-                        url: G_PATH + '/analysis/result/pmd/parse.json',
-                        method : 'POST',
+                        url: G_PATH + '/analysis/result/parse',
+                        method : 'GET',
                         headers : {'Content-Type' : 'application/json'},
-                        params : (Ext.JSON.encode({analysisFileNo : 26})),
-                        success: function(res, eOtps) {
+                         success: function(res, eOtps) {
 
                         },
                         failure: function(res, eOtps) {

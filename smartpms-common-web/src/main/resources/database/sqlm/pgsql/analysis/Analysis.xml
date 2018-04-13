@@ -111,20 +111,21 @@
 		smrt_analysis_result(
 	analysis_result_id, service_name, repo_name, analysis_date,
 	vulnerability, cwe, security_rule, severity, full_location,
-	file, source, result_message, area, tool, order_no, manager, team)
+	file, source, result_message, area, tool, order_no, manager, team,analysis_file_no)
 	VALUES (nextval('analysis_result_seq'), #{serviceName}, #{repoName}, #{analysisDate},
 	#{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
-	#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
+	#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team},#{analysisFileNo})
 </insert>
 
 	<insert id="insertAnalysisRawCore" parameterType="AnalysisRawCore">
-		INSERT INTO /*insertAnalysisRawCore*/smrt_analysis_result(
+		INSERT INTO /*insertAnalysisRawCore*/
+		smrt_analysis_result(
 		analysis_result_id, service_name, repo_name, analysis_date,
 		vulnerability, cwe, security_rule, severity, full_location,
-		file, source, result_message, area, tool, order_no, manager, team)
+		file, source, result_message, area, tool, order_no, manager, team,analysis_file_no)
 		VALUES (nextval('analysis_result_seq'), #{serviceName}, #{repoName}, #{analysisDate},
 		#{vulnerability}, #{cwe}, #{securityRule}, #{severity}, #{fullLocation},
-		#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team})
+		#{file}, #{source}, #{resultMessage}, #{area}, #{tool}, #{orderNo}, #{manager}, #{team},#{analysisFileNo})
 	</insert>
 	
 	<select id="selectAnalysisTopList" parameterType="AnalysisTop" resultType="AnalysisTop">

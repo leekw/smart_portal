@@ -22,8 +22,16 @@ public class AnalysisRawCore {
 	private String team;
 	private String manager;
 	private String filePath;
-	
-	
+	private long analysisFileNo;
+
+	public long getAnalysisFileNo() {
+		return analysisFileNo;
+	}
+
+	public void setAnalysisFileNo(long analysisFileNo) {
+		this.analysisFileNo = analysisFileNo;
+	}
+
 	public long getAnalysisResultId() {
 		return analysisResultId;
 	}

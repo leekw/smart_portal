@@ -9,6 +9,7 @@ import net.smart.common.support.util.DateUtil;
 import net.smart.core.analyzer.request.AnalysisRequestTargetProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.opencsv.CSVReader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,73 +30,48 @@ public class AnalysisResultParser {
         AnalysisRequestTarget target = provider.nextAnalysisResult();
         if (target != null) {
             log.info(" parsing target file full path : {}", target.getAnalysisRequestTargetResultPath());
-            // TODO 아래에 file 읽어서 parsing 하는 작업 추가 하면 됨.
 
             InputStreamReader isr = new FileReader(target.getAnalysisRequestTargetResultPath());
 
-            BufferedReader reader = new BufferedReader(isr);
+            CSVReader reader = new CSVReader(isr, ',', '"', 1);
+             List<AnalysisRawCore> insDataList = new ArrayList<AnalysisRawCore>();
 
-            List<AnalysisRawCore> insDataList = new ArrayList<AnalysisRawCore>();
+            List<String[]> list = reader.readAll();
 
-            int lineNum = 0;
-            while(true){
+            for(String[] data : list){
+                AnalysisRawCore insData = new AnalysisRawCore();
 
-                String line = reader.readLine();
+                int fileIndex = data[2].lastIndexOf("/");
+                String fileName = data[2].substring(fileIndex+1);
 
-                if(line == null) break;
-                String[] colmns = line.split(",",-1);
+                insData.setFile(fileName);
+                insData.setFullLocation(data[1]+"."+fileName);
 
-                if(lineNum !=0) {
+                String priority = data[3];
+                String priorityNm = null;
 
-                    AnalysisRawCore insData = new AnalysisRawCore();
-                    int colNum = 0;
-                    for (String data : colmns) {
-                        data = data.replaceAll("\"","");
-                        colNum++;
-                        if (colNum == 3) {
-                            insData.setFullLocation(data);
-
-                            String fileName[] = data.split("/");
-                            insData.setFile(fileName[fileName.length-1]);
-
-                        }
-                        if (colNum == 4) {
-                            if("1".equals(data)){
-                                data = AnalysisPriority.Critical.name();
-                            }else if("2".equals(data)){
-                                data = AnalysisPriority.High.name();
-                            }else if("3".equals(data)){
-                                data = AnalysisPriority.Nomal.name();
-                            }
-
-                            insData.setSeverity(data);
-                        }
-                        if (colNum == 5) {
-                            insData.setSource(data);
-                        }
-                        if (colNum == 6) {
-                            insData.setResultMessage(data);
-                        }
-                        if (colNum == 7) {
-                            insData.setVulnerability(data);
-                        }
-                        if (colNum == 8) {
-                            insData.setSecurityRule(data);
-                        }
-                    }
-
-                    insData.setServiceName(target.getServiceName());
-                    insData.setRepoName(target.getRepoName());
-                    insData.setTool(target.getToolName());
-                    insData.setAnalysisDate(DateUtil.getNow());
-                    insDataList.add(insData);
+                if("1".equals(priority)){
+                    priorityNm = AnalysisPriority.Critical.name();
+                }else if("2".equals(priority)){
+                    priorityNm = AnalysisPriority.High.name();
+                }else if("3".equals(priority)){
+                    priorityNm = AnalysisPriority.Nomal.name();
                 }
-                lineNum++;
+
+                insData.setSeverity(priorityNm);
+                insData.setSource(data[4]);
+                insData.setResultMessage(data[5]);
+                insData.setVulnerability(data[6]);
+                insData.setSecurityRule(data[7]);
+                insData.setServiceName(target.getServiceName());
+                insData.setRepoName(target.getRepoName());
+                insData.setTool(target.getToolName());
+                insData.setAnalysisDate(DateUtil.getNow());
+                insData.setAnalysisFileNo(target.getAnalysisFileNo());
+                insDataList.add(insData);
             }
 
             parseService.savePmdAnalysisResult(insDataList);
-
-
         }
     }
 }
