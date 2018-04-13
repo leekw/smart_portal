@@ -13,7 +13,7 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultHighRankTree', {
     columns: [{
         xtype: 'treecolumn',
         text: '클래스',
-        width: 500,
+        width: 700,
         locked: false,
         dataIndex: 'assetName',
         editor: {

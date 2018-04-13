@@ -4,7 +4,6 @@ Ext.define('Ui.analysis.sourceResult.view.AnalysisSourceResultPanel', {
 	id : 'source-result-panel',
 	bodyPadding : 5,
 	layout: 'responsivecolumn',
-    //anchor: '80% 50%',
     defaults: {
         xtype: 'container'
     },
