@@ -72,7 +72,7 @@
       <param-value>classpath:context/smart-mvc.xml</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
-    <async-supported>false</async-supported>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>smart</servlet-name>
