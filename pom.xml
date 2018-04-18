@@ -20,8 +20,8 @@
 		<org.slf4j.version>1.7.6</org.slf4j.version>
 		<aspectj.version>1.6.11</aspectj.version>
 		<junit.version>4.8.2</junit.version>
-		<java-version>1.7</java-version>
-		<java.source.version>1.7</java.source.version>
+		<java-version>1.8</java-version>
+		<java.source.version>1.8</java.source.version>
 		<log4j.version>1.2.17</log4j.version>
 	</properties>
 	<dependencies>

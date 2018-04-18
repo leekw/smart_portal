@@ -6,20 +6,21 @@ import net.smart.core.analyzer.parser.AnalysisResultParser;
 import net.smart.core.analyzer.stat.StaticAnalyzer;
 import net.smart.web.analysis.service.AnalysisService;
 import net.smart.web.domain.analysis.*;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -172,5 +173,52 @@ public class AnalysisController {
 		return analysisService.getAnalysisMobileList(param);
 
 	}
+
+
+
+	@RequestMapping(value = "/analysis/file/send/scalpel/send.{metadataType}", method = RequestMethod.GET)
+	public ModelAndView fileSend(ModelAndView modelAndView, @RequestParam int analysisAssetId ,HttpServletRequest request) throws Exception {
+
+				File org =null;
+
+				FileInputStream fis = null;
+
+				FTPClient clnt = new FTPClient();
+				clnt.setControlEncoding("utf-8");
+
+				try {
+					clnt.connect("192.168.0.29");
+					//clnt.setBufferSize(1024*1024);
+					int reply = clnt.getReplyCode();
+					if (!FTPReply.isPositiveCompletion(reply)) {
+						throw new Exception("ftp connection refused");
+					}
+
+					clnt.setSoTimeout(1000 * 10);
+					clnt.login("leekh", "1234");
+					clnt.setFileType(FTP.BINARY_FILE_TYPE);
+
+
+					clnt.enterLocalActiveMode();
+
+					//clnt.enterLocalPassiveMode();
+					clnt.changeWorkingDirectory("/var/www/html/uploads");
+					//clnt.makeDirectory("");
+
+					fis = new FileInputStream(org);
+					Boolean result = clnt.storeFile("test.apk", fis);
+				} finally {
+					if (clnt.isConnected()) {
+						clnt.disconnect();
+					}
+					if (fis != null) {
+						fis.close();
+					}
+				}
+
+		modelAndView.setViewName("scalpelView");
+		return modelAndView;
+	}
+
 
 }

@@ -140,11 +140,17 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
 
                 }
             },{
-                text: 'run',
+                text: 'run3',
                 ui : 'soft-blue',
                 handler : function() {
 
-                    Ext.Ajax.request({
+
+                    var url = G_PATH + '/analysis/file/send/scalpel/send.json';
+                    var option = "left=100,top=100,width='100%',height='100%',fullscreen=yes,location=no,titlebar=no,scrollbars=yes";
+                     var popup = window.open(url, '분석이', option);
+                    popup.focus();
+
+                   /* Ext.Ajax.request({
                         url: G_PATH + '/analysis/run.json',
                         method : 'GET',
                         headers : {'Content-Type' : 'application/json'},
@@ -155,7 +161,7 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
                         failure: function(res, eOtps) {
                         }
 
-                    });
+                    });*/
 
                 }
             },
@@ -328,9 +334,9 @@ var FileUpload = {
                             fieldLabel :'진단요청툴',
                             vertical: true,
                             items:[
-                                {boxLabel:'PMD',name:'tool',inputValue:'PMD',checked:true},
+                                {boxLabel:'PMD',    name:'tool',inputValue:'PMD',   checked:true},
                                 {boxLabel:'fortify',name:'tool',inputValue:'FORTIFY'},
-                                {boxLabel:'etc',name:'tool',inputValue:'ETC'}
+                                {boxLabel:'etc',    name:'tool',inputValue:'ETC'}
                             ]
                         },{
                             buttonAlign:'right',
@@ -343,6 +349,7 @@ var FileUpload = {
                                             if (frm.isValid()) {
                                                 frm.submit({
                                                     url : G_PATH + '/permit/res/source/file/upload.file',
+
                                                     success : function(ft, res) {
                                                         var jsonResult = Ext.JSON.decode(res.response.responseText);
 
