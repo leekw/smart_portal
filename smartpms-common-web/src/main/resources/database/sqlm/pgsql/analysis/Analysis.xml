@@ -367,6 +367,7 @@
 			analysis_count 				as analysisCount,
 		    to_char(upload_date,'yyyy/mm/dd hh24:mi:ss') 				as uploadDate,
 		    to_char(analysis_date,'yyyy/mm/dd hh24:mi:ss') 			as analysisDate,
+		    md5_hash                    as md5Hash,
 			etc ,
 			pmd,
 			fortify,
@@ -378,10 +379,10 @@
 		from smrt_analysis_file
 		where 1=1
 		<if test="analysisJavaOriName != null">
-			AND analysis_java_ori_name like  '%'|| #{analysisJavaOriName}||'%'
+			AND analysis_java_file_name like  '%'|| #{analysisJavaOriName}||'%'
 		</if>
 		<if test="analysisClassOriName != null">
-			AND analysis_class_ori_name like '%'||#{analysisClassOriName}||'%'
+			AND analysis_class_file_name like '%'||#{analysisClassOriName}||'%'
 		</if>
 		<if test="etc != null">
 			AND etc like '%'||#{etc}||'%'

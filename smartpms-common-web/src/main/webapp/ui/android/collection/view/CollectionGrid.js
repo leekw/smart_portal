@@ -23,15 +23,11 @@ Ext.define('Ui.android.collection.view.CollectionGrid' ,{
             {
                 header: '파일명',
                 dataIndex: 'analysisJavaFileName',
-                width:'25%'
+                width:'30%'
             }, {
-                header: 'MD5',
-                dataIndex: 'result',
-                width:'25%'
-            }, {
-                header: 'Binary size',
-                dataIndex: 'result',
-                width:'25%'
+                header: 'APK 식별값(MD5 HASH)',
+                dataIndex: 'md5Hash',
+                width:'40%'
             }, {
                 header: '분석진행상황',
                 dataIndex: 'analysisYn',
@@ -81,6 +77,7 @@ Ext.define('Ui.android.collection.view.CollectionGrid' ,{
                                     }
                                 });
                             }
+
                         }
                     }
                 }]
@@ -118,36 +115,36 @@ Ext.define('Ui.android.collection.view.CollectionGrid' ,{
         cellclick :function(grid,td,cellIndex,record,tr,rowIndex,e,eOpts){
 
 
-            var win = Ext.getCmp('analysis-apk-info');
-            if (win == null) {
-                win = Ext.create('Ext.window.Window', {
-                    id : 'analysis-apk-info',
-                    title: 'APK 분석',
-                    autoScroll: true,
-                    maximizable : true,
-                    width: 800,
-                    height:600,
-                    layout: 'fit',
-                     items : [{
-                        //title:'상위 참조 클래스',
-                        xtype:'panel',
-                        border: false,
-                        responsiveCls: 'big-50 small-100',
-                        items :[
-                            { xtype :'collectionanalysistree'}
-                        ]
+            //document.location.href = "http://192.168.0.29/9997/list.php"
 
-                    }]
-                });
-            }
-            var tree = Ext.getCmp('collection-analysis-tree');
-            var store= tree.getStore();
-            var proxy = store.getProxy();
-            proxy.extraParams.analysisFileNo =  record.data.analysisFileNo
-            proxy.extraParams.analysisParentId = 0;
-            store.load();
+            //local
+            window.open("http://192.168.0.29:9997/list.php");
 
-            win.show();
+           //prd
+            //window.open("http://14.39.151.185:9997/list.php");
+
+            // var win = Ext.getCmp('analysis-apk-info');
+            // if (win == null) {
+            //     win = Ext.create('Ext.window.Window', {
+            //         id : 'analysis-apk-info',
+            //         title: 'APK 분석',
+            //         autoScroll: true,
+            //         maximizable : true,
+            //         width: 800,
+            //         height:600,
+            //         layout: 'fit',
+            //         modal:false,
+            //         listeners : {
+            //             afterrender : function(field) {
+            //               document.location.href = "http://192.168.0.29/9997/list.php"
+            //
+            //             }
+            //
+            //         }
+            //
+            //     });
+            // }
+            // win.show();
 
 
 

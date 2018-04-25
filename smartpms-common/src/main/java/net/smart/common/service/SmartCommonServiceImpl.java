@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import net.smart.common.dao.BasedResourceDao;
+import net.smart.common.domain.AnalysisApk;
 import net.smart.common.domain.DataSyncInfo;
 import net.smart.common.domain.IntUser;
 import net.smart.common.domain.UserDetail;
@@ -686,6 +687,11 @@ public class SmartCommonServiceImpl implements SmartCommonService {
 	@Override
 	public void addAnalysisMobileFile(BasedFile basedFile){
 		basedResourceDao.addAnalysisMobileFile(basedFile);
+	};
+
+	@Override
+	public void  addAnalysisApk(AnalysisApk analysisApk){
+		basedResourceDao.addAnalysisApk(analysisApk);
 	};
 
 }

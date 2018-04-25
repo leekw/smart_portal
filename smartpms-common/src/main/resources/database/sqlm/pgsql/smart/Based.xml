@@ -569,7 +569,8 @@
 		analysis_class_file_path,
  		analysis_yn,
 		upload_date,
-		mobile
+		mobile,
+		md5_hash
 		)
 		VALUES
 		(
@@ -580,7 +581,44 @@
 		#{filePath},
  		'N',
 		now(),
-		'Y'
+		'Y',
+		#{filePysName}
+		)
+	</insert>
+
+
+	<insert id="insertAnalysisApk" parameterType="AnalysisApk">
+		INSERT INTO smrt_analysis_file
+		(
+		analysis_file_no,
+ 		analysis_java_file_name,
+		analysis_java_file_path,
+ 		analysis_class_file_name,
+		analysis_class_file_path,
+		etc,
+		analysis_yn,
+		upload_date,
+		service,
+		module,
+		pmd,
+		fortify,
+		req_user
+		)
+		VALUES
+		(
+		nextVal('analysis_file_seq'),
+ 		#{analysisJavaFileName},
+		#{analysisJavaFilePath},
+ 		#{analysisClassFileName},
+		#{analysisClassFilePath},
+		#{etc},
+		'N',
+		now(),
+		#{service},
+		#{module},
+		#{pmd},
+		#{fortify},
+		#{reqUser}
 		)
 	</insert>
 

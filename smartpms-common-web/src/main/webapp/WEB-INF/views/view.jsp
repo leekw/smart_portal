@@ -16,7 +16,6 @@
        <meta http-equiv="X-UA-Compatible" content="IE=9">
        <meta name="_csrf" content="${_csrf.token}"/>
        <meta name="_csrf_header" content="${_csrf.headerName}"/>
-       <meta http-equiv="X-Frame-Options" content="SAMEORIGIN"/>
        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
        <meta name="apple-mobile-web-app-capable" content="yes">
        <style type="text/css">

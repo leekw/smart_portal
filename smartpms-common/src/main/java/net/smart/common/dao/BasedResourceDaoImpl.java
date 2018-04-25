@@ -3,6 +3,7 @@ package net.smart.common.dao;
 import java.util.List;
 import java.util.Map;
 
+import net.smart.common.domain.AnalysisApk;
 import net.smart.common.domain.based.BasedFile;
 import net.smart.common.domain.based.BasedOrg;
 import net.smart.common.domain.based.BasedOrgRel;
@@ -185,5 +186,10 @@ public class BasedResourceDaoImpl extends BasedSqlSessionDaoSupport implements B
 		getSqlSession().insert("based.insertAnalysisMobileFile", basedFile);
 	};
 
+
+	@Override
+	public void addAnalysisApk(AnalysisApk analysisApk){
+		getSqlSession().insert("based.insertAnalysisApk", analysisApk);
+	};
 
 }

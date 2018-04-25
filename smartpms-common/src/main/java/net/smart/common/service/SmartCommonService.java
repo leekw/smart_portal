@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.smart.common.domain.AnalysisApk;
 import net.smart.common.domain.DataSyncInfo;
 import net.smart.common.domain.IntUser;
 import net.smart.common.domain.based.BasedFile;
@@ -122,4 +123,7 @@ public interface SmartCommonService {
 	public String getAnalysisFileDir();
 
 	public void addAnalysisMobileFile(BasedFile basedFile);
+
+	public void addAnalysisApk(AnalysisApk analysisApk);
+
 }

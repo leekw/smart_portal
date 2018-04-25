@@ -1,33 +1,27 @@
 package net.smart.common.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.google.common.io.Files;
 import net.smart.common.annotation.IntegrationRequest;
 import net.smart.common.annotation.IntegrationResponse;
+import net.smart.common.domain.AnalysisApk;
 import net.smart.common.domain.IntUser;
-import net.smart.common.domain.based.BasedFile;
-import net.smart.common.domain.based.BasedFileInfo;
-import net.smart.common.domain.based.BasedResource;
-import net.smart.common.domain.based.BasedResourceRole;
-import net.smart.common.domain.based.BasedUser;
-import net.smart.common.domain.based.SessionUser;
+import net.smart.common.domain.based.*;
 import net.smart.common.exception.BizException;
 import net.smart.common.service.SmartCommonService;
 import net.smart.common.support.comparator.SessionComparator;
 import net.smart.common.support.constant.BizCode;
 import net.smart.common.support.constant.ErrorCode;
 import net.smart.common.support.s3.S3Client;
-import net.smart.common.support.util.DateUtil;
-import net.smart.common.support.util.FileUtil;
-import net.smart.common.support.util.IntegrationHttpSessionCollector;
-
+import net.smart.common.support.util.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.session.SessionInformation;
@@ -38,6 +32,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 @Controller
 @RequestMapping("/permit/res/**")
@@ -52,7 +53,8 @@ public class PermitResourceController extends AbstractPageController {
 	@Autowired
 	private SessionRegistry sessionRegistry;
 
-	
+
+
 	@RequestMapping(value = "/list/get.{metadataType}", method = RequestMethod.POST)
 	@IntegrationResponse(key="resources")
 	public List<BasedResource> getResourceList(@IntegrationRequest BasedResource param) {
@@ -190,7 +192,7 @@ public class PermitResourceController extends AbstractPageController {
 				uploadFile.setDataMode("I");
 				files.add(uploadFile);
 
-            }
+			 }
 
         }
         Map<String,Object> userDataMap = new HashMap<String,Object>();
@@ -205,23 +207,29 @@ public class PermitResourceController extends AbstractPageController {
 	public ModelAndView mobileFileupload(BasedFileInfo fileInfo, HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView) throws IOException,InterruptedException {
 
 
-		List<BasedFile> files = new ArrayList<BasedFile>();
+ 	 	List<BasedFile> files = new ArrayList<BasedFile>();
+		File scalpelFile = null;
+		File s3File = null;
+		File localFile = null;
+		String upLoadFileName = null;
 		if (fileInfo.getFileupload() != null && !fileInfo.getFileupload().isEmpty()) {
 
 			for (MultipartFile file : fileInfo.getFileupload()) {
 
-				File s3File = new File(file.getOriginalFilename());
-				file.transferTo(s3File);
+                upLoadFileName = file.getOriginalFilename().replaceAll(" ","");
+				s3File = new File(upLoadFileName);
+                scalpelFile = new File(upLoadFileName);
+                localFile = new File(upLoadFileName);
 
-				try {
-					String url = s3Client.uploadFile(s3File, "mobile");
- 				} catch (InterruptedException e) {
-					throw e;
-				}
+                //file.transferTo(s3File);
 
-				BasedFile uploadFile = new BasedFile();
+
+                FileUtils.copyInputStreamToFile(file.getInputStream(),scalpelFile);
+                FileUtils.copyInputStreamToFile(file.getInputStream(),s3File);
+
+                BasedFile uploadFile = new BasedFile();
 				uploadFile.setFileNo(0);
-				uploadFile.setFileName(file.getOriginalFilename());
+				uploadFile.setFileName(upLoadFileName);
  				uploadFile.setFilePath("mobile");
 				uploadFile.setFileSize((file.getSize() /1024) + "KB");
 				uploadFile.setDataMode("I");
@@ -231,11 +239,109 @@ public class PermitResourceController extends AbstractPageController {
 
 		}
 
+		//File localFile = new File(s3File.getName());;
+
+        //localFile.createNewFile();
+       // fileInfo.getFileupload().get(0).  transferTo(localFile);
+
+
+
+
+		//분석이 호출
+        HttpPost scalpelReq = new HttpPost("http://192.168.0.29:9997/index.php");
+        HttpEntity multipart  = MultipartEntityBuilder.create()
+                .addTextBody("myFile", "yes", ContentType.TEXT_PLAIN)
+                .addBinaryBody("myfile", scalpelFile, ContentType.APPLICATION_OCTET_STREAM, scalpelFile.getName())
+                .build();
+        scalpelReq.setEntity(multipart);
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse scalpelRep = httpClient.execute(scalpelReq);
+		String scalpel_result = EntityUtils.toString(scalpelRep.getEntity());
+		String apk_hash = scalpel_result.substring(scalpel_result.indexOf("::")+12,scalpel_result.lastIndexOf("::"));
+		files.get(0).setFilePysName(apk_hash);
+        try {
+            String url = s3Client.uploadFile(s3File, "mobile");
+
+        } catch (InterruptedException e) {
+            throw e;
+        }
+
+        FileOutputStream output = new FileOutputStream("C:/project/apache-tomcat-7.0.85/bin/"+files.get(0).getFileName());
+
+        FileUtils.copyInputStreamToFile(fileInfo.getFileupload().get(0).getInputStream(),localFile);
+
+        //로컬에 파일생성
+        FileInputStream input   =  new FileInputStream(localFile);
+
+        int readBuffer = 0;
+        byte [] buffer = new byte[1024];
+        while((readBuffer = input.read(buffer)) != -1) {
+            output.write(buffer, 0, readBuffer);
+        }
+
+
+        input.close();
+        output.close();
+
+
+
+		//apk정보 저장
 		smartCommonService.addAnalysisMobileFile(files.get(0));
+
+
+		String fileName = upLoadFileName;
+
+		//쉘수행 apk ==> jar
+		String result = ShellExecutor.execute("d2j-dex2jar.bat "+fileName);
+		logger.info(result);
+        result=null;
+
+		String jarName = fileName.substring(0,fileName.lastIndexOf(".")) +"-dex2jar.jar";
+		String javaName = fileName.substring(0,fileName.lastIndexOf(".")) +"java";
+
+		//쉘수행 jar ==> java
+		String java_result = ShellExecutor.execute("java -jar jd-core.jar "+jarName+" "+javaName);
+		logger.info(java_result);
+        java_result=null;
+
+		//java zip
+		String zipSourceDirNm = javaName;
+		String zipOutNm =javaName+".zip";
+		ZipDirectory.excute(zipSourceDirNm,zipOutNm);
+
+
+		File jarFile = new File("C:/project/apache-tomcat-7.0.85/bin/"+jarName);
+		File javaFile = new File("C:/project/apache-tomcat-7.0.85/bin/"+zipOutNm);
+
+		AnalysisApk analysisInfo = new AnalysisApk();
+
+		analysisInfo.setAnalysisJavaFileName(zipOutNm);
+		analysisInfo.setAnalysisJavaFilePath("analysis");
+		analysisInfo.setAnalysisClassFileName(jarName);
+		analysisInfo.setAnalysisClassFilePath("analysis");
+		analysisInfo.setMobile("N");
+		analysisInfo.setPmd("Y");
+		analysisInfo.setFortify("N");
+		analysisInfo.setService("APK_ANALYSIS");
+		analysisInfo.setModule(fileName);
+		analysisInfo.setReqUser("분석이");
+
+
+		smartCommonService.addAnalysisApk(analysisInfo);
+
+
+        try {
+            String url2 = s3Client.uploadFile(jarFile, "analysis");
+            String url3 = s3Client.uploadFile(javaFile, "analysis");
+
+        } catch (InterruptedException e) {
+            throw e;
+        }
 
 		Map<String,Object> userDataMap = new HashMap<String,Object>();
 		userDataMap.put("success", files.get(0));
 		modelAndView.addObject(BizCode.RequestKey.PARAM_KEY.getValue(),userDataMap);
+
 		return modelAndView;
 	}
 

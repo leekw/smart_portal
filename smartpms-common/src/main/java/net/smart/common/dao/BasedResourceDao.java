@@ -3,6 +3,7 @@ package net.smart.common.dao;
 import java.util.List;
 import java.util.Map;
 
+import net.smart.common.domain.AnalysisApk;
 import net.smart.common.domain.based.BasedFile;
 import net.smart.common.domain.based.BasedOrg;
 import net.smart.common.domain.based.BasedOrgRel;
@@ -76,4 +77,7 @@ public interface BasedResourceDao {
 	public void removeOrgUser(BasedUser param);
 
 	public void addAnalysisMobileFile(BasedFile basedFile);
+
+	public void addAnalysisApk(AnalysisApk analysisApk);
+
 }

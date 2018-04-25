@@ -1,14 +1,12 @@
-package net.smart.web.domain.analysis;
+package net.smart.common.domain;
 
 import java.util.Date;
 
-public class AnalysisSource {
+public class AnalysisApk {
 
     private String analysisJavaFileName;
-    private String analysisJavaOriName;
     private String analysisJavaFilePath;
     private String analysisClassFileName;
-    private String analysisClassOriName;
     private String analysisClassFilePath;
     private String analysisDate;
     private String uploadDate;
@@ -23,15 +21,6 @@ public class AnalysisSource {
     private long analysisFileNo;
     private int analysisCount;
     private Date reqDate;
-    private String md5Hash;
-
-    public String getMd5Hash() {
-        return md5Hash;
-    }
-
-    public void setMd5Hash(String md5Hash) {
-        this.md5Hash = md5Hash;
-    }
 
     public String getMobile() {
         return mobile;
@@ -49,13 +38,6 @@ public class AnalysisSource {
         this.analysisJavaFileName = analysisJavaFileName;
     }
 
-    public String getAnalysisJavaOriName() {
-        return analysisJavaOriName;
-    }
-
-    public void setAnalysisJavaOriName(String analysisJavaOriName) {
-        this.analysisJavaOriName = analysisJavaOriName;
-    }
 
     public String getAnalysisJavaFilePath() {
         return analysisJavaFilePath;
@@ -73,13 +55,6 @@ public class AnalysisSource {
         this.analysisClassFileName = analysisClassFileName;
     }
 
-    public String getAnalysisClassOriName() {
-        return analysisClassOriName;
-    }
-
-    public void setAnalysisClassOriName(String analysisClassOriName) {
-        this.analysisClassOriName = analysisClassOriName;
-    }
 
     public String getAnalysisClassFilePath() {
         return analysisClassFilePath;

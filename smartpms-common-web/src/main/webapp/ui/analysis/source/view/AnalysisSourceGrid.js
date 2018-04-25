@@ -43,12 +43,12 @@ Ext.define('Ui.analysis.source.view.AnalysisSourceGrid' ,{
         { 
             header: '소스파일',
             width: 200,
-            dataIndex: 'analysisJavaOriName'
+            dataIndex: 'analysisJavaFileName'
         },
         { 
             header: '바이너리파일',
             width: 200,
-            dataIndex: 'analysisClassOriName'
+            dataIndex: 'analysisClassFileName'
         },
 		{
 			header: '진단여부',
